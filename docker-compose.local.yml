@@ -30,7 +30,7 @@ services:
   bvc_api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     container_name: bvc_api
     restart: unless-stopped
     env_file: .env
