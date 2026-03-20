@@ -93,6 +93,7 @@ else:
 
 # ------------------------------------------------------------------
 # API
+# Render asigna el puerto via $PORT — tiene prioridad sobre API_PORT
 # ------------------------------------------------------------------
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
-API_PORT = int(os.getenv("API_PORT", "8001"))
+API_PORT = int(os.getenv("PORT", os.getenv("API_PORT", "8001")))

@@ -63,6 +63,7 @@ class BVCHandler(BaseHTTPRequestHandler):
             '/auth/logout':       self._auth_logout,
             '/simulador/comprar': self._sim_comprar,
             '/simulador/vender':  self._sim_vender,
+            '/etl/iniciar':       self._etl_iniciar,
         }
         handler = rutas_post.get(ruta)
         if handler:
@@ -105,6 +106,8 @@ class BVCHandler(BaseHTTPRequestHandler):
             "/ordenamiento/benchmark":       self._sorting_benchmark,
             "/ordenamiento/top-volumen":     self._sorting_top_volumen,
             "/ordenamiento/dataset":         self._sorting_dataset,
+            # ETL status
+            "/etl/status":                   self._etl_status,
         }
 
         handler = rutas.get(ruta)
@@ -858,6 +861,45 @@ class BVCHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             _respuesta_json(self, 500, {'error': str(e)})
+
+    def _etl_status(self, params):
+        """GET /etl/status — Cuántos registros hay en la BD."""
+        from etl.database import get_connection
+        try:
+            conn = get_connection()
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) FROM precios;")
+                total_precios = cur.fetchone()[0]
+                cur.execute("SELECT COUNT(*) FROM activos;")
+                total_activos = cur.fetchone()[0]
+            conn.close()
+            _respuesta_json(self, 200, {
+                "activos": total_activos,
+                "registros_precios": total_precios,
+                "etl_ejecutado": total_precios > 0,
+            })
+        except Exception as e:
+            _respuesta_json(self, 500, {"error": str(e)})
+
+    def _etl_iniciar(self, params, body):
+        """
+        POST /etl/iniciar — Dispara el pipeline ETL completo en un hilo separado.
+        Retorna inmediatamente con estado 'iniciado'.
+        """
+        import threading
+        def _run():
+            try:
+                from main import pipeline_etl
+                pipeline_etl()
+            except Exception as ex:
+                print(f"[ETL-API] Error en pipeline: {ex}")
+
+        hilo = threading.Thread(target=_run, daemon=True)
+        hilo.start()
+        _respuesta_json(self, 202, {
+            "estado": "iniciado",
+            "mensaje": "ETL corriendo en segundo plano. Consulta /etl/status para ver el progreso.",
+        })
 
 
 # ------------------------------------------------------------------
