@@ -9,7 +9,7 @@ services:
     name: bvc-analytics-api
     runtime: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && python -c \"from etl.database import init_schema; init_schema()\""
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python main.py api"
     envVars:
       - key: DATABASE_URL

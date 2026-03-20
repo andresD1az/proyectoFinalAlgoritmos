@@ -242,6 +242,12 @@ def _guardar_resultados_sorting(resultados: list, top15: list):
 
 def iniciar_api():
     """Inicia el servidor HTTP de la API (http.server stdlib)."""
+    # Inicializar schema al arrancar (idempotente, no falla si ya existe)
+    try:
+        from etl.database import init_schema
+        init_schema()
+    except Exception as e:
+        print(f"[API] Advertencia al inicializar schema: {e}")
     from api.server import iniciar_servidor
     iniciar_servidor()
 
