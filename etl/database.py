@@ -207,3 +207,85 @@ def obtener_todos_cierres() -> dict[str, list]:
         if filas:
             resultado[ticker] = [float(f["cierre"]) for f in filas]
     return resultado
+
+
+# ------------------------------------------------------------------
+# INICIALIZACIÓN DEL SCHEMA (usado en el build de Render)
+# ------------------------------------------------------------------
+
+def init_schema():
+    """
+    Crea todas las tablas necesarias si no existen.
+    Equivalente a ejecutar database/init.sql pero desde Python.
+    Se llama durante el buildCommand en Render.
+    """
+    sql = """
+        CREATE TABLE IF NOT EXISTS activos (
+            id      SERIAL PRIMARY KEY,
+            ticker  VARCHAR(10) UNIQUE NOT NULL,
+            nombre  VARCHAR(100),
+            tipo    VARCHAR(20),
+            mercado VARCHAR(20)
+        );
+
+        CREATE TABLE IF NOT EXISTS precios (
+            id        SERIAL PRIMARY KEY,
+            activo_id INTEGER REFERENCES activos(id),
+            fecha     DATE NOT NULL,
+            apertura  NUMERIC(12,4),
+            maximo    NUMERIC(12,4),
+            minimo    NUMERIC(12,4),
+            cierre    NUMERIC(12,4) NOT NULL,
+            volumen   BIGINT,
+            UNIQUE (activo_id, fecha)
+        );
+
+        CREATE TABLE IF NOT EXISTS resultados_similitud (
+            id         SERIAL PRIMARY KEY,
+            activo1_id INTEGER REFERENCES activos(id),
+            activo2_id INTEGER REFERENCES activos(id),
+            algoritmo  VARCHAR(30),
+            valor      NUMERIC(10,6),
+            calculado_en TIMESTAMP DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS resultados_volatilidad (
+            id           SERIAL PRIMARY KEY,
+            activo_id    INTEGER REFERENCES activos(id),
+            fecha        DATE,
+            ventana_dias INTEGER,
+            volatilidad  NUMERIC(12,6),
+            retorno_medio NUMERIC(12,6),
+            calculado_en TIMESTAMP DEFAULT NOW(),
+            UNIQUE (activo_id, fecha, ventana_dias)
+        );
+
+        CREATE TABLE IF NOT EXISTS resultados_sorting (
+            id           SERIAL PRIMARY KEY,
+            algoritmo    VARCHAR(50),
+            complejidad  VARCHAR(20),
+            tamanio      INTEGER,
+            tiempo_ms    NUMERIC(12,6),
+            calculado_en TIMESTAMP DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS top_volumen (
+            id           SERIAL PRIMARY KEY,
+            ticker       VARCHAR(10),
+            fecha        DATE,
+            volumen      BIGINT,
+            cierre       NUMERIC(12,4),
+            calculado_en TIMESTAMP DEFAULT NOW()
+        );
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+        conn.commit()
+        print("[DB] Schema inicializado correctamente.")
+    except Exception as e:
+        print(f"[DB] Error al inicializar schema: {e}")
+        conn.rollback()
+    finally:
+        conn.close()

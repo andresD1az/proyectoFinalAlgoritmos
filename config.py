@@ -57,15 +57,39 @@ DIAS_VOLATILIDAD         = 30    # Ventana para cálculo de volatilidad
 MIN_SIMILITUD_THRESHOLD  = 0.75  # Umbral mínimo para reportar similitud
 
 # ------------------------------------------------------------------
-# BASE DE DATOS (leídos desde variables de entorno con fallback local)
+# BASE DE DATOS
+# Render provee DATABASE_URL en formato:
+#   postgresql://user:password@host:port/dbname
+# Si está presente, se usa directamente; si no, se usan las vars individuales.
 # ------------------------------------------------------------------
-DB_CONFIG = {
-    "host":     os.getenv("DB_HOST",     "bvc_db"),
-    "port":     int(os.getenv("DB_PORT", "5432")),
-    "dbname":   os.getenv("DB_NAME",     "bvc_analytics"),
-    "user":     os.getenv("DB_USER",     "bvc_user"),
-    "password": os.getenv("DB_PASSWORD", "changeme"),
-}
+_DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+if _DATABASE_URL:
+    # Parsear DATABASE_URL manualmente (sin dependencias externas)
+    # Formato: postgresql://user:password@host:port/dbname
+    import re as _re
+    _m = _re.match(
+        r"postgres(?:ql)?://([^:]+):([^@]+)@([^:/]+):(\d+)/(.+)",
+        _DATABASE_URL
+    )
+    if _m:
+        DB_CONFIG = {
+            "host":     _m.group(3),
+            "port":     int(_m.group(4)),
+            "dbname":   _m.group(5),
+            "user":     _m.group(1),
+            "password": _m.group(2),
+        }
+    else:
+        raise ValueError(f"DATABASE_URL con formato inesperado: {_DATABASE_URL}")
+else:
+    DB_CONFIG = {
+        "host":     os.getenv("DB_HOST",     "bvc_db"),
+        "port":     int(os.getenv("DB_PORT", "5432")),
+        "dbname":   os.getenv("DB_NAME",     "bvc_analytics"),
+        "user":     os.getenv("DB_USER",     "bvc_user"),
+        "password": os.getenv("DB_PASSWORD", "changeme"),
+    }
 
 # ------------------------------------------------------------------
 # API
