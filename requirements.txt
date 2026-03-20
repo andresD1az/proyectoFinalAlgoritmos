@@ -1,0 +1,8 @@
+# =============================================================
+# requirements.txt
+# POLÍTICA: Solo drivers de conectividad, CERO librerías algorítmicas
+# Prohibido: pandas, numpy, scipy, sklearn, yfinance, etc.
+# =============================================================
+
+# Driver PostgreSQL (solo conectividad, no encapsula matemática)
+psycopg2-binary==2.9.9

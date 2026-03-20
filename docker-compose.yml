@@ -1,0 +1,65 @@
+# =============================================================
+# docker-compose.yml — Orquestación del Proyecto BVC Analytics
+# Servicios: bvc_api (Python) + bvc_db (PostgreSQL 15)
+# =============================================================
+
+services:
+
+  # ─── BASE DE DATOS ──────────────────────────────────────────
+  bvc_db:
+    image: postgres:15-alpine
+    container_name: bvc_db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - bvc_pg_data:/var/lib/postgresql/data # Persistencia entre reinicios
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Schema inicial
+    networks:
+      - bvc_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── API PYTHON ─────────────────────────────────────────────
+  bvc_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bvc_api
+    restart: unless-stopped
+    env_file: .env
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    environment:
+      DB_HOST: bvc_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      API_HOST: 0.0.0.0
+      API_PORT: 8001
+    ports:
+      - "8001:8001" # Nginx en el VPS apunta aquí
+    depends_on:
+      bvc_db:
+        condition: service_healthy
+    networks:
+      - bvc_network
+    volumes:
+      - .:/app # Hot-reload en desarrollo
+
+# ─── VOLÚMENES Y REDES ────────────────────────────────────────
+volumes:
+  bvc_pg_data:
+    driver: local
+
+networks:
+  bvc_network:
+    driver: bridge

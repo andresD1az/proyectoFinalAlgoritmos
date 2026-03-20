@@ -1,0 +1,23 @@
+# =============================================================
+# .gitignore — BVC Analytics
+# =============================================================
+
+# Variables de entorno (NUNCA al repositorio)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Datos locales
+data/
