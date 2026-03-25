@@ -5,6 +5,16 @@
 **Análisis de Algoritmos  Proyecto Final**
 
 ---
+# Instalar dependencia
+pip install psycopg2-binary==2.9.9
+
+# Opción A — con Docker (BD incluida, recomendado)
+docker compose -f docker-compose.local.yml up --build
+
+# Opción B — sin Docker (necesitas PostgreSQL instalado localmente)
+python main.py etl
+python main.py api
+
 
 ## 1. Introducción
 
