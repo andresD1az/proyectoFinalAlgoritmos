@@ -3,1124 +3,1031 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BVC Analytics Dashboard Bursátil</title>
+<title>BVC Analytics</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 :root{
- --bg:#070d1a;--surf:#0f1629;--surf2:#151d33;--brd:#1e293b;
- --acc:#38bdf8;--acc2:rgba(56,189,248,.12);--green:#10b981;
- --red:#f43f5e;--yel:#f59e0b;--pur:#8b5cf6;--blu:#3b82f6;
- --txt:#e2e8f0;--muted:#64748b;--sb:215px;
- --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --bg:#060b18;--surf:#0c1526;--surf2:#111e35;--brd:#1a2d4a;--brd2:#243a5e;
+  --acc:#38bdf8;--acc2:rgba(56,189,248,.1);--acc3:rgba(56,189,248,.05);
+  --green:#10b981;--green2:rgba(16,185,129,.12);
+  --red:#f43f5e;--red2:rgba(244,63,94,.12);
+  --yel:#f59e0b;--yel2:rgba(245,158,11,.12);
+  --pur:#8b5cf6;--pur2:rgba(139,92,246,.12);
+  --blu:#3b82f6;--blu2:rgba(59,130,246,.12);
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;
+  --sb:220px;--font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:10px;--r2:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--txt);overflow:hidden}
-::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
-
-/* LAYOUT */
+html,body{height:100%;font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px}
 .app{display:flex;height:100vh}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;backdrop-filter:blur(2px)}
 .overlay.show{display:block}
-
-/* SIDEBAR */
 .sidebar{width:var(--sb);background:var(--surf);border-right:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:transform .25s;z-index:100;overflow-y:auto}
-.logo{padding:16px 14px;border-bottom:1px solid var(--brd)}
-.logo h1{font-size:13px;font-weight:700;color:var(--acc)}
-.logo small{font-size:10px;color:var(--muted)}
-.nav-group{padding:8px 0 2px}
-.nav-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:0 12px 4px}
-.nav-item{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid transparent;transition:all .15s;user-select:none}
-.nav-item:hover{background:var(--acc2);color:var(--txt)}
-.nav-item.active{background:var(--acc2);border-left-color:var(--acc);color:var(--acc)}
-.sidebar-foot{margin-top:auto;padding:12px;border-top:1px solid var(--brd);font-size:11px;display:flex;gap:7px;align-items:center;color:var(--muted)}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
-
-/* MAIN */
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--brd);background:linear-gradient(135deg,rgba(56,189,248,.05),transparent)}
+.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--acc),#818cf8);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.logo h1{font-size:14px;font-weight:700;color:var(--txt)}
+.logo small{font-size:10px;color:var(--txt3);letter-spacing:.3px;text-transform:uppercase}
+.nav-group{padding:6px 0}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:1.2px;padding:8px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--txt2);border-left:2px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{background:var(--acc3);color:var(--txt)}
+.nav-item.active{background:var(--acc2);border-left-color:var(--acc);color:var(--acc);font-weight:500}
+.nav-icon{width:16px;text-align:center;flex-shrink:0}
+.sidebar-foot{margin-top:auto;padding:14px 16px;border-top:1px solid var(--brd);font-size:11px;display:flex;gap:8px;align-items:center;color:var(--txt3)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:all .3s}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:50px;background:var(--surf);border-bottom:1px solid var(--brd);padding:0 18px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.burger{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px;display:none;line-height:1}
+.topbar{height:52px;background:var(--surf);border-bottom:1px solid var(--brd);padding:0 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.burger{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:18px;padding:4px;display:none;line-height:1;transition:color .15s}
+.burger:hover{color:var(--txt)}
 .topbar h2{font-size:14px;font-weight:600;white-space:nowrap}
-.strip{margin-left:auto;display:flex;gap:14px;font-size:11px;font-family:var(--mono);overflow:hidden}
-.tick{display:flex;gap:4px;align-items:center;color:var(--muted);white-space:nowrap}
-.tick .pr{color:var(--txt);font-weight:500}.tick .up{color:var(--green)}.tick .dn{color:var(--red)}
-.content{flex:1;overflow-y:auto;padding:18px}
-
-/* SECTIONS */
+.strip{margin-left:auto;display:flex;gap:16px;font-size:11px;font-family:var(--mono);overflow:hidden}
+.tick{display:flex;gap:5px;align-items:center;color:var(--txt3);white-space:nowrap}
+.tick b{color:var(--txt);font-weight:600}.tick .pr{color:var(--txt2)}.tick .up{color:var(--green)}.tick .dn{color:var(--red)}
+.content{flex:1;overflow-y:auto;padding:20px}
 .sec{display:none}.sec.on{display:block}
-
-/* CARDS */
-.card{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:16px;margin-bottom:14px}
-.ch{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:18px;margin-bottom:16px}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .ch h3{font-size:14px;font-weight:600}
-
-/* GRIDS */
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.stat{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:16px;position:relative;overflow:hidden}
-.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.stat.bl::before{background:var(--blu)}.stat.gr::before{background:var(--green)}
-.stat.yl::before{background:var(--yel)}.stat.pu::before{background:var(--pur)}.stat.rd::before{background:var(--red)}
-.slbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.sval{font-size:24px;font-weight:700;font-family:var(--mono);margin:4px 0}
-.ssub{font-size:11px;color:var(--muted)}
-
-/* CONTROLS */
-.ctrls{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.ctrls label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
-select,input[type=number],input[type=text]{background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);padding:7px 10px;font-family:var(--font);font-size:13px;outline:none}
-select:focus,input:focus{border-color:var(--acc)}
-.btn{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.ci{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ci-b{background:var(--blu2);color:var(--blu)}.ci-g{background:var(--green2);color:var(--green)}
+.ci-y{background:var(--yel2);color:var(--yel)}.ci-p{background:var(--pur2);color:var(--pur)}
+.ci-r{background:var(--red2);color:var(--red)}.ci-a{background:var(--acc2);color:var(--acc)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r2) var(--r2) 0 0}
+.stat.bl::after{background:linear-gradient(90deg,var(--blu),transparent)}
+.stat.gr::after{background:linear-gradient(90deg,var(--green),transparent)}
+.stat.yl::after{background:linear-gradient(90deg,var(--yel),transparent)}
+.stat.pu::after{background:linear-gradient(90deg,var(--pur),transparent)}
+.stat.rd::after{background:linear-gradient(90deg,var(--red),transparent)}
+.stat.ac::after{background:linear-gradient(90deg,var(--acc),transparent)}
+.slbl{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.sval{font-size:26px;font-weight:700;font-family:var(--mono);margin:6px 0 4px}
+.ssub{font-size:11px;color:var(--txt3)}
+.ctrls{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.ctrls label{font-size:11px;color:var(--txt3);font-weight:500;display:block;margin-bottom:4px}
+select,input[type=number],input[type=text]{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);padding:8px 12px;font-family:var(--font);font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+select:focus,input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+select:hover,input:hover{border-color:var(--brd2)}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-p{background:var(--acc);color:#000}.btn-p:hover:not(:disabled){opacity:.85}
-.btn-g{background:var(--green);color:#000}.btn-g:hover:not(:disabled){opacity:.85}
-.btn-s{background:var(--surf2);color:var(--txt);border:1px solid var(--brd)}.btn-s:hover{border-color:var(--acc);color:var(--acc)}
-
-/* ALGO */
+.btn-p{background:linear-gradient(135deg,var(--acc),#0ea5e9);color:#000;box-shadow:0 2px 8px rgba(56,189,248,.2)}
+.btn-p:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 16px rgba(56,189,248,.3)}
+.btn-g{background:linear-gradient(135deg,var(--green),#059669);color:#000;box-shadow:0 2px 8px rgba(16,185,129,.2)}
+.btn-g:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,185,129,.3)}
+.btn-s{background:var(--surf2);color:var(--txt2);border:1px solid var(--brd)}
+.btn-s:hover{border-color:var(--acc);color:var(--acc);background:var(--acc3)}
+.btn-r{background:var(--red2);color:var(--red);border:1px solid rgba(244,63,94,.2)}
+.btn-r:hover{background:rgba(244,63,94,.2)}
 .agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.acard{background:var(--surf2);border:1px solid var(--brd);border-radius:9px;padding:12px 14px}
-.an{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.av{font-size:20px;font-weight:700;font-family:var(--mono)}
-.ac{font-size:10px;color:var(--muted);margin-top:3px}
-
-/* TABLE */
+.acard{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:14px 16px;transition:border-color .15s}
+.acard:hover{border-color:var(--brd2)}
+.an{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px}
+.av{font-size:22px;font-weight:700;font-family:var(--mono)}
+.ac{font-size:10px;color:var(--txt3);margin-top:4px}
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--brd)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:8px 12px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--brd)}
-td{padding:10px 12px;border-bottom:1px solid var(--brd)}
+thead{background:var(--surf2)}
+th{text-align:left;padding:10px 14px;font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--brd);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--brd);color:var(--txt2)}
 tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--acc2)}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-.bg{background:rgba(16,185,129,.15);color:var(--green)}
-.by{background:rgba(245,158,11,.15);color:var(--yel)}
-.br{background:rgba(244,63,94,.15);color:var(--red)}
-.vbar{background:var(--brd);border-radius:3px;height:5px;width:90px}
-.vfill{height:100%;border-radius:3px}
-
-/* YF LINK */
-.yfl{color:var(--acc);text-decoration:none;font-size:11px;opacity:.7;transition:opacity .15s}
+tbody tr{transition:background .1s}
+tbody tr:hover td{background:var(--acc3);color:var(--txt)}
+.mono{font-family:var(--mono);color:var(--txt)}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.bg{background:var(--green2);color:var(--green)}.by{background:var(--yel2);color:var(--yel)}
+.br{background:var(--red2);color:var(--red)}.bp{background:var(--pur2);color:var(--pur)}
+.vbar{background:var(--surf2);border-radius:4px;height:5px;width:100%;overflow:hidden}
+.vfill{height:100%;border-radius:4px;transition:width .4s ease}
+.yfl{color:var(--acc);text-decoration:none;font-size:11px;opacity:.6;transition:opacity .15s}
 .yfl:hover{opacity:1}
-
-/* ADD ASSET PANEL */
-.add-step{display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surf2);border:1px solid var(--brd);border-radius:10px;margin-bottom:12px}
-.step-num{width:28px;height:28px;border-radius:50%;background:var(--acc);color:#000;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.add-step{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r2);margin-bottom:12px}
+.step-num{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#818cf8);color:#000;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .step-body{flex:1}
-.step-body p{font-size:13px;margin-bottom:8px}
-.step-body small{font-size:11px;color:var(--muted)}
-.add-result{border-radius:10px;padding:14px;margin-top:12px;display:none;font-size:13px}
-.add-result.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--green)}
-.add-result.err{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);color:var(--red)}
-.ticker-preview{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
-.assets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
-
-/* AUTH Glassmorphism Login */
-.auth-wrapper{display:flex;align-items:center;justify-content:center;min-height:70vh}
-.auth-box{max-width:440px;width:100%;background:linear-gradient(135deg,rgba(15,22,41,.95),rgba(30,42,75,.85));backdrop-filter:blur(20px);border:1px solid rgba(56,189,248,.15);border-radius:20px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
-.auth-box input{width:100%;margin-bottom:12px;padding:12px 14px;font-size:14px;border-radius:10px;background:rgba(7,13,26,.7);border:1px solid var(--brd);color:var(--txt);transition:border-color .2s,box-shadow .2s}
-.auth-box input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(56,189,248,.15);outline:none}
-.auth-box .btn{width:100%;justify-content:center;margin-top:6px;padding:12px;font-size:14px;border-radius:10px;transition:all .2s}
-.auth-box .btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 15px rgba(56,189,248,.3)}
-.auth-logo{text-align:center;margin-bottom:24px}
-.auth-logo .icon{font-size:48px;margin-bottom:8px}
-.auth-logo h2{font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--acc),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.auth-logo p{font-size:12px;color:var(--muted);margin-top:4px}
-.auth-tab{display:flex;gap:0;margin-bottom:20px;border-radius:12px;overflow:hidden;border:1px solid var(--brd);background:var(--bg)}
-.auth-tab button{flex:1;padding:12px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
-.auth-tab button.act{background:linear-gradient(135deg,var(--acc),#818cf8);color:#000}
-.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:11px;color:var(--muted)}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--brd)}
-.user-bar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--brd);font-size:12px;background:linear-gradient(90deg,rgba(56,189,248,.05),transparent)}
-.user-bar b{color:var(--acc)}
-.user-bar .btn{padding:4px 10px;font-size:11px}
-.auth-input-group{position:relative;margin-bottom:14px}
-.auth-input-group label{font-size:11px;color:var(--muted);display:block;margin-bottom:5px;font-weight:500;letter-spacing:.3px}
-.auth-input-group .icon-input{position:absolute;left:12px;top:28px;font-size:14px;color:var(--muted);pointer-events:none}
-
-/* ADMIN PANEL */
-.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.admin-table{margin-top:12px}
-.admin-table td{font-size:12px}
-.admin-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(139,92,246,.15);color:var(--pur)}
-
-/* LESSON */
-.lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.lesson-card{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s}
-.lesson-card:hover{border-color:var(--acc);transform:translateY(-2px)}
-.lesson-icon{font-size:28px;margin-bottom:8px}
-.lesson-title{font-size:14px;font-weight:600;margin-bottom:4px}
-.lesson-meta{font-size:11px;color:var(--muted);display:flex;gap:12px}
-.lesson-content{font-size:14px;line-height:1.7;max-width:720px}
-.lesson-content h2{font-size:20px;color:var(--acc);margin:20px 0 10px}
-.lesson-content h3{font-size:16px;margin:16px 0 8px}
-.lesson-content p{margin-bottom:10px}
-.lesson-content ul,.lesson-content ol{margin:8px 0 8px 20px}
-.lesson-content li{margin-bottom:5px}
-.lesson-content a{color:var(--acc)}
-.lesson-content table{margin:12px 0}
-.lesson-content code{background:var(--surf2);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:12px}
-.lesson-content pre{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;margin:12px 0}
-.lesson-content blockquote{border-left:3px solid var(--acc);padding-left:14px;color:var(--muted);margin:12px 0}
-
-/* SIMULATOR */
-.sim-balance{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.sim-form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
-.pos-table{margin-top:14px}
-.pnl-pos{color:var(--green)}.pnl-neg{color:var(--red)}
-
-/* TASA */
-.tasa-card{background:linear-gradient(135deg,#1e3a5f,#0f1629);border:1px solid var(--brd);border-radius:12px;padding:18px;text-align:center}
-.tasa-val{font-size:32px;font-weight:700;font-family:var(--mono);color:var(--acc);margin:8px 0}
-.tasa-src{font-size:11px;color:var(--muted)}
-.asset-card{background:var(--surf2);border:1px solid var(--brd);border-radius:10px;padding:12px;transition:border-color .15s}
-.asset-card:hover{border-color:var(--acc)}
+.step-body p{font-size:13px;margin-bottom:8px;color:var(--txt)}
+.step-body small{font-size:11px;color:var(--txt3);line-height:1.6}
+.add-result{border-radius:var(--r);padding:12px 14px;margin-top:12px;display:none;font-size:13px;line-height:1.5}
+.add-result.ok{background:var(--green2);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+.add-result.err{background:var(--red2);border:1px solid rgba(244,63,94,.25);color:var(--red)}
+.assets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.asset-card{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:14px;transition:all .15s}
+.asset-card:hover{border-color:var(--acc);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .asset-tk{font-size:16px;font-weight:700;font-family:var(--mono);color:var(--acc)}
-.asset-nm{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.asset-inf{font-size:11px;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
-
-/* LOADING */
-.ld{display:flex;align-items:center;justify-content:center;min-height:140px;color:var(--muted);gap:8px;font-size:13px}
-.spin{width:16px;height:16px;border:2px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+.asset-nm{font-size:11px;color:var(--txt3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-inf{font-size:11px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.auth-wrapper{display:flex;align-items:center;justify-content:center;min-height:65vh;padding:20px}
+.auth-box{max-width:420px;width:100%;background:linear-gradient(135deg,rgba(12,21,38,.98),rgba(22,34,64,.95));backdrop-filter:blur(20px);border:1px solid rgba(56,189,248,.15);border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo .icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--acc),#818cf8);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px}
+.auth-logo h2{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--acc),#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.auth-logo p{font-size:12px;color:var(--txt3);margin-top:5px}
+.auth-tab{display:flex;margin-bottom:22px;border-radius:10px;overflow:hidden;border:1px solid var(--brd);background:var(--bg)}
+.auth-tab button{flex:1;padding:11px;background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.auth-tab button.act{background:linear-gradient(135deg,var(--acc),#818cf8);color:#000}
+.auth-input-group{margin-bottom:14px}
+.auth-input-group label{font-size:11px;color:var(--txt3);display:block;margin-bottom:5px;font-weight:500}
+.auth-input-group input{width:100%;padding:11px 14px;font-size:13px;border-radius:9px;background:rgba(6,11,24,.8);border:1px solid var(--brd);color:var(--txt);transition:border-color .2s,box-shadow .2s}
+.auth-input-group input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(56,189,248,.15);outline:none}
+.auth-box .btn{width:100%;justify-content:center;margin-top:6px;padding:12px;font-size:14px;border-radius:10px}
+.auth-box .btn:hover:not(:disabled){transform:translateY(-1px)}
+.user-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--brd);font-size:12px;background:linear-gradient(90deg,rgba(56,189,248,.06),transparent)}
+.user-bar b{color:var(--acc)}.user-bar .btn{padding:4px 10px;font-size:11px;margin-left:auto}
+.admin-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:var(--pur2);color:var(--pur)}
+.lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.lesson-card{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .15s}
+.lesson-card:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.lesson-icon{font-size:28px;margin-bottom:10px}
+.lesson-title{font-size:14px;font-weight:600;margin-bottom:5px}
+.lesson-meta{font-size:11px;color:var(--txt3);display:flex;gap:12px}
+.lesson-content{font-size:14px;line-height:1.75;max-width:720px;color:var(--txt2)}
+.lesson-content h2{font-size:20px;margin:22px 0 10px;color:var(--txt)}
+.lesson-content h3{font-size:16px;margin:18px 0 8px;color:var(--txt)}
+.lesson-content p{margin-bottom:12px}
+.lesson-content ul,.lesson-content ol{margin:8px 0 12px 20px}
+.lesson-content li{margin-bottom:6px}
+.lesson-content a{color:var(--acc)}
+.lesson-content code{background:var(--surf2);padding:2px 7px;border-radius:5px;font-family:var(--mono);font-size:12px;color:var(--acc)}
+.lesson-content pre{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12px;margin:14px 0;line-height:1.6}
+.lesson-content blockquote{border-left:3px solid var(--acc);padding-left:16px;color:var(--txt3);margin:14px 0;font-style:italic}
+.sim-balance{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.sim-form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.tasa-card{background:linear-gradient(135deg,#0f2040,#0c1526);border:1px solid var(--brd);border-radius:var(--r2);padding:24px;text-align:center}
+.tasa-val{font-size:36px;font-weight:700;font-family:var(--mono);color:var(--acc);margin:10px 0 6px;text-shadow:0 0 30px rgba(56,189,248,.3)}
+.tasa-src{font-size:12px;color:var(--txt3)}
+.ld{display:flex;align-items:center;justify-content:center;min-height:120px;color:var(--txt3);gap:10px;font-size:13px}
+.spin{width:18px;height:18px;border:2px solid var(--brd2);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
-.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
-.leg-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px}
-#tip{position:fixed;background:var(--surf);border:1px solid var(--brd);border-radius:7px;padding:6px 10px;font-size:11px;pointer-events:none;display:none;z-index:999;font-family:var(--mono)}
-
-/* RESPONSIVE */
-@media(max-width:900px){
- .g4{grid-template-columns:repeat(2,1fr)}
- .strip{display:none}
-}
+.legend{display:flex;gap:16px;font-size:11px;color:var(--txt3);margin-bottom:12px;flex-wrap:wrap}
+.leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle}
+#tip{position:fixed;background:var(--surf);border:1px solid var(--brd2);border-radius:8px;padding:7px 12px;font-size:11px;pointer-events:none;display:none;z-index:999;font-family:var(--mono);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+@media(max-width:1024px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.strip{display:none}}
 @media(max-width:640px){
- .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
- .sidebar.open{transform:translateX(0)}
- .burger{display:block}
- .g4{grid-template-columns:1fr 1fr}
- .g2{grid-template-columns:1fr}
- .agrid{grid-template-columns:1fr}
- .content{padding:12px}
+  .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .burger{display:block}
+  .g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}
+  .agrid{grid-template-columns:1fr}.content{padding:14px}.sim-balance{grid-template-columns:1fr}
 }
-@media(max-width:400px){
- .g4{grid-template-columns:1fr}
-}
-@media print{
- .sidebar,.topbar{display:none!important}
- .app{display:block}.main{overflow:visible}
- .content{padding:0}.sec{display:block!important}
-}
+@media(max-width:400px){.g4{grid-template-columns:1fr}}
+@media print{.sidebar,.topbar{display:none!important}.app{display:block}.main{overflow:visible}.content{padding:0}.sec{display:block!important}}
 </style>
 </head>
 <body>
 <div id="tip"></div>
 <div class="overlay" id="ov-lay" onclick="closeSidebar()"></div>
 <div class="app">
-
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
- <div class="logo"><h1> BVC Analytics</h1><small>Dashboard Bursátil - v2.0</small></div>
- <div id="user-bar" class="user-bar" style="display:none"><span> <b id="uname"></b></span><button class="btn btn-s" onclick="doLogout()" style="margin-left:auto">Salir</button></div>
- <div class="nav-group">
- <div class="nav-lbl">General</div>
- <div class="nav-item active" onclick="nav(this,'ov')">  Overview</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl">Análisis</div>
- <div class="nav-item" onclick="nav(this,'cmp')"> Comparar Activos</div>
- <div class="nav-item" onclick="nav(this,'hm')"> Mapa de Calor</div>
- <div class="nav-item" onclick="nav(this,'cs')"> Velas OHLC</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl">Riesgo</div>
- <div class="nav-item" onclick="nav(this,'rk')"> ï¸ Clasificación</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl"> Monedas</div>
- <div class="nav-item" onclick="nav(this,'fx')"> Tasa USD/COP</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl"> Academia</div>
- <div class="nav-item" onclick="nav(this,'learn')"> Lecciones</div>
- <div class="nav-item" onclick="nav(this,'sim')"> Simulador</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl">Portafolio</div>
- <div class="nav-item" onclick="nav(this,'add')"> Agregar Activo</div>
- <div class="nav-item" onclick="nav(this,'all')"> Todos los Activos</div>
- </div>
- <div class="nav-group" id="admin-nav" style="display:none">
- <div class="nav-lbl"> Admin</div>
- <div class="nav-item" onclick="nav(this,'admin')"> Panel de Admin</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl">Info</div>
- <div class="nav-item" onclick="nav(this,'info')">Informacion Legal</div>
- </div>
- <div class="nav-group">
- <div class="nav-lbl">Cuenta</div>
- <div class="nav-item" id="nav-auth" onclick="nav(this,'auth')"> Iniciar Sesión</div>
- <div class="nav-item" onclick="nav(this,'rp')"> Reporte / PDF</div>
- </div>
- <div class="sidebar-foot"><div class="dot" id="adot"></div><span id="atxt">Conectando...</span></div>
+  <div class="logo">
+    <div class="logo-mark"><div class="logo-icon">&#x1F4C8;</div><div><h1>BVC Analytics</h1></div></div>
+    <small>Dashboard Bursatil v2.0</small>
+  </div>
+  <div id="user-bar" class="user-bar" style="display:none">
+    <span>Hola, <b id="uname"></b></span>
+    <button class="btn btn-s" onclick="doLogout()">Salir</button>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">General</div>
+    <div class="nav-item active" onclick="nav(this,'ov')"><span class="nav-icon">&#x1F3E0;</span> Overview</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Analisis</div>
+    <div class="nav-item" onclick="nav(this,'cmp')"><span class="nav-icon">&#x1F4CA;</span> Comparar Activos</div>
+    <div class="nav-item" onclick="nav(this,'hm')"><span class="nav-icon">&#x1F321;</span> Mapa de Calor</div>
+    <div class="nav-item" onclick="nav(this,'cs')"><span class="nav-icon">&#x1F56F;</span> Velas OHLC</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Riesgo</div>
+    <div class="nav-item" onclick="nav(this,'rk')"><span class="nav-icon">&#x26A0;</span> Clasificacion</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Monedas</div>
+    <div class="nav-item" onclick="nav(this,'fx')"><span class="nav-icon">&#x1F4B1;</span> Tasa USD/COP</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Academia</div>
+    <div class="nav-item" onclick="nav(this,'learn')"><span class="nav-icon">&#x1F4DA;</span> Lecciones</div>
+    <div class="nav-item" onclick="nav(this,'sim')"><span class="nav-icon">&#x1F3AE;</span> Simulador</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Portafolio</div>
+    <div class="nav-item" onclick="nav(this,'add')"><span class="nav-icon">&#x2795;</span> Agregar Activo</div>
+    <div class="nav-item" onclick="nav(this,'all')"><span class="nav-icon">&#x1F4CB;</span> Todos los Activos</div>
+  </div>
+  <div class="nav-group" id="admin-nav" style="display:none"><div class="nav-lbl">Admin</div>
+    <div class="nav-item" onclick="nav(this,'admin')"><span class="nav-icon">&#x1F6E1;</span> Panel de Admin</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Info</div>
+    <div class="nav-item" onclick="nav(this,'info')"><span class="nav-icon">&#x2139;</span> Informacion Legal</div>
+  </div>
+  <div class="nav-group"><div class="nav-lbl">Cuenta</div>
+    <div class="nav-item" id="nav-auth" onclick="nav(this,'auth')"><span class="nav-icon">&#x1F464;</span> Iniciar Sesion</div>
+    <div class="nav-item" onclick="nav(this,'rp')"><span class="nav-icon">&#x1F4C4;</span> Reporte / PDF</div>
+  </div>
+  <div class="sidebar-foot"><div class="dot" id="adot"></div><span id="atxt">Conectando...</span></div>
 </aside>
-
-<!-- MAIN -->
 <div class="main">
- <div class="topbar">
- <button class="burger" onclick="toggleSidebar()"></button>
- <h2 id="ptitle"> Overview</h2>
- <div class="strip" id="strip"></div>
- </div>
- <div class="content">
+  <div class="topbar">
+    <button class="burger" onclick="toggleSidebar()">&#9776;</button>
+    <h2 id="ptitle">Overview</h2>
+    <div class="strip" id="strip"></div>
+  </div>
+  <div class="content">
+    <!-- OVERVIEW -->
+    <div class="sec on" id="sec-ov">
+      <div class="g4">
+        <div class="stat bl"><div class="slbl">Activos</div><div class="sval" id="st-act">-</div><div class="ssub">en base de datos</div></div>
+        <div class="stat gr"><div class="slbl">Registros en BD</div><div class="sval" id="st-reg">-</div><div class="ssub">5 anos historico</div></div>
+        <div class="stat yl"><div class="slbl">Pares calculados</div><div class="sval">190</div><div class="ssub">4 algoritmos</div></div>
+        <div class="stat pu"><div class="slbl">Algoritmos</div><div class="sval">28</div><div class="ssub">Desde cero, sin libs</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ci ci-g">&#x1F4C8;</div><h3>Top 5 pares Pearson</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>Par</th><th>r</th><th>Nivel</th></tr></thead>
+          <tbody id="top-p"><tr><td colspan="4"><div class="ld"><div class="spin"></div>Cargando...</div></td></tr></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ci ci-r">&#x26A0;</div><h3>Distribucion de Riesgo</h3></div>
+          <div id="risk-sum"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+        </div>
+      </div>
+    </div>
 
- <!-- OVERVIEW -->
- <div class="sec on" id="sec-ov">
- <div class="g4">
- <div class="stat bl"><div class="slbl">Activos</div><div class="sval" id="st-act"></div><div class="ssub">en base de datos</div></div>
- <div class="stat gr"><div class="slbl">Registros en BD</div><div class="sval" id="st-reg"></div><div class="ssub">5 años histórico</div></div>
- <div class="stat yl"><div class="slbl">Pares calculados</div><div class="sval">190</div><div class="ssub">4 algoritmos</div></div>
- <div class="stat pu"><div class="slbl">Algoritmos</div><div class="sval">16</div><div class="ssub">Desde cero, sin libs</div></div>
- </div>
- <div class="g2">
- <div class="card">
- <div class="ch"> <h3>Top 5 pares Pearson</h3></div>
- <table><thead><tr><th>#</th><th>Par</th><th>r</th><th>Nivel</th></tr></thead>
- <tbody id="top-p"><tr><td colspan="4"><div class="ld"><div class="spin"></div>Cargando...</div></td></tr></tbody></table>
- </div>
- <div class="card">
- <div class="ch"> ï¸<h3>Distribución de Riesgo</h3></div>
- <div id="risk-sum"><div class="ld"><div class="spin"></div>Cargando...</div></div>
- </div>
- </div>
- </div>
+    <!-- COMPARAR -->
+    <div class="sec" id="sec-cmp">
+      <div class="card">
+        <div class="ch"><div class="ci ci-b">&#x1F4CA;</div><h3>Comparar Activos</h3></div>
+        <div class="ctrls">
+          <div><label>Activo 1</label><select id="ca1"></select></div>
+          <div><label>Activo 2</label><select id="ca2"></select></div>
+          <button class="btn btn-p" onclick="comparar()">&#x25B6; Comparar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-a">&#x1F4C9;</div><h3 id="ctitle">% Cambio acumulado</h3></div>
+        <div id="line-wrap" style="height:270px"><div class="ld">Selecciona activos y haz clic en Comparar</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-p">&#x1F9EE;</div><h3>4 algoritmos de similitud</h3></div>
+        <div class="agrid">
+          <div class="acard"><div class="an">Distancia Euclidiana</div><div class="av" id="v-eu">-</div><div class="ac">O(n) &mdash; Menor = mas similar</div></div>
+          <div class="acard"><div class="an">Correlacion de Pearson</div><div class="av" id="v-pe">-</div><div class="ac">O(n) &mdash; Rango [-1, 1]</div></div>
+          <div class="acard"><div class="an">Similitud por Coseno</div><div class="av" id="v-co">-</div><div class="ac">O(n) &mdash; Rango [-1, 1]</div></div>
+          <div class="acard"><div class="an">DTW Dynamic Time Warping</div><div class="av" id="v-dt">-</div><div class="ac">O(n&sup2;) &mdash; Menor = mas similar</div></div>
+        </div>
+      </div>
+    </div>
 
- <!-- COMPARAR -->
- <div class="sec" id="sec-cmp">
- <div class="card">
- <div class="ctrls">
- <div><label>Activo 1</label><select id="ca1"></select></div>
- <div><label>Activo 2</label><select id="ca2"></select></div>
- <button class="btn btn-p" onclick="comparar()"> Comparar</button>
- </div>
- </div>
- <div class="card">
- <div class="ch"> <h3 id="ctitle">Comparación % acumulado</h3></div>
- <div id="line-wrap" style="height:270px"><div class="ld">Selecciona activos y haz clic en Comparar</div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Resultados de los 4 algoritmos de similitud</h3></div>
- <div class="agrid">
- <div class="acard"><div class="an">Distancia Euclidiana</div><div class="av" id="v-eu"></div><div class="ac">O(n) - Menor = más similar</div></div>
- <div class="acard"><div class="an">Correlación de Pearson</div><div class="av" id="v-pe"></div><div class="ac">O(n) - Rango [-1, 1]</div></div>
- <div class="acard"><div class="an">Similitud por Coseno</div><div class="av" id="v-co"></div><div class="ac">O(n) - Rango [-1, 1]</div></div>
- <div class="acard"><div class="an">DTW Dynamic Time Warping</div><div class="av" id="v-dt"></div><div class="ac">O(nÂ²) - Menor = más similar</div></div>
- </div>
- </div>
- </div>
+    <!-- HEATMAP -->
+    <div class="sec" id="sec-hm">
+      <div class="card">
+        <div class="ch"><div class="ci ci-y">&#x1F321;</div><h3>Mapa de Calor &mdash; Correlacion de Pearson</h3></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:11px;color:var(--txt3)">
+          <div style="width:140px;height:8px;border-radius:4px;background:linear-gradient(to right,#f43f5e,#334155,#10b981)"></div>
+          <span>-1 inversa</span><span>0 sin relacion</span><span>+1 perfecta</span>
+        </div>
+        <div id="hm-wrap"><div class="ld"><div class="spin"></div>Cargando matriz...</div></div>
+      </div>
+    </div>
 
- <!-- HEATMAP -->
- <div class="sec" id="sec-hm">
- <div class="card">
- <div class="ch"> <h3>Mapa de Calor Correlación de Pearson</h3></div>
- <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;font-size:11px;color:var(--muted)">
- <span style="display:block;width:120px;height:8px;border-radius:4px;background:linear-gradient(to right,#f43f5e,#334155,#10b981)"></span>
- <span>-1 inversa</span><span>0 sin relación</span><span>+1 perfecta</span>
- </div>
- <div id="hm-wrap"><div class="ld"><div class="spin"></div>Cargando matriz...</div></div>
- </div>
- </div>
+    <!-- CANDLESTICK -->
+    <div class="sec" id="sec-cs">
+      <div class="card">
+        <div class="ch"><div class="ci ci-a">&#x1F56F;</div><h3>Grafico de Velas OHLC</h3></div>
+        <div class="ctrls">
+          <div><label>Ticker</label><select id="cst"></select></div>
+          <div><label>SMA rapida</label><input type="number" id="sm1" value="10" min="2" max="50" style="width:70px"></div>
+          <div><label>SMA lenta</label><input type="number" id="sm2" value="30" min="5" max="200" style="width:70px"></div>
+          <div><label>Periodo</label>
+            <select id="csp">
+              <option value="60">60 dias</option>
+              <option value="120" selected>120 dias</option>
+              <option value="180">180 dias</option>
+              <option value="252">1 ano</option>
+            </select>
+          </div>
+          <button class="btn btn-p" onclick="loadCS()">&#x25B6; Mostrar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-g">&#x1F4C8;</div><h3 id="cs-title">Velas</h3></div>
+        <div class="legend">
+          <span><span class="leg-dot" style="background:#10b981"></span>Alcista</span>
+          <span><span class="leg-dot" style="background:#f43f5e"></span>Bajista</span>
+          <span><span class="leg-dot" style="background:#38bdf8"></span>SMA rapida</span>
+          <span><span class="leg-dot" style="background:#f59e0b"></span>SMA lenta</span>
+        </div>
+        <div id="cs-wrap"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+        <canvas id="cv" style="display:none;width:100%"></canvas>
+      </div>
+    </div>
 
- <!-- CANDLESTICK -->
- <div class="sec" id="sec-cs">
- <div class="card">
- <div class="ctrls">
- <div><label>Ticker</label><select id="cst"></select></div>
- <div><label>SMA rápida</label><input type="number" id="sm1" value="10" min="2" max="50" style="width:70px"></div>
- <div><label>SMA lenta</label><input type="number" id="sm2" value="30" min="5" max="200" style="width:70px"></div>
- <div><label>Período</label>
- <select id="csp">
- <option value="60">60 días</option>
- <option value="120" selected>120 días</option>
- <option value="180">180 días</option>
- <option value="252">1 año</option>
- </select>
- </div>
- <button class="btn btn-p" onclick="loadCS()"> Mostrar</button>
- </div>
- </div>
- <div class="card">
- <div class="ch"> <h3 id="cs-title">Gráfico de Velas</h3></div>
- <div class="legend">
- <span><span class="leg-dot" style="background:#10b981"></span>Alcista</span>
- <span><span class="leg-dot" style="background:#f43f5e"></span>Bajista</span>
- <span><span class="leg-dot" style="background:#38bdf8"></span>SMA rápida</span>
- <span><span class="leg-dot" style="background:#f59e0b"></span>SMA lenta</span>
- </div>
- <div id="cs-wrap"><div class="ld"><div class="spin"></div>Cargando...</div></div>
- <canvas id="cv" style="display:none;width:100%"></canvas>
- </div>
- </div>
+    <!-- RIESGO -->
+    <div class="sec" id="sec-rk">
+      <div class="g3">
+        <div class="stat gr"><div class="slbl">Conservador</div><div class="sval" id="cnt-c">-</div><div class="ssub">sigma anual &lt; 15%</div></div>
+        <div class="stat yl"><div class="slbl">Moderado</div><div class="sval" id="cnt-m">-</div><div class="ssub">15% &le; sigma &lt; 30%</div></div>
+        <div class="stat rd"><div class="slbl">Agresivo</div><div class="sval" id="cnt-a">-</div><div class="ssub">sigma anual &ge; 30%</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-r">&#x26A0;</div><h3>Ranking por nivel de riesgo</h3></div>
+        <div id="rk-wrap"><div class="ld"><div class="spin"></div>Calculando...</div></div>
+      </div>
+    </div>
 
- <!-- RIESGO -->
- <div class="sec" id="sec-rk">
- <div class="g4" id="rk-stats">
- <div class="stat gr"><div class="slbl">Conservador</div><div class="sval" id="cnt-c"></div><div class="ssub">Ïƒ anual &lt; 15%</div></div>
- <div class="stat yl"><div class="slbl">Moderado</div><div class="sval" id="cnt-m"></div><div class="ssub">15% Ïƒ &lt; 30%</div></div>
- <div class="stat rd"><div class="slbl">Agresivo</div><div class="sval" id="cnt-a"></div><div class="ssub">Ïƒ anual 30%</div></div>
- <div class="stat bl"><div class="slbl">Más volátil</div><div class="sval" id="rk-mv" style="font-size:18px"></div><div class="ssub" id="rk-mvv"></div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Ranking por nivel de riesgo</h3></div>
- <div id="rk-wrap"><div class="ld"><div class="spin"></div>Calculando...</div></div>
- </div>
- </div>
+    <!-- AGREGAR ACTIVO -->
+    <div class="sec" id="sec-add">
+      <div class="add-step"><div class="step-num">1</div><div class="step-body">
+        <p><b>Busca el ticker en Yahoo Finance</b></p>
+        <small>Ve a <a href="https://finance.yahoo.com" target="_blank" style="color:var(--acc)">finance.yahoo.com</a>, busca el activo y copia su simbolo (ej: AMZN, MSFT, BTC-USD)</small>
+      </div></div>
+      <div class="add-step"><div class="step-num">2</div><div class="step-body">
+        <p><b>Pega el ticker y descarga</b></p>
+        <div class="ctrls" style="margin-top:8px">
+          <div><label>Ticker *</label><input type="text" id="add-tk" placeholder="ej: AMZN" style="width:120px;text-transform:uppercase"></div>
+          <div><label>Nombre (opcional)</label><input type="text" id="add-nm" placeholder="ej: Amazon Inc" style="width:200px"></div>
+          <div><label>Mercado</label>
+            <select id="add-mkt">
+              <option value="NASDAQ">NASDAQ</option><option value="NYSE">NYSE</option>
+              <option value="BVC">BVC</option><option value="CRYPTO">Crypto</option><option value="CUSTOM">Otro</option>
+            </select>
+          </div>
+          <button class="btn btn-p" id="add-btn" onclick="agregarActivo()">&#x2B07; Descargar y agregar</button>
+        </div>
+        <small>Descarga automaticamente 5 anos de datos historicos desde Yahoo Finance.</small>
+        <div id="add-res" class="add-result"></div>
+      </div></div>
+      <div class="add-step"><div class="step-num">3</div><div class="step-body">
+        <p><b>Listo. El activo estara disponible</b> en todos los analisis.</p>
+        <small>Para calcular similitud: <code style="color:var(--acc);background:var(--surf2);padding:2px 6px;border-radius:4px;font-family:var(--mono)">python main.py similitud</code></small>
+      </div></div>
+    </div>
 
- <!-- AGREGAR ACTIVO -->
- <div class="sec" id="sec-add">
- <div class="add-step">
- <div class="step-num">1</div>
- <div class="step-body">
- <p><b>Busca el ticker en Yahoo Finance</b></p>
- <small>Ve a <a href="https://finance.yahoo.com" target="_blank" style="color:var(--acc)">finance.yahoo.com</a>, busca el activo que quieres y copia su símbolo (ej: <b>AMZN</b>, <b>MSFT</b>, <b>BTC-USD</b>)</small>
- </div>
- </div>
- <div class="add-step">
- <div class="step-num">2</div>
- <div class="step-body">
- <p><b>Pega el ticker aquí y descarga</b></p>
- <div class="ctrls" style="margin-top:8px">
- <div><label>Ticker *</label><input type="text" id="add-tk" placeholder="ej: AMZN" style="width:120px;text-transform:uppercase"></div>
- <div><label>Nombre (opcional)</label><input type="text" id="add-nm" placeholder="ej: Amazon Inc" style="width:200px"></div>
- <div><label>Mercado</label>
- <select id="add-mkt">
- <option value="NASDAQ">NASDAQ</option>
- <option value="NYSE">NYSE</option>
- <option value="BVC">BVC</option>
- <option value="CRYPTO">Crypto</option>
- <option value="CUSTOM">Otro</option>
- </select>
- </div>
- <button class="btn btn-p" id="add-btn" onclick="agregarActivo()"> Descargar y agregar</button>
- </div>
- <small>Descarga automáticamente 5 años de datos históricos desde Yahoo Finance.</small>
- <div id="add-res" class="add-result"></div>
- </div>
- </div>
- <div class="add-step">
- <div class="step-num">3</div>
- <div class="step-body">
- <p><b>Â¡Listo! El activo estará disponible</b> en todos los análisis (comparar, velas, riesgo)</p>
- <small>Para calcular similitud con los demás activos, ejecuta: <code style="color:var(--acc)">docker-compose exec bvc_api python main.py similitud</code></small>
- </div>
- </div>
- </div>
+    <!-- TODOS LOS ACTIVOS -->
+    <div class="sec" id="sec-all">
+      <div class="card">
+        <div class="ch"><div class="ci ci-b">&#x1F4CB;</div><h3>Portafolio completo</h3>
+          <a href="https://finance.yahoo.com/markets" target="_blank" class="yfl" style="margin-left:auto">Ver mercados &#x2197;</a>
+        </div>
+        <div id="all-wrap"><div class="ld"><div class="spin"></div>Cargando activos...</div></div>
+      </div>
+    </div>
 
- <!-- TODOS LOS ACTIVOS -->
- <div class="sec" id="sec-all">
- <div class="card">
- <div class="ch"> <h3>Portafolio completo</h3>
- <a href="https://finance.yahoo.com/markets" target="_blank" class="yfl" style="margin-left:auto">Ver mercados en Yahoo Finance </a>
- </div>
- <div id="all-wrap"><div class="ld"><div class="spin"></div>Cargando activos...</div></div>
- </div>
- </div>
+    <!-- REPORTE -->
+    <div class="sec" id="sec-rp">
+      <div class="card">
+        <div class="ch"><div class="ci ci-p">&#x1F4C4;</div><h3>Reporte Tecnico</h3></div>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Consolida resultados de los 4 modulos: ETL, Similitud, Patrones y Volatilidad.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="loadRep()">&#x1F504; Cargar reporte</button>
+          <button class="btn btn-g" onclick="window.print()">&#x1F5A8; Exportar PDF</button>
+        </div>
+      </div>
+      <div class="card" id="rep-body" style="display:none">
+        <pre id="rep-txt" style="font-family:var(--mono);font-size:12px;color:#a5d6ff;line-height:1.7;white-space:pre-wrap;max-height:560px;overflow-y:auto"></pre>
+      </div>
+    </div>
 
- <!-- REPORTE -->
- <div class="sec" id="sec-rp">
- <div class="card">
- <div class="ch"> <h3>Reporte Técnico</h3></div>
- <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Consolida resultados de los 4 módulos: ETL, Similitud, Patrones y Volatilidad.</p>
- <div style="display:flex;gap:10px;flex-wrap:wrap">
- <button class="btn btn-p" onclick="loadRep()"> Cargar reporte</button>
- <button class="btn btn-g" onclick="window.print()"> Exportar PDF</button>
- </div>
- </div>
- <div class="card" id="rep-body" style="display:none">
- <pre id="rep-txt" style="font-family:var(--mono);font-size:12px;color:#a5d6ff;line-height:1.7;white-space:pre-wrap;max-height:560px;overflow-y:auto"></pre>
- </div>
- </div>
+    <!-- AUTH -->
+    <div class="sec" id="sec-auth">
+      <div class="auth-wrapper"><div class="auth-box">
+        <div class="auth-logo">
+          <div class="icon">&#x1F4C8;</div>
+          <h2>BVC Analytics</h2>
+          <p>Plataforma de analisis bursatil colombiana</p>
+        </div>
+        <div class="auth-tab">
+          <button class="act" id="tab-login" onclick="authTab('login')">Iniciar Sesion</button>
+          <button id="tab-reg" onclick="authTab('reg')">Registrarse</button>
+        </div>
+        <div id="auth-login">
+          <div class="auth-input-group"><label>Usuario</label><input type="text" id="l-user" placeholder="Escribe tu usuario" autocomplete="username"></div>
+          <div class="auth-input-group"><label>Contrasena</label><input type="password" id="l-pass" placeholder="********" autocomplete="current-password"></div>
+          <button class="btn btn-p" onclick="doLogin()" style="background:linear-gradient(135deg,var(--acc),#818cf8)">Entrar al Dashboard</button>
+        </div>
+        <div id="auth-reg" style="display:none">
+          <div class="auth-input-group"><label>Usuario</label><input type="text" id="r-user" placeholder="Minimo 3 caracteres" autocomplete="username"></div>
+          <div class="auth-input-group"><label>Email</label><input type="text" id="r-email" placeholder="correo@ejemplo.com" autocomplete="email"></div>
+          <div class="auth-input-group"><label>Contrasena</label><input type="password" id="r-pass" placeholder="Minimo 6 caracteres" autocomplete="new-password"></div>
+          <button class="btn btn-g" onclick="doRegister()" style="background:linear-gradient(135deg,var(--green),#059669)">Crear mi cuenta</button>
+        </div>
+        <div id="auth-msg" class="add-result" style="margin-top:14px"></div>
+        <p style="text-align:center;margin-top:16px;font-size:11px;color:var(--txt3)">Datos protegidos con SHA-256 + salt. Sin librerias externas.</p>
+      </div></div>
+    </div>
 
- <!-- AUTH -->
- <div class="sec" id="sec-auth">
- <div class="auth-wrapper">
- <div class="auth-box">
- <div class="auth-logo">
- <div class="icon"></div>
- <h2>BVC Analytics</h2>
- <p>Plataforma de análisis bursátil colombiana</p>
- </div>
- <div class="auth-tab">
- <button class="act" id="tab-login" onclick="authTab('login')"> Iniciar Sesión</button>
- <button id="tab-reg" onclick="authTab('reg')"> Registrarse</button>
- </div>
- <div id="auth-login">
- <div class="auth-input-group">
- <label> Usuario</label>
- <input type="text" id="l-user" placeholder="Escribe tu usuario" autocomplete="username">
- </div>
- <div class="auth-input-group">
- <label> Contraseña</label>
- <input type="password" id="l-pass" placeholder="********" autocomplete="current-password">
- </div>
- <button class="btn btn-p" onclick="doLogin()" style="background:linear-gradient(135deg,var(--acc),#818cf8)"> Entrar al Dashboard</button>
- </div>
- <div id="auth-reg" style="display:none">
- <div class="auth-input-group">
- <label> Usuario</label>
- <input type="text" id="r-user" placeholder="Mínimo 3 caracteres" autocomplete="username">
- </div>
- <div class="auth-input-group">
- <label> Email</label>
- <input type="text" id="r-email" placeholder="correo@ejemplo.com" autocomplete="email">
- </div>
- <div class="auth-input-group">
- <label> Contraseña</label>
- <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
- </div>
- <button class="btn btn-g" onclick="doRegister()" style="background:linear-gradient(135deg,var(--green),#059669)"> Crear mi cuenta</button>
- </div>
- <div id="auth-msg" class="add-result" style="margin-top:14px"></div>
- <p style="text-align:center;margin-top:16px;font-size:11px;color:var(--muted)">Tus datos estan protegidos con SHA-256 + salt. Sin librerias externas.</p>
- </div>
- </div>
- </div>
+    <!-- INFO -->
+    <div class="sec" id="sec-info">
+      <div class="card">
+        <div class="ch"><div class="ci ci-r">&#x26A0;</div><h3>Descargo de Responsabilidad</h3></div>
+        <div style="font-size:13px;line-height:1.8;color:var(--txt2)">
+          <p style="margin-bottom:12px"><b style="color:var(--red)">ADVERTENCIA:</b> Esta plataforma es un <b style="color:var(--txt)">proyecto academico y educativo</b>. NO constituye asesoria financiera.</p>
+          <ul style="margin:12px 0 12px 20px;color:var(--txt3)">
+            <li>Los datos y analisis son con fines educativos unicamente.</li>
+            <li>El simulador usa dinero virtual y NO involucra activos reales.</li>
+            <li>Las decisiones de inversion deben tomarse con asesoria profesional.</li>
+          </ul>
+          <p><b style="color:var(--txt)">Fuentes:</b> Datos de <a href="https://finance.yahoo.com" target="_blank" style="color:var(--acc)">Yahoo Finance</a> via HTTP directo (sin yfinance).</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-b">&#x1F4BB;</div><h3>Tecnologias</h3></div>
+        <p style="font-size:13px;color:var(--txt2);line-height:1.8">Python 3.11 stdlib &mdash; PostgreSQL 15 &mdash; HTML5 / CSS3 / JS vanilla</p>
+        <p style="font-size:12px;color:var(--txt3);margin-top:6px">Principio: cero librerias externas para la logica de negocio. Solo psycopg2-binary como driver de BD.</p>
+      </div>
+    </div>
 
- <!-- DISCLAIMER / INFO -->
- <div class="sec" id="sec-info">
- <div class="card">
- <div class="ch"><h3>Descargo de Responsabilidad</h3></div>
- <div style="font-size:13px;line-height:1.8;color:var(--muted)">
- <p style="margin-bottom:12px"><b style="color:var(--red)">ADVERTENCIA IMPORTANTE:</b> Esta plataforma es un <b style="color:var(--txt)">proyecto academico y educativo</b>. NO constituye asesoria financiera, de inversion ni de ninguna otra indole profesional.</p>
- <ul style="margin:12px 0 12px 20px">
- <li>Los datos y analisis presentados son con fines educativos unicamente.</li>
- <li>El simulador de trading utiliza dinero virtual y NO involucra activos reales.</li>
- <li>Las decisiones de inversion deben tomarse con asesoria profesional certificada.</li>
- <li>Los creadores NO se hacen responsables por decisiones tomadas con base en esta herramienta.</li>
- <li>Los precios mostrados pueden tener retraso y NO reflejan el valor en tiempo real exacto.</li>
- <li>Este software se proporciona "tal cual" sin garantias de ningun tipo.</li>
- </ul>
- <p style="margin-bottom:12px"><b style="color:var(--txt)">Proposito:</b> Proyecto final del curso de <b>Algoritmos</b> - Semestre 9, Ingenieria. Demuestra implementacion de algoritmos de similitud, volatilidad, DTW y mas, sin librerias externas.</p>
- <p style="margin-bottom:12px"><b style="color:var(--txt)">Fuentes de datos:</b> Los datos historicos provienen de <a href="https://finance.yahoo.com" target="_blank" style="color:var(--acc)">Yahoo Finance</a> y la tasa USD/COP se obtiene en tiempo real del mismo servicio.</p>
- <p><b style="color:var(--txt)">Algoritmos implementados:</b> Distancia Euclidiana, Correlacion de Pearson, Similitud por Coseno, DTW (Dynamic Time Warping), SMA, Volatilidad, Sharpe Ratio, VaR - todos desde cero en Python sin numpy/pandas/scipy.</p>
- </div>
- </div>
- <div class="card">
- <div class="ch"><h3>Contacto y Creditos</h3></div>
- <div style="font-size:13px;line-height:1.8;color:var(--muted)">
- <p>Desarrollado como proyecto academico.</p>
- <p style="margin-top:8px"><b style="color:var(--txt)">Tecnologias:</b> Python 3.11 | PostgreSQL | HTML/CSS/JS | Docker</p>
- <p><b style="color:var(--txt)">Principio:</b> Cero librerias externas para la logica de negocio.</p>
- </div>
- </div>
- </div>
+    <!-- ADMIN -->
+    <div class="sec" id="sec-admin">
+      <div class="g3">
+        <div class="stat pu"><div class="slbl">Usuarios Registrados</div><div class="sval" id="adm-users">-</div><div class="ssub">En la plataforma</div></div>
+        <div class="stat gr"><div class="slbl">Operaciones Simulador</div><div class="sval" id="adm-ops">-</div><div class="ssub">Compras + Ventas</div></div>
+        <div class="stat bl"><div class="slbl">Lecciones CMS</div><div class="sval">8</div><div class="ssub">Educacion financiera</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-p">&#x1F465;</div><h3>Usuarios Registrados</h3></div>
+        <div id="adm-user-list"><div class="ld"><div class="spin"></div>Cargando usuarios...</div></div>
+      </div>
+    </div>
 
- <!-- ADMIN PANEL -->
- <div class="sec" id="sec-admin">
- <div class="admin-stats">
- <div class="stat pu"><div class="slbl"> Usuarios Registrados</div><div class="sval" id="adm-users"></div><div class="ssub">En la plataforma</div></div>
- <div class="stat gr"><div class="slbl"> Operaciones Simulador</div><div class="sval" id="adm-ops"></div><div class="ssub">Compras + Ventas</div></div>
- <div class="stat bl"><div class="slbl"> Lecciones CMS</div><div class="sval">8</div><div class="ssub">Educación financiera</div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Usuarios Registrados</h3></div>
- <div id="adm-user-list"><div class="ld"><div class="spin"></div>Cargando usuarios...</div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Resumen del Sistema</h3></div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
- <div style="padding:12px;background:var(--surf2);border-radius:9px">
- <div style="color:var(--muted);font-size:11px;margin-bottom:4px"> Autenticación</div>
- <ul style="list-style:none;padding:0;color:var(--txt);font-size:12px;line-height:1.8">
- <li> SHA-256 + salt aleatorio</li>
- <li> Tokens de sesión (24h)</li>
- <li> Comparación timing-safe</li>
- <li> Cookies HttpOnly</li>
- </ul>
- </div>
- <div style="padding:12px;background:var(--surf2);border-radius:9px">
- <div style="color:var(--muted);font-size:11px;margin-bottom:4px"> CMS Educativo</div>
- <ul style="list-style:none;padding:0;color:var(--txt);font-size:12px;line-height:1.8">
- <li> 8 lecciones completas</li>
- <li> Simulador de paper trading</li>
- <li> Tasa USD/COP en tiempo real</li>
- <li> Links a mercados oficiales</li>
- </ul>
- </div>
- </div>
- </div>
- </div>
+    <!-- TASA USD/COP -->
+    <div class="sec" id="sec-fx">
+      <div class="g2">
+        <div class="tasa-card">
+          <div class="slbl">Dolar &rarr; Peso Colombiano</div>
+          <div class="tasa-val" id="fx-usd">-</div>
+          <div class="tasa-src">1 USD = <span id="fx-cop">?</span> COP</div>
+        </div>
+        <div class="tasa-card">
+          <div class="slbl">Peso Colombiano &rarr; Dolar</div>
+          <div class="tasa-val" id="fx-cop-usd">-</div>
+          <div class="tasa-src">1 COP = <span id="fx-cop2">?</span> USD</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-y">&#x1F4B1;</div><h3>Convertidor</h3></div>
+        <div class="ctrls">
+          <div><label>Monto USD</label><input type="number" id="conv-usd" value="100" min="0" style="width:140px" oninput="convertir('usd')"></div>
+          <span style="font-size:20px;padding-top:16px;color:var(--txt3)">&#x21C4;</span>
+          <div><label>Monto COP</label><input type="number" id="conv-cop" value="0" min="0" style="width:180px" oninput="convertir('cop')"></div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:11px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Mercados Oficiales</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <a href="https://www.bvc.com.co" target="_blank" class="btn btn-s">BVC</a>
+            <a href="https://www.nyse.com" target="_blank" class="btn btn-s">NYSE</a>
+            <a href="https://www.nasdaq.com" target="_blank" class="btn btn-s">NASDAQ</a>
+            <a href="https://finance.yahoo.com" target="_blank" class="btn btn-s">Yahoo Finance</a>
+            <a href="https://es.investing.com" target="_blank" class="btn btn-s">Investing.com</a>
+            <a href="https://www.tradingview.com" target="_blank" class="btn btn-s">TradingView</a>
+          </div>
+        </div>
+      </div>
+    </div>
 
- <!-- TASA USD/COP -->
- <div class="sec" id="sec-fx">
- <div class="g2">
- <div class="tasa-card">
- <div class="slbl"> Dólar Peso Colombiano</div>
- <div class="tasa-val" id="fx-usd"></div>
- <div class="tasa-src">1 USD = <span id="fx-cop">?</span> COP</div>
- </div>
- <div class="tasa-card">
- <div class="slbl">´ Peso Colombiano Dólar</div>
- <div class="tasa-val" id="fx-cop-usd"></div>
- <div class="tasa-src">1 COP = <span id="fx-cop2">?</span> USD</div>
- </div>
- </div>
- <div class="card" style="margin-top:14px">
- <div class="ch"> <h3>Convertidor</h3></div>
- <div class="ctrls">
- <div><label>Monto USD</label><input type="number" id="conv-usd" value="100" min="0" style="width:140px" oninput="convertir('usd')"></div>
- <span style="font-size:18px;padding-top:16px"></span>
- <div><label>Monto COP</label><input type="number" id="conv-cop" value="0" min="0" style="width:180px" oninput="convertir('cop')"></div>
- </div>
- <div style="margin-top:14px">
- <div class="ch"> <h3>Mercados Oficiales</h3></div>
- <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
- <a href="https://www.bvc.com.co" target="_blank" class="btn btn-s">´ BVC</a>
- <a href="https://www.nyse.com" target="_blank" class="btn btn-s">¸ NYSE</a>
- <a href="https://www.nasdaq.com" target="_blank" class="btn btn-s">¸ NASDAQ</a>
- <a href="https://finance.yahoo.com" target="_blank" class="btn btn-s"> Yahoo Finance</a>
- <a href="https://es.investing.com" target="_blank" class="btn btn-s"> Investing.com</a>
- <a href="https://www.tradingview.com" target="_blank" class="btn btn-s"> TradingView</a>
- <a href="https://www.bloomberg.com/markets" target="_blank" class="btn btn-s"> Bloomberg</a>
- </div>
- </div>
- </div>
- </div>
+    <!-- ACADEMIA -->
+    <div class="sec" id="sec-learn">
+      <div class="card">
+        <div class="ch"><div class="ci ci-b">&#x1F4DA;</div><h3>Educacion Financiera</h3></div>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Lecciones claras y honestas. Desde lo basico hasta como usar el simulador.</p>
+      </div>
+      <div id="lecciones-wrap" class="lesson-list"><div class="ld"><div class="spin"></div>Cargando lecciones...</div></div>
+      <div id="leccion-detail" class="card" style="display:none">
+        <button class="btn btn-s" onclick="backToLessons()" style="margin-bottom:14px">&#x2190; Volver</button>
+        <div id="leccion-body" class="lesson-content"></div>
+      </div>
+    </div>
 
- <!-- ACADEMIA -->
- <div class="sec" id="sec-learn">
- <div class="card">
- <div class="ch"> <h3>Educación Financiera Aprende sin trucos</h3></div>
- <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Lecciones claras, honestas y sin palabras de más. Desde lo más básico hasta cómo usar el simulador.</p>
- </div>
- <div id="lecciones-wrap" class="lesson-list"><div class="ld"><div class="spin"></div>Cargando lecciones...</div></div>
- <div id="leccion-detail" class="card" style="display:none">
- <button class="btn btn-s" onclick="backToLessons()" style="margin-bottom:14px"> Volver a lecciones</button>
- <div id="leccion-body" class="lesson-content"></div>
- </div>
- </div>
+    <!-- SIMULADOR -->
+    <div class="sec" id="sec-sim">
+      <div id="sim-no-auth" class="card" style="text-align:center;padding:40px">
+        <p style="font-size:32px;margin-bottom:12px">&#x1F3AE;</p>
+        <p style="font-size:16px;font-weight:600;margin-bottom:8px">Inicia sesion para usar el simulador</p>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:16px">Necesitas una cuenta para practicar con dinero virtual.</p>
+        <button class="btn btn-p" onclick="nav(document.querySelector('[onclick*=auth]'),'auth')">Ir a Login</button>
+      </div>
+      <div id="sim-auth" style="display:none">
+        <div class="sim-balance">
+          <div class="stat gr"><div class="slbl">Saldo USD</div><div class="sval" id="sim-usd">-</div><div class="ssub">Dolares virtuales</div></div>
+          <div class="stat bl"><div class="slbl">Saldo COP</div><div class="sval" id="sim-cop" style="font-size:18px">-</div><div class="ssub">Pesos virtuales</div></div>
+          <div class="stat pu"><div class="slbl">Posiciones</div><div class="sval" id="sim-pos">-</div><div class="ssub">Activos en portafolio</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ci ci-g">&#x1F4B0;</div><h3>Comprar / Vender Activo</h3></div>
+          <div class="sim-form">
+            <div><label>Ticker</label><select id="sim-tk"></select></div>
+            <div><label>Cantidad</label><input type="number" id="sim-qty" value="10" min="1" style="width:100px"></div>
+            <button class="btn btn-g" onclick="simComprar()">&#x2B06; Comprar</button>
+            <button class="btn btn-r" onclick="simVender()">&#x2B07; Vender</button>
+          </div>
+          <div id="sim-msg" class="add-result" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ci ci-b">&#x1F4BC;</div><h3>Mi Portafolio Virtual</h3></div>
+          <div id="sim-positions"><div class="ld"><div class="spin"></div>Cargando portafolio...</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ci ci-p">&#x1F4DC;</div><h3>Ultimas Transacciones</h3></div>
+          <div id="sim-history"><div class="ld"><div class="spin"></div>Cargando historial...</div></div>
+        </div>
+      </div>
+    </div>
 
- <!-- SIMULADOR -->
- <div class="sec" id="sec-sim">
- <div id="sim-no-auth" class="card" style="text-align:center;padding:40px">
- <p style="font-size:28px;margin-bottom:12px"></p>
- <p style="font-size:16px;font-weight:600;margin-bottom:8px">Inicia sesión para usar el simulador</p>
- <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Necesitas una cuenta para practicar con dinero virtual ($100,000 USD + COP).</p>
- <button class="btn btn-p" onclick="nav(document.querySelector('[onclick*=auth]'),'auth')"> Ir a Login</button>
- </div>
- <div id="sim-auth" style="display:none">
- <div class="sim-balance">
- <div class="stat gr"><div class="slbl"> Saldo USD</div><div class="sval" id="sim-usd"></div><div class="ssub">Dólares virtuales</div></div>
- <div class="stat bl"><div class="slbl">´ Saldo COP</div><div class="sval" id="sim-cop" style="font-size:18px"></div><div class="ssub">Pesos virtuales</div></div>
- <div class="stat pu"><div class="slbl"> Posiciones</div><div class="sval" id="sim-pos"></div><div class="ssub">Activos en portafolio</div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Comprar / Vender Activo</h3></div>
- <div class="sim-form">
- <div><label>Ticker</label><select id="sim-tk"></select></div>
- <div><label>Cantidad</label><input type="number" id="sim-qty" value="10" min="1" style="width:100px"></div>
- <button class="btn btn-g" onclick="simComprar()"> Comprar</button>
- <button class="btn btn-s" style="border-color:var(--red);color:var(--red)" onclick="simVender()"> Vender</button>
- </div>
- <div id="sim-msg" class="add-result" style="margin-top:10px"></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Mi Portafolio Virtual</h3></div>
- <div id="sim-positions"><div class="ld"><div class="spin"></div>Cargando portafolio...</div></div>
- </div>
- <div class="card">
- <div class="ch"> <h3>Íšltimas Transacciones</h3></div>
- <div id="sim-history"><div class="ld"><div class="spin"></div>Cargando historial...</div></div>
- </div>
- </div>
- </div>
-
- </div>
-</div>
-</div>
-
-<script>
-const API = ''; // Usar path relativo automáticamente (funciona local, VPS y dominio)
+  </div></div></div><script>
+const API='';
 const YF='https://finance.yahoo.com/quote/';
 const NM={EC:"Ecopetrol",CIB:"Bancolombia",GXG:"iShares Colombia",ILF:"Latin America 40",EWZ:"iShares Brazil",EWW:"iShares Mexico",SPY:"S&P 500 ETF",QQQ:"Nasdaq 100",DIA:"Dow Jones ETF",EEM:"Emerging Markets",VT:"Vanguard World",IEMG:"Core EM",GLD:"Gold SPDR",SLV:"Silver Trust",USO:"US Oil Fund",TLT:"Treasury 20Y",XLE:"Energy",XLF:"Financials",XLK:"Technology",VNQ:"Real Estate"};
-
 let hmLoaded=false,rkLoaded=false,allLoaded=false,cache={};
 let allTickers=Object.keys(NM);
 
-// === SIDEBAR RESPONSIVE ===
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('ov-lay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('ov-lay').classList.remove('show');}
 
-// === NAV ===
 const titles={ov:'Overview',cmp:'Comparar Activos',hm:'Mapa de Calor',cs:'Velas OHLC',rk:'Clasificacion de Riesgo',add:'Agregar Activo',all:'Todos los Activos',rp:'Reporte',auth:'Login / Registro',fx:'Tasa USD/COP',learn:'Academia',sim:'Simulador',admin:'Panel de Admin',info:'Informacion Legal'};
+
 function nav(el,id){
- document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
- document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
- el.classList.add('active');document.getElementById('sec-'+id).classList.add('on');
- document.getElementById('ptitle').textContent=titles[id]||id;
- closeSidebar();
- if(id==='hm'&&!hmLoaded)loadHeatmap();
- if(id==='rk'&&!rkLoaded)loadRiesgo();
- if(id==='all'&&!allLoaded)loadAll();
- if(id==='cs')initCS();
- if(id==='fx')loadTasa();
- if(id==='learn')loadLecciones();
- if(id==='sim')loadSim();
- if(id==='admin')loadAdmin();
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  el.classList.add('active');
+  document.getElementById('sec-'+id).classList.add('on');
+  document.getElementById('ptitle').textContent=titles[id]||id;
+  closeSidebar();
+  if(id==='hm'&&!hmLoaded)loadHeatmap();
+  if(id==='rk'&&!rkLoaded)loadRiesgo();
+  if(id==='all'&&!allLoaded)loadAll();
+  if(id==='cs')initCS();
+  if(id==='fx')loadTasa();
+  if(id==='learn')loadLecciones();
+  if(id==='sim')loadSim();
+  if(id==='admin')loadAdmin();
 }
 
-// === POPULATE TICKER SELECTS ===
 function populateSel(tickers){
- ['ca1','ca2','cst'].forEach(id=>{
- const s=document.getElementById(id);if(!s)return;
- s.innerHTML=tickers.map((t,i)=>`<option value="${t}"${i===(id==='ca2'?1:0)?' selected':''}>${t}${NM[t]?' '+NM[t]:''}</option>`).join('');
- });
+  ['ca1','ca2','cst'].forEach(id=>{
+    const s=document.getElementById(id);if(!s)return;
+    s.innerHTML=tickers.map((t,i)=>`<option value="${t}"${i===(id==='ca2'?1:0)?' selected':''}>${t}${NM[t]?' - '+NM[t]:''}</option>`).join('');
+  });
 }
 
-// === FETCH ===
 async function f(path){if(cache[path])return cache[path];const r=await fetch(API+path);const d=await r.json();cache[path]=d;return d;}
 async function fno(path){const r=await fetch(API+path);return r.json();}
 
-// === INIT ===
 async function init(){
- // Load active tickers from BD
- try{
- const d=await fno('/activos');
- const tks=(d.activos||[]).map(a=>a.ticker||a);
- if(tks.length){allTickers=tks;Object.assign(NM,Object.fromEntries(d.activos.map(a=>[a.ticker,a.nombre||a.ticker])));}
- }catch{}
- populateSel(allTickers);
- checkStatus();
- loadOV();
+  try{
+    const d=await fno('/activos');
+    const tks=(d.activos||[]).map(a=>a.ticker||a);
+    if(tks.length){allTickers=tks;Object.assign(NM,Object.fromEntries(d.activos.map(a=>[a.ticker,a.nombre||a.ticker])));}
+  }catch(e){}
+  populateSel(allTickers);
+  checkStatus();
+  loadOV();
 }
 
 async function checkStatus(){
- try{
- const d=await f('/health');
- if(d.estado==='ok'){document.getElementById('adot').classList.add('on');document.getElementById('atxt').textContent='API Online ';}
- }catch{document.getElementById('atxt').textContent='Sin conexión ';}
+  try{
+    const d=await f('/health');
+    if(d.estado==='ok'){document.getElementById('adot').classList.add('on');document.getElementById('atxt').textContent='API Online';}
+  }catch{document.getElementById('atxt').textContent='Sin conexion';}
 }
 
-// === OVERVIEW ===
 async function loadOV(){
- try{
- const da=await fno('/activos');
- document.getElementById('st-act').textContent=(da.total||da.activos?.length||'');
- const d=await f('/reporte');
- const tot=d.seccion_1_datos?.filas_totales;
- if(tot)document.getElementById('st-reg').textContent=tot.toLocaleString();
- const top=(d.seccion_2_similitud?.pearson?.top_5||[]);
- document.getElementById('top-p').innerHTML=top.map((p,i)=>`
- <tr><td style="color:var(--muted)">${i+1}</td>
- <td><a href="${YF+p.ticker1}" target="_blank" class="yfl">${p.ticker1}</a> <a href="${YF+p.ticker2}" target="_blank" class="yfl">${p.ticker2}</a></td>
- <td style="font-family:var(--mono);color:${p.valor>.9?'var(--green)':'var(--yel)'}">${p.valor.toFixed(4)}</td>
- <td><span class="badge ${p.valor>.9?'bg':'by'}">${p.valor>.9?'Muy alta':'Alta'}</span></td></tr>`).join('')||
- '<tr><td colspan="4" style="padding:14px;color:var(--muted)">Ejecutar pipeline de similitud primero</td></tr>';
- const rk=d.seccion_3_volatilidad?.ranking||[];
- if(rk.length){
- const c=rk.filter(x=>x.volatilidad_anual<.15).length;
- const m=rk.filter(x=>x.volatilidad_anual>=.15&&x.volatilidad_anual<.3).length;
- const a=rk.filter(x=>x.volatilidad_anual>=.3).length;
- document.getElementById('risk-sum').innerHTML=`<div style="display:flex;flex-direction:column;gap:9px;padding:4px 0">
- ${rbar('Conservadores',c,rk.length,'var(--green)')}
- ${rbar('Moderados',m,rk.length,'var(--yel)')}
- ${rbar('Agresivos',a,rk.length,'var(--red)')}</div>`;
- }
- }catch(e){console.error(e)}
- // Strip
- try{
- const sample=allTickers.slice(0,5);
- const items=await Promise.all(sample.map(async t=>{
- try{const d=await f(`/precios?ticker=${t}&columna=cierre`);const p=d.datos||[];if(p.length<2)return null;
- const last=+p[p.length-1].cierre,prev=+p[p.length-2].cierre,chg=(last-prev)/prev*100;
- return `<div class="tick"><b>${t}</b><span class="pr">$${last.toFixed(2)}</span><span class="${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span></div>`;}catch{return null;}
- }));
- document.getElementById('strip').innerHTML=items.filter(Boolean).join('');
- }catch{}
+  try{
+    const da=await fno('/activos');
+    document.getElementById('st-act').textContent=(da.total||da.activos?.length||'');
+    const d=await f('/reporte');
+    const tot=d.seccion_1_datos?.filas_totales;
+    if(tot)document.getElementById('st-reg').textContent=tot.toLocaleString();
+    const top=(d.seccion_2_similitud?.pearson?.top_5||[]);
+    document.getElementById('top-p').innerHTML=top.map((p,i)=>`
+      <tr><td style="color:var(--txt3)">${i+1}</td>
+      <td><a href="${YF+p.ticker1}" target="_blank" class="yfl">${p.ticker1}</a> &mdash; <a href="${YF+p.ticker2}" target="_blank" class="yfl">${p.ticker2}</a></td>
+      <td class="mono">${p.valor.toFixed(4)}</td>
+      <td><span class="badge ${p.valor>.9?'bg':'by'}">${p.valor>.9?'Muy alta':'Alta'}</span></td></tr>`).join('')||
+      '<tr><td colspan="4" style="padding:14px;color:var(--txt3)">Ejecutar pipeline de similitud primero</td></tr>';
+    const rk=d.seccion_3_volatilidad?.ranking||[];
+    if(rk.length){
+      const c=rk.filter(x=>x.volatilidad_anual<.15).length;
+      const m=rk.filter(x=>x.volatilidad_anual>=.15&&x.volatilidad_anual<.3).length;
+      const a=rk.filter(x=>x.volatilidad_anual>=.3).length;
+      document.getElementById('risk-sum').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
+        ${rbar('Conservadores',c,rk.length,'var(--green)')}
+        ${rbar('Moderados',m,rk.length,'var(--yel)')}
+        ${rbar('Agresivos',a,rk.length,'var(--red)')}</div>`;
+    }
+  }catch(e){console.error(e)}
+  try{
+    const sample=allTickers.slice(0,6);
+    const items=await Promise.all(sample.map(async t=>{
+      try{const d=await f(`/precios?ticker=${t}&columna=cierre`);const p=d.datos||[];if(p.length<2)return null;
+      const last=+p[p.length-1].cierre,prev=+p[p.length-2].cierre,chg=(last-prev)/prev*100;
+      return `<div class="tick"><b>${t}</b><span class="pr">${last.toFixed(2)}</span><span class="${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span></div>`;}catch{return null;}
+    }));
+    document.getElementById('strip').innerHTML=items.filter(Boolean).join('');
+  }catch(e){}
 }
-function rbar(lbl,n,tot,cl){const p=tot>0?n/tot*100:0;return `<div style="display:flex;align-items:center;gap:8px"><div style="width:90px;font-size:12px;color:var(--muted)">${lbl}</div><div class="vbar" style="flex:1;max-width:150px"><div class="vfill" style="width:${p}%;background:${cl}"></div></div><b style="font-family:var(--mono);color:${cl};width:16px">${n}</b></div>`;}
 
-// === COMPARAR ===
+function rbar(lbl,n,tot,cl){
+  const p=tot>0?n/tot*100:0;
+  return `<div style="display:flex;align-items:center;gap:10px">
+    <div style="width:90px;font-size:12px;color:var(--txt3)">${lbl}</div>
+    <div class="vbar" style="flex:1;max-width:160px"><div class="vfill" style="width:${p}%;background:${cl}"></div></div>
+    <b style="font-family:var(--mono);color:${cl};min-width:16px">${n}</b></div>`;
+}
+
 let pc={};
 async function getPr(t){if(pc[t])return pc[t];const d=await f(`/precios?ticker=${t}&columna=cierre`);const v=(d.datos||[]).map(x=>+x.cierre);pc[t]=v;return v;}
 async function getSim(t1,t2,algo){
- try{const d=await f(`/similitud?algoritmo=${algo}`);const rs=d.resultados||[];
- const row=rs.find(r=>(r.ticker1===t1&&r.ticker2===t2)||(r.ticker1===t2&&r.ticker2===t1));return row?+row.valor:null;}catch{return null;}
-}
-async function comparar(){
- const t1=document.getElementById('ca1').value,t2=document.getElementById('ca2').value;
- document.getElementById('ctitle').textContent=`${t1} vs ${t2} % Cambio acumulado`;
- document.getElementById('line-wrap').innerHTML='<div class="ld"><div class="spin"></div>Calculando...</div>';
- ['v-eu','v-pe','v-co','v-dt'].forEach(id=>document.getElementById(id).textContent='');
- try{const [p1,p2]=await Promise.all([getPr(t1),getPr(t2)]);drawLine(p1,p2,t1,t2);}
- catch(e){document.getElementById('line-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
- for(const[algo,id]of[['euclidiana','v-eu'],['pearson','v-pe'],['coseno','v-co'],['dtw','v-dt']]){
- const val=await getSim(t1,t2,algo);document.getElementById(id).textContent=val!=null?val.toFixed(4):'N/D';}
-}
-function drawLine(p1,p2,l1,l2){
- const n=Math.min(p1.length,p2.length);
- const s1=p1.slice(-n),s2=p2.slice(-n);
- const n1=s1.map(v=>((v-s1[0])/s1[0])*100),n2=s2.map(v=>((v-s2[0])/s2[0])*100);
- const W=900,H=250,PL=48,PR=12,PT=10,PB=30;const xs=W-PL-PR,ys=H-PT-PB;
- const all=[...n1,...n2],mn=Math.min(...all),mx=Math.max(...all),rng=mx-mn||1;
- const px=i=>PL+i/(n-1)*xs,py=v=>PT+(1-(v-mn)/rng)*ys;
- const pt=a=>a.map((v,i)=>`${i===0?'M':'L'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
- const yL=[];for(let i=0;i<=4;i++){const v=mn+i/4*rng;yL.push({y:py(v),l:(v>=0?'+':'')+v.toFixed(1)+'%'});}
- const svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;overflow:visible">
- <defs><linearGradient id="g1" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity=".25"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></linearGradient>
- <linearGradient id="g2" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".25"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient></defs>
- ${yL.map(({y,l})=>`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#1e293b" stroke-width="1"/>
- <text x="${PL-4}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${l}</text>`).join('')}
- <path d="${pt(n1)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g1)"/>
- <path d="${pt(n2)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g2)"/>
- <path d="${pt(n1)}" fill="none" stroke="#10b981" stroke-width="2"/>
- <path d="${pt(n2)}" fill="none" stroke="#38bdf8" stroke-width="2"/>
- <g transform="translate(${PL},${H-6})">
- <circle cx="0" cy="0" r="4" fill="#10b981"/><text x="8" y="4" font-size="11" fill="#10b981">${l1}</text>
- <circle cx="55" cy="0" r="4" fill="#38bdf8"/><text x="63" y="4" font-size="11" fill="#38bdf8">${l2}</text>
- </g></svg>`;
- document.getElementById('line-wrap').innerHTML=`<div style="height:260px">${svg}</div>`;
+  try{const d=await f(`/similitud?algoritmo=${algo}`);const rs=d.resultados||[];
+  const row=rs.find(r=>(r.ticker1===t1&&r.ticker2===t2)||(r.ticker1===t2&&r.ticker2===t1));return row?+row.valor:null;}catch{return null;}
 }
 
-// === HEATMAP ===
+async function comparar(){
+  const t1=document.getElementById('ca1').value,t2=document.getElementById('ca2').value;
+  document.getElementById('ctitle').textContent=`${t1} vs ${t2} % Cambio acumulado`;
+  document.getElementById('line-wrap').innerHTML='<div class="ld"><div class="spin"></div>Calculando...</div>';
+  ['v-eu','v-pe','v-co','v-dt'].forEach(id=>document.getElementById(id).textContent='-');
+  try{const [p1,p2]=await Promise.all([getPr(t1),getPr(t2)]);drawLine(p1,p2,t1,t2);}
+  catch(e){document.getElementById('line-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+  for(const[algo,id]of[['euclidiana','v-eu'],['pearson','v-pe'],['coseno','v-co'],['dtw','v-dt']]){
+    const val=await getSim(t1,t2,algo);document.getElementById(id).textContent=val!=null?val.toFixed(4):'N/D';}
+}
+
+function drawLine(p1,p2,l1,l2){
+  const n=Math.min(p1.length,p2.length);
+  const s1=p1.slice(-n),s2=p2.slice(-n);
+  const n1=s1.map(v=>((v-s1[0])/s1[0])*100),n2=s2.map(v=>((v-s2[0])/s2[0])*100);
+  const W=900,H=250,PL=52,PR=12,PT=12,PB=32;const xs=W-PL-PR,ys=H-PT-PB;
+  const all=[...n1,...n2],mn=Math.min(...all),mx=Math.max(...all),rng=mx-mn||1;
+  const px=i=>PL+i/(n-1)*xs,py=v=>PT+(1-(v-mn)/rng)*ys;
+  const pt=a=>a.map((v,i)=>`${i===0?'M':'L'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+  const yL=[];for(let i=0;i<=4;i++){const v=mn+i/4*rng;yL.push({y:py(v),l:(v>=0?'+':'')+v.toFixed(1)+'%'});}
+  const svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;overflow:visible">
+    <defs>
+      <linearGradient id="g1" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity=".2"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></linearGradient>
+      <linearGradient id="g2" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".2"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient>
+    </defs>
+    ${yL.map(({y,l})=>`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#1a2d4a" stroke-width="1"/>
+    <text x="${PL-5}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${l}</text>`).join('')}
+    <path d="${pt(n1)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g1)"/>
+    <path d="${pt(n2)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g2)"/>
+    <path d="${pt(n1)}" fill="none" stroke="#10b981" stroke-width="2.5"/>
+    <path d="${pt(n2)}" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+    <g transform="translate(${PL},${H-6})">
+      <circle cx="0" cy="0" r="5" fill="#10b981"/><text x="10" y="4" font-size="12" fill="#10b981" font-weight="600">${l1}</text>
+      <circle cx="60" cy="0" r="5" fill="#38bdf8"/><text x="70" y="4" font-size="12" fill="#38bdf8" font-weight="600">${l2}</text>
+    </g></svg>`;
+  document.getElementById('line-wrap').innerHTML=`<div style="height:260px">${svg}</div>`;
+}
+</script><script>
 async function loadHeatmap(){
- hmLoaded=true;
- try{
- const d=await fno('/correlacion/matriz');const tks=d.tickers||[],mat=d.matriz||[];
- if(!tks.length){document.getElementById('hm-wrap').innerHTML='<p style="color:var(--muted);padding:14px">Sin datos de similitud. Ejecutar pipeline primero.</p>';return;}
- drawHeatmap(tks,mat);
- }catch(e){document.getElementById('hm-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+  hmLoaded=true;
+  try{
+    const d=await fno('/correlacion/matriz');const tks=d.tickers||[],mat=d.matriz||[];
+    if(!tks.length){document.getElementById('hm-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecutar pipeline de similitud primero.</p>';return;}
+    drawHeatmap(tks,mat);
+  }catch(e){document.getElementById('hm-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
 }
-function corColor(v){if(v>=0){return `rgb(${Math.round(16+(240-16)*(1-v))},${185},${Math.round(129*v)})`;}const t=-v;return `rgb(244,${Math.round(63+90*(1-t))},${Math.round(94*(1-t))})`;}
+function corColor(v){
+  if(v>=0){return `rgb(${Math.round(16+(240-16)*(1-v))},${185},${Math.round(129*v)})`;}
+  const t=-v;return `rgb(244,${Math.round(63+90*(1-t))},${Math.round(94*(1-t))})`;
+}
 function drawHeatmap(tks,mat){
- const n=tks.length,cell=30,lbl=46;const W=lbl+n*cell,H=lbl+n*cell;
- const tip=document.getElementById('tip');
- let rects='',xl='',yl='';
- for(let i=0;i<n;i++){
- xl+=`<text x="${lbl+i*cell+cell/2}" y="${lbl-3}" text-anchor="middle" font-size="8" fill="#64748b" transform="rotate(-45,${lbl+i*cell+cell/2},${lbl-3})">${tks[i]}</text>`;
- yl+=`<text x="${lbl-4}" y="${lbl+i*cell+cell/2+4}" text-anchor="end" font-size="9" fill="#64748b">${tks[i]}</text>`;
- for(let j=0;j<n;j++){const v=mat[i]?.[j]??0;
- rects+=`<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" fill="${corColor(v)}" rx="2"
- onmouseenter="showTip(event,'${tks[i]} ${tks[j]}: r = ${v.toFixed(4)}')" onmouseleave="hideTip()"/>`;
- }
- }
- document.getElementById('hm-wrap').innerHTML=`<div style="overflow-x:auto"><svg width="${W}" height="${H}" style="display:block">${xl}${yl}${rects}</svg></div>`;
+  const n=tks.length,cell=32,lbl=48;const W=lbl+n*cell,H=lbl+n*cell;
+  let rects='',xl='',yl='';
+  for(let i=0;i<n;i++){
+    xl+=`<text x="${lbl+i*cell+cell/2}" y="${lbl-4}" text-anchor="middle" font-size="8" fill="#64748b" transform="rotate(-45,${lbl+i*cell+cell/2},${lbl-4})">${tks[i]}</text>`;
+    yl+=`<text x="${lbl-5}" y="${lbl+i*cell+cell/2+4}" text-anchor="end" font-size="9" fill="#64748b">${tks[i]}</text>`;
+    for(let j=0;j<n;j++){const v=mat[i]?.[j]??0;
+      rects+=`<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" fill="${corColor(v)}" rx="3"
+        onmouseenter="showTip(event,'${tks[i]} vs ${tks[j]}: r=${v.toFixed(4)}')" onmouseleave="hideTip()"/>`;
+    }
+  }
+  document.getElementById('hm-wrap').innerHTML=`<div style="overflow-x:auto"><svg width="${W}" height="${H}" style="display:block">${xl}${yl}${rects}</svg></div>`;
 }
-function showTip(e,t){const tp=document.getElementById('tip');tp.textContent=t;tp.style.display='block';tp.style.left=(e.clientX+10)+'px';tp.style.top=(e.clientY+10)+'px';}
+function showTip(e,t){const tp=document.getElementById('tip');tp.textContent=t;tp.style.display='block';tp.style.left=(e.clientX+12)+'px';tp.style.top=(e.clientY+12)+'px';}
 function hideTip(){document.getElementById('tip').style.display='none';}
 
-// === CANDLESTICK ===
 function initCS(){if(!document.getElementById('cst').options.length)populateSel(allTickers);}
 function sma(arr,w){return arr.map((_,i)=>i<w-1?null:arr.slice(i-w+1,i+1).reduce((a,b)=>a+b,0)/w);}
+
 async function loadCS(){
- const tk=document.getElementById('cst').value,n=+document.getElementById('csp').value;
- const w1=+document.getElementById('sm1').value,w2=+document.getElementById('sm2').value;
- document.getElementById('cs-title').textContent=`${tk} Íšltimos ${n} días`;
- document.getElementById('cs-wrap').style.display='block';document.getElementById('cs-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
- document.getElementById('cv').style.display='none';
- try{
- const d=await fno(`/precios/ohlcv?ticker=${tk}&n=${n+Math.max(w1,w2)}`);
- const datos=(d.datos||[]).slice(-n);if(!datos.length){document.getElementById('cs-wrap').innerHTML='<p style="color:var(--red);padding:14px">Sin datos OHLCV</p>';return;}
- drawCS(datos,sma(datos.map(x=>x.cierre),w1),sma(datos.map(x=>x.cierre),w2),w1,w2);
- }catch(e){document.getElementById('cs-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
-}
-function drawCS(datos,smaf,smas,w1,w2){
- const cv=document.getElementById('cv');
- const W=cv.parentElement.offsetWidth||900,H=360;
- cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
- ctx.fillStyle='#0f1629';ctx.fillRect(0,0,W,H);
- const n=datos.length,PL=58,PR=12,PT=16,PB=54;
- const xs=W-PL-PR,ys=H-PT-PB,pw=xs/n,cw=Math.max(pw*.6,2);
- const mn=Math.min(...datos.map(d=>d.minimo)),mx=Math.max(...datos.map(d=>d.maximo)),rng=mx-mn||1;
- const px=i=>PL+i*pw+pw/2,py=v=>PT+(1-(v-mn)/rng)*ys;
- ctx.strokeStyle='#1e293b';ctx.lineWidth=1;
- for(let i=0;i<=5;i++){const v=mn+i/5*rng,y=py(v);
- ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();
- ctx.fillStyle='#64748b';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='right';ctx.fillText('$'+v.toFixed(2),PL-4,y+4);}
- for(let i=0;i<n;i++){
- const{apertura:o,maximo:h,minimo:l,cierre:c}=datos[i],bull=c>=o,col=bull?'#10b981':'#f43f5e',cx=px(i);
- ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,py(h));ctx.lineTo(cx,py(l));ctx.stroke();
- const top=py(Math.max(o,c)),bot=py(Math.min(o,c)),bh=Math.max(bot-top,1);
- ctx.fillStyle=col;ctx.fillRect(cx-cw/2,top,cw,bh);}
- const drawSMA=(arr,color)=>{ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();let first=true;arr.forEach((v,i)=>{if(v===null)return;if(first){ctx.moveTo(px(i),py(v));first=false;}else ctx.lineTo(px(i),py(v));});ctx.stroke();};
- drawSMA(smaf,'#38bdf8');drawSMA(smas,'#f59e0b');
- ctx.fillStyle='#64748b';ctx.textAlign='center';ctx.font='9px JetBrains Mono,monospace';
- const step=Math.max(1,Math.floor(n/10));
- for(let i=0;i<n;i+=step)ctx.fillText(datos[i].fecha.slice(5),px(i),H-PT-6);
- document.getElementById('cs-wrap').style.display='none';cv.style.display='block';
+  const tk=document.getElementById('cst').value,n=+document.getElementById('csp').value;
+  const w1=+document.getElementById('sm1').value,w2=+document.getElementById('sm2').value;
+  document.getElementById('cs-title').textContent=`${tk} - Ultimos ${n} dias`;
+  document.getElementById('cs-wrap').style.display='block';
+  document.getElementById('cs-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('cv').style.display='none';
+  try{
+    const d=await fno(`/precios/ohlcv?ticker=${tk}&n=${n+Math.max(w1,w2)}`);
+    const datos=(d.datos||[]).slice(-n);
+    if(!datos.length){document.getElementById('cs-wrap').innerHTML='<p style="color:var(--red);padding:14px">Sin datos OHLCV</p>';return;}
+    drawCS(datos,sma(datos.map(x=>x.cierre),w1),sma(datos.map(x=>x.cierre),w2));
+  }catch(e){document.getElementById('cs-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
 }
 
-// === RIESGO ===
+function drawCS(datos,smaf,smas){
+  const cv=document.getElementById('cv');
+  const W=cv.parentElement.offsetWidth||900,H=380;
+  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0c1526';ctx.fillRect(0,0,W,H);
+  const n=datos.length,PL=60,PR=14,PT=18,PB=56;
+  const xs=W-PL-PR,ys=H-PT-PB,pw=xs/n,cw=Math.max(pw*.65,2);
+  const mn=Math.min(...datos.map(d=>d.minimo)),mx=Math.max(...datos.map(d=>d.maximo)),rng=mx-mn||1;
+  const px=i=>PL+i*pw+pw/2,py=v=>PT+(1-(v-mn)/rng)*ys;
+  ctx.strokeStyle='#1a2d4a';ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){const v=mn+i/5*rng,y=py(v);
+    ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();
+    ctx.fillStyle='#64748b';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='right';
+    ctx.fillText('$'+v.toFixed(2),PL-5,y+4);
+  }
+  for(let i=0;i<n;i++){
+    const{apertura:o,maximo:h,minimo:l,cierre:c}=datos[i],bull=c>=o,col=bull?'#10b981':'#f43f5e',cx=px(i);
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,py(h));ctx.lineTo(cx,py(l));ctx.stroke();
+    const top=py(Math.max(o,c)),bot=py(Math.min(o,c)),bh=Math.max(bot-top,1);
+    ctx.fillStyle=col;ctx.fillRect(cx-cw/2,top,cw,bh);
+  }
+  const drawSMA=(arr,color)=>{
+    ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.beginPath();
+    let first=true;arr.forEach((v,i)=>{if(v===null)return;if(first){ctx.moveTo(px(i),py(v));first=false;}else ctx.lineTo(px(i),py(v));});
+    ctx.stroke();
+  };
+  drawSMA(smaf,'#38bdf8');drawSMA(smas,'#f59e0b');
+  ctx.fillStyle='#64748b';ctx.textAlign='center';ctx.font='9px JetBrains Mono,monospace';
+  const step=Math.max(1,Math.floor(n/10));
+  for(let i=0;i<n;i+=step)ctx.fillText(datos[i].fecha.slice(5),px(i),H-PT-8);
+  document.getElementById('cs-wrap').style.display='none';cv.style.display='block';
+}
+
 async function loadRiesgo(){
- rkLoaded=true;
- try{
- const d=await fno('/riesgo/clasificacion');const activos=d.activos||[],conteo=d.conteo||{};
- document.getElementById('cnt-c').textContent=conteo['Conservador']||0;
- document.getElementById('cnt-m').textContent=conteo['Moderado']||0;
- document.getElementById('cnt-a').textContent=conteo['Agresivo']||0;
- if(activos.length){document.getElementById('rk-mv').textContent=activos[0].ticker;document.getElementById('rk-mvv').textContent=activos[0].vol_pct+'% anual';}
- const maxV=Math.max(...activos.map(a=>a.vol_pct));
- const rows=activos.map((a,i)=>{
- const bcls=a.categoria==='Conservador'?'bg':a.categoria==='Moderado'?'by':'br';
- const bc=a.categoria==='Conservador'?'var(--green)':a.categoria==='Moderado'?'var(--yel)':'var(--red)';
- const sc=a.sharpe>1?'var(--green)':a.sharpe>0?'var(--yel)':'var(--red)';
- return `<tr>
- <td style="color:var(--muted)">${i+1}</td>
- <td><a href="${YF+a.ticker}" target="_blank" class="yfl" title="Ver en Yahoo Finance"></a> <b>${a.ticker}</b></td>
- <td style="color:var(--muted)">${NM[a.ticker]||''}</td>
- <td style="font-family:var(--mono)">${a.vol_pct}%</td>
- <td><div class="vbar"><div class="vfill" style="width:${Math.round(a.vol_pct/maxV*100)}%;background:${bc}"></div></div></td>
- <td><span class="badge ${bcls}">${a.categoria}</span></td>
- <td style="font-family:var(--mono);color:${sc}">${a.sharpe}</td>
- <td style="font-family:var(--mono)">${a.var95_pct}%</td>
- </tr>`;
- }).join('');
- document.getElementById('rk-wrap').innerHTML=`<table>
- <thead><tr><th>#</th><th>Ticker</th><th>Nombre</th><th>Vol. Anual</th><th>Barra</th><th>Categoría</th><th>Sharpe</th><th>VaR 95%</th></tr></thead>
- <tbody>${rows}</tbody></table>`;
- }catch(e){document.getElementById('rk-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+  rkLoaded=true;
+  try{
+    const d=await fno('/riesgo/clasificacion');const activos=d.activos||[],conteo=d.conteo||{};
+    document.getElementById('cnt-c').textContent=conteo['Conservador']||0;
+    document.getElementById('cnt-m').textContent=conteo['Moderado']||0;
+    document.getElementById('cnt-a').textContent=conteo['Agresivo']||0;
+    const maxV=Math.max(...activos.map(a=>a.vol_pct));
+    const rows=activos.map((a,i)=>{
+      const bcls=a.categoria==='Conservador'?'bg':a.categoria==='Moderado'?'by':'br';
+      const bc=a.categoria==='Conservador'?'var(--green)':a.categoria==='Moderado'?'var(--yel)':'var(--red)';
+      const sc=a.sharpe>1?'var(--green)':a.sharpe>0?'var(--yel)':'var(--red)';
+      return `<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${a.ticker}</b></td>
+        <td style="color:var(--txt3)">${NM[a.ticker]||''}</td>
+        <td class="mono">${a.vol_pct}%</td>
+        <td style="width:120px"><div class="vbar"><div class="vfill" style="width:${Math.round(a.vol_pct/maxV*100)}%;background:${bc}"></div></div></td>
+        <td><span class="badge ${bcls}">${a.categoria}</span></td>
+        <td class="mono" style="color:${sc}">${a.sharpe}</td>
+        <td class="mono">${a.var95_pct}%</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('rk-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Nombre</th><th>Vol. Anual</th><th>Barra</th><th>Categoria</th><th>Sharpe</th><th>VaR 95%</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+  }catch(e){document.getElementById('rk-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
 }
-
-// === AGREGAR ACTIVO ===
+</script><script>
 async function agregarActivo(){
- const btn=document.getElementById('add-btn');
- const tk=document.getElementById('add-tk').value.trim().toUpperCase();
- const nm=document.getElementById('add-nm').value.trim()||tk;
- const mkt=document.getElementById('add-mkt').value;
- const res=document.getElementById('add-res');
- if(!tk){res.className='add-result err';res.style.display='block';res.textContent=' ï¸ Escribe un ticker primero.';return;}
- btn.disabled=true;btn.textContent=' Descargando...';
- res.className='add-result';res.style.display='block';res.textContent=`Descargando 5 años de datos para ${tk} (puede tardar 15-30 seg)`;
- try{
- const r=await fetch(API+'/activos/agregar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:tk,nombre:nm,mercado:mkt})});
- const d=await r.json();
- if(d.ok){
- res.className='add-result ok';
- res.innerHTML=`${d.mensaje}<br><small style="opacity:.8"> ${d.dias_descargados} días - 
- <a href="${d.yahoo_url}" target="_blank" style="color:var(--green)">Ver en Yahoo Finance </a></small>`;
- // Update ticker lists
- if(!allTickers.includes(tk)){allTickers.push(tk);NM[tk]=nm;}
- populateSel(allTickers);
- cache={};// Limpiar caché
- document.getElementById('add-tk').value='';document.getElementById('add-nm').value='';
- allLoaded=false;// Forzar recarga de lista
- }else{
- res.className='add-result err';res.textContent=' '+d.error;
- }
- }catch(e){res.className='add-result err';res.textContent=' Error de red: '+e.message;}
- btn.disabled=false;btn.innerHTML=' Descargar y agregar';
+  const btn=document.getElementById('add-btn');
+  const tk=document.getElementById('add-tk').value.trim().toUpperCase();
+  const nm=document.getElementById('add-nm').value.trim()||tk;
+  const mkt=document.getElementById('add-mkt').value;
+  const res=document.getElementById('add-res');
+  if(!tk){res.className='add-result err';res.style.display='block';res.textContent='Escribe un ticker primero.';return;}
+  btn.disabled=true;btn.textContent='Descargando...';
+  res.className='add-result';res.style.display='block';res.textContent=`Descargando 5 anos de datos para ${tk}...`;
+  try{
+    const r=await fetch(API+'/activos/agregar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:tk,nombre:nm,mercado:mkt})});
+    const d=await r.json();
+    if(d.ok){
+      res.className='add-result ok';
+      res.innerHTML=`${d.mensaje}<br><small>${d.dias_descargados} dias &mdash; <a href="${d.yahoo_url}" target="_blank" style="color:var(--green)">Ver en Yahoo Finance</a></small>`;
+      if(!allTickers.includes(tk)){allTickers.push(tk);NM[tk]=nm;}
+      populateSel(allTickers);cache={};
+      document.getElementById('add-tk').value='';document.getElementById('add-nm').value='';
+      allLoaded=false;
+    }else{res.className='add-result err';res.textContent=d.error;}
+  }catch(e){res.className='add-result err';res.textContent='Error de red: '+e.message;}
+  btn.disabled=false;btn.innerHTML='&#x2B07; Descargar y agregar';
 }
 
-// === TODOS LOS ACTIVOS ===
 async function loadAll(){
- allLoaded=true;
- try{
- const d=await fno('/activos');const activos=d.activos||[];
- const cards=activos.map(a=>`
- <div class="asset-card">
- <div class="asset-tk">${a.ticker||a}</div>
- <div class="asset-nm">${a.nombre||NM[a.ticker||a]||a}</div>
- <div class="asset-inf">
- <span style="color:var(--muted)">${a.dias||''} días</span>
- <a href="${YF+(a.ticker||a)}" target="_blank" class="yfl" title="Ver en Yahoo Finance">Ver en YF </a>
- </div>
- </div>`).join('');
- document.getElementById('all-wrap').innerHTML=`<div class="assets-grid">${cards}</div>`;
- }catch(e){document.getElementById('all-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+  allLoaded=true;
+  try{
+    const d=await fno('/activos');const activos=d.activos||[];
+    const cards=activos.map(a=>`
+      <div class="asset-card">
+        <div class="asset-tk">${a.ticker||a}</div>
+        <div class="asset-nm">${a.nombre||NM[a.ticker||a]||a}</div>
+        <div class="asset-inf">
+          <span style="color:var(--txt3)">${a.dias||''} dias</span>
+          <a href="${YF+(a.ticker||a)}" target="_blank" class="yfl">YF &#x2197;</a>
+        </div>
+      </div>`).join('');
+    document.getElementById('all-wrap').innerHTML=`<div class="assets-grid">${cards}</div>`;
+  }catch(e){document.getElementById('all-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
 }
 
-// === REPORTE ===
 async function loadRep(){
- document.getElementById('rep-body').style.display='block';
- document.getElementById('rep-txt').textContent='Cargando';
- try{const r=await fetch(API+'/reporte/txt');document.getElementById('rep-txt').textContent=await r.text();}
- catch(e){document.getElementById('rep-txt').textContent='Error: '+e.message;}
+  document.getElementById('rep-body').style.display='block';
+  document.getElementById('rep-txt').textContent='Cargando...';
+  try{const r=await fetch(API+'/reporte/txt');document.getElementById('rep-txt').textContent=await r.text();}
+  catch(e){document.getElementById('rep-txt').textContent='Error: '+e.message;}
 }
 
-// === AUTH ===
 let currentUser=null;
-function authTab(t){document.getElementById('auth-login').style.display=t==='login'?'block':'none';document.getElementById('auth-reg').style.display=t==='reg'?'block':'none';document.getElementById('tab-login').className=t==='login'?'act':'';document.getElementById('tab-reg').className=t==='reg'?'act':'';}
-
-// Auto-redirect to login when auth is required
-function requireAuth(actionName){
- if(currentUser) return true;
- // Navigate to auth section with message
- const authNav=document.getElementById('nav-auth');
- nav(authNav,'auth');
- const msg=document.getElementById('auth-msg');
- msg.className='add-result err';msg.style.display='block';
- msg.innerHTML=` Debes <b>iniciar sesión</b> para ${actionName||'realizar esta acción'}. Crea una cuenta o usa las credenciales de demo.`;
- return false;
+function authTab(t){
+  document.getElementById('auth-login').style.display=t==='login'?'block':'none';
+  document.getElementById('auth-reg').style.display=t==='reg'?'block':'none';
+  document.getElementById('tab-login').className=t==='login'?'act':'';
+  document.getElementById('tab-reg').className=t==='reg'?'act':'';
 }
-
+function requireAuth(actionName){
+  if(currentUser)return true;
+  const authNav=document.getElementById('nav-auth');
+  nav(authNav,'auth');
+  const msg=document.getElementById('auth-msg');
+  msg.className='add-result err';msg.style.display='block';
+  msg.innerHTML=`Debes <b>iniciar sesion</b> para ${actionName||'realizar esta accion'}.`;
+  return false;
+}
 async function doLogin(){
- const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pass').value;
- const msg=document.getElementById('auth-msg');
- if(!u||!p){msg.className='add-result err';msg.style.display='block';msg.textContent=' ï¸ Completa ambos campos.';return;}
- try{const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:u,password:p})});
- const d=await r.json();
- if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.innerHTML=' Bienvenido, <b>'+d.username+'</b>. Redirigiendo...';currentUser=d;updateUserUI();
- setTimeout(()=>{nav(document.querySelector('.nav-item'),'ov');},800);
- }
- else{msg.className='add-result err';msg.style.display='block';msg.textContent=' '+d.error;}
- }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=' '+e.message;}
+  const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pass').value;
+  const msg=document.getElementById('auth-msg');
+  if(!u||!p){msg.className='add-result err';msg.style.display='block';msg.textContent='Completa ambos campos.';return;}
+  try{
+    const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.innerHTML='Bienvenido, <b>'+d.username+'</b>';currentUser=d;updateUserUI();
+      setTimeout(()=>{nav(document.querySelector('.nav-item'),'ov');},800);
+    }else{msg.className='add-result err';msg.style.display='block';msg.textContent=d.error;}
+  }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=e.message;}
 }
 async function doRegister(){
- const u=document.getElementById('r-user').value.trim(),e=document.getElementById('r-email').value.trim(),p=document.getElementById('r-pass').value;
- const msg=document.getElementById('auth-msg');
- if(!u||!e||!p){msg.className='add-result err';msg.style.display='block';msg.textContent=' ï¸ Completa todos los campos.';return;}
- try{const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p})});
- const d=await r.json();
- if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.innerHTML=' Cuenta creada. Ahora inicia sesión.';authTab('login');}
- else{msg.className='add-result err';msg.style.display='block';msg.textContent=' '+d.error;}
- }catch(er){msg.className='add-result err';msg.style.display='block';msg.textContent=' '+er.message;}
+  const u=document.getElementById('r-user').value.trim(),e=document.getElementById('r-email').value.trim(),p=document.getElementById('r-pass').value;
+  const msg=document.getElementById('auth-msg');
+  if(!u||!e||!p){msg.className='add-result err';msg.style.display='block';msg.textContent='Completa todos los campos.';return;}
+  try{
+    const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p})});
+    const d=await r.json();
+    if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.innerHTML='Cuenta creada. Ahora inicia sesion.';authTab('login');}
+    else{msg.className='add-result err';msg.style.display='block';msg.textContent=d.error;}
+  }catch(er){msg.className='add-result err';msg.style.display='block';msg.textContent=er.message;}
 }
 async function doLogout(){
- try{await fetch(API+'/auth/logout',{method:'POST',credentials:'include'});}catch{}
- currentUser=null;updateUserUI();
+  try{await fetch(API+'/auth/logout',{method:'POST',credentials:'include'});}catch{}
+  currentUser=null;updateUserUI();
 }
 async function checkAuth(){
- try{const r=await fetch(API+'/auth/me',{credentials:'include'});if(r.ok){currentUser=await r.json();updateUserUI();}}catch{}
+  try{const r=await fetch(API+'/auth/me',{credentials:'include'});if(r.ok){currentUser=await r.json();updateUserUI();}}catch{}
 }
 function updateUserUI(){
- const bar=document.getElementById('user-bar');
- const authBtn=document.getElementById('nav-auth');
- const adminNav=document.getElementById('admin-nav');
- if(currentUser){
- bar.style.display='flex';document.getElementById('uname').textContent=currentUser.username;
- document.getElementById('sim-no-auth').style.display='none';document.getElementById('sim-auth').style.display='block';
- authBtn.innerHTML=' '+currentUser.username;authBtn.style.color='var(--green)';
- // Show admin panel only for admin user
- if(currentUser.username==='admin'){adminNav.style.display='block';}else{adminNav.style.display='none';}
- }else{
- bar.style.display='none';
- document.getElementById('sim-no-auth').style.display='block';document.getElementById('sim-auth').style.display='none';
- authBtn.innerHTML=' Iniciar Sesión';authBtn.style.color='';
- adminNav.style.display='none';
- }
+  const bar=document.getElementById('user-bar');
+  const authBtn=document.getElementById('nav-auth');
+  const adminNav=document.getElementById('admin-nav');
+  if(currentUser){
+    bar.style.display='flex';document.getElementById('uname').textContent=currentUser.username;
+    document.getElementById('sim-no-auth').style.display='none';
+    document.getElementById('sim-auth').style.display='block';
+    authBtn.innerHTML='<span class="nav-icon">&#x1F464;</span> '+currentUser.username;
+    authBtn.style.color='var(--green)';
+    adminNav.style.display=currentUser.username==='admin'?'block':'none';
+  }else{
+    bar.style.display='none';
+    document.getElementById('sim-no-auth').style.display='block';
+    document.getElementById('sim-auth').style.display='none';
+    authBtn.innerHTML='<span class="nav-icon">&#x1F464;</span> Iniciar Sesion';
+    authBtn.style.color='';adminNav.style.display='none';
+  }
 }
 
-// === ADMIN PANEL ===
 async function loadAdmin(){
- if(!currentUser||currentUser.username!=='admin')return;
- try{
- const d=await fetch(API+'/admin/usuarios',{credentials:'include'}).then(r=>r.json());
- const users=d.usuarios||[];
- document.getElementById('adm-users').textContent=users.length;
- document.getElementById('adm-ops').textContent=d.total_transacciones||0;
- if(users.length){
- document.getElementById('adm-user-list').innerHTML=`<table><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Saldo USD</th><th>Posiciones</th><th>Registrado</th></tr></thead><tbody>`+
- users.map((u,i)=>`<tr>
- <td style="color:var(--muted)">${i+1}</td>
- <td><b style="color:var(--acc)">${u.username}</b>${u.username==='admin'?' <span class="admin-badge">ADMIN</span>':''}</td>
- <td style="color:var(--muted)">${u.email}</td>
- <td style="font-family:var(--mono)">$${(u.saldo_usd||0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
- <td style="font-family:var(--mono)">${u.posiciones||0}</td>
- <td style="font-size:11px;color:var(--muted)">${(u.creado_en||'').slice(0,10)}</td>
- </tr>`).join('')+
- '</tbody></table>';
- }else{document.getElementById('adm-user-list').innerHTML='<p style="color:var(--muted);padding:14px">No hay usuarios registrados.</p>';}
- }catch(e){
- // If admin endpoint doesn't exist yet, show local info
- document.getElementById('adm-users').textContent='1+';
- document.getElementById('adm-ops').textContent='';
- document.getElementById('adm-user-list').innerHTML='<p style="color:var(--muted);padding:14px">Endpoint admin aún no disponible en el servidor. Los usuarios se manejan directamente en PostgreSQL.</p>';
- }
+  if(!currentUser||currentUser.username!=='admin')return;
+  try{
+    const d=await fetch(API+'/admin/usuarios',{credentials:'include'}).then(r=>r.json());
+    const users=d.usuarios||[];
+    document.getElementById('adm-users').textContent=users.length;
+    document.getElementById('adm-ops').textContent=d.total_transacciones||0;
+    if(users.length){
+      document.getElementById('adm-user-list').innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>Usuario</th><th>Email</th><th>Saldo USD</th><th>Posiciones</th><th>Registrado</th></tr></thead><tbody>`+
+        users.map((u,i)=>`<tr>
+          <td style="color:var(--txt3)">${i+1}</td>
+          <td><b style="color:var(--acc)">${u.username}</b>${u.username==='admin'?' <span class="admin-badge">ADMIN</span>':''}</td>
+          <td style="color:var(--txt3)">${u.email}</td>
+          <td class="mono">${(u.saldo_usd||0).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+          <td class="mono">${u.posiciones||0}</td>
+          <td style="font-size:11px;color:var(--txt3)">${(u.creado_en||'').slice(0,10)}</td>
+        </tr>`).join('')+'</tbody></table></div>';
+    }else{document.getElementById('adm-user-list').innerHTML='<p style="color:var(--txt3);padding:14px">No hay usuarios registrados.</p>';}
+  }catch{
+    document.getElementById('adm-users').textContent='1+';
+    document.getElementById('adm-ops').textContent='-';
+    document.getElementById('adm-user-list').innerHTML='<p style="color:var(--txt3);padding:14px">Endpoint admin no disponible aun.</p>';
+  }
 }
 
-// === TASA USD/COP ===
 let tasaUsdCop=4250;
 async function loadTasa(){
- try{const d=await fno('/monedas/tasa');
- tasaUsdCop=d.usd_cop||4250;
- document.getElementById('fx-usd').textContent='$'+tasaUsdCop.toLocaleString('es-CO',{minimumFractionDigits:2});
- document.getElementById('fx-cop').textContent=tasaUsdCop.toLocaleString('es-CO',{minimumFractionDigits:2});
- document.getElementById('fx-cop-usd').textContent=(d.cop_usd||0).toFixed(8);
- document.getElementById('fx-cop2').textContent=(d.cop_usd||0).toFixed(8);
- convertir('usd');
- }catch(e){document.getElementById('fx-usd').textContent='Error';}
+  try{
+    const d=await fno('/monedas/tasa');
+    tasaUsdCop=d.usd_cop||4250;
+    document.getElementById('fx-usd').textContent='$'+tasaUsdCop.toLocaleString('es-CO',{minimumFractionDigits:2});
+    document.getElementById('fx-cop').textContent=tasaUsdCop.toLocaleString('es-CO',{minimumFractionDigits:2});
+    document.getElementById('fx-cop-usd').textContent='$'+(d.cop_usd||0).toFixed(8);
+    document.getElementById('fx-cop2').textContent=(d.cop_usd||0).toFixed(8);
+    convertir('usd');
+  }catch{document.getElementById('fx-usd').textContent='Error';}
 }
 function convertir(from){
- if(from==='usd'){const usd=+document.getElementById('conv-usd').value||0;document.getElementById('conv-cop').value=Math.round(usd*tasaUsdCop);}
- else{const cop=+document.getElementById('conv-cop').value||0;document.getElementById('conv-usd').value=(cop/tasaUsdCop).toFixed(2);}
+  if(from==='usd'){const usd=+document.getElementById('conv-usd').value||0;document.getElementById('conv-cop').value=Math.round(usd*tasaUsdCop);}
+  else{const cop=+document.getElementById('conv-cop').value||0;document.getElementById('conv-usd').value=(cop/tasaUsdCop).toFixed(2);}
 }
 
-// === ACADEMIA ===
 let leccionesLoaded=false;
 async function loadLecciones(){
- if(leccionesLoaded)return;leccionesLoaded=true;
- try{const d=await fno('/academia/lecciones');const ls=d.lecciones||[];
- document.getElementById('lecciones-wrap').innerHTML=ls.map(l=>`
- <div class="lesson-card" onclick="openLeccion(${l.id})">
- <div class="lesson-icon">${l.icono}</div>
- <div class="lesson-title">${l.titulo}</div>
- <div class="lesson-meta"><span>${l.categoria}</span><span> ${l.duracion}</span></div>
- </div>`).join('');
- }catch(e){document.getElementById('lecciones-wrap').innerHTML=`<p style="color:var(--red)">${e.message}</p>`;}
+  if(leccionesLoaded)return;leccionesLoaded=true;
+  try{
+    const d=await fno('/academia/lecciones');const ls=d.lecciones||[];
+    document.getElementById('lecciones-wrap').innerHTML=ls.map(l=>`
+      <div class="lesson-card" onclick="openLeccion(${l.id})">
+        <div class="lesson-icon">${l.icono}</div>
+        <div class="lesson-title">${l.titulo}</div>
+        <div class="lesson-meta"><span>${l.categoria}</span><span>${l.duracion}</span></div>
+      </div>`).join('');
+  }catch(e){document.getElementById('lecciones-wrap').innerHTML=`<p style="color:var(--red)">${e.message}</p>`;}
 }
 async function openLeccion(id){
- document.getElementById('lecciones-wrap').style.display='none';
- document.getElementById('leccion-detail').style.display='block';
- try{const d=await fno('/academia/leccion?id='+id);
- let html=d.contenido||'';
- html=html.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>');
- html=html.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
- html=html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
- html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
- html=html.replace(/^- (.+)$/gm,'<li>$1</li>');
- html=html.replace(/(<li>.+<\/li>)/s,m=>'<ul>'+m+'</ul>');
- html=html.replace(/```([\s\S]*?)```/g,'<pre>$1</pre>');
- html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
- html=html.replace(/\|(.+)\|/g,r=>{const cells=r.split('|').filter(c=>c.trim());return '<tr>'+cells.map(c=>'<td>'+c.trim()+'</td>').join('')+'</tr>';});
- html=html.replace(/\n\n/g,'<br>');
- document.getElementById('leccion-body').innerHTML=`<h2>${d.icono} ${d.titulo}</h2><div class="lesson-meta" style="margin-bottom:16px"><span>${d.categoria}</span><span> ${d.duracion}</span></div>`+html;
- }catch(e){document.getElementById('leccion-body').innerHTML=`<p style="color:var(--red)">${e.message}</p>`;}
+  document.getElementById('lecciones-wrap').style.display='none';
+  document.getElementById('leccion-detail').style.display='block';
+  try{
+    const d=await fno('/academia/leccion?id='+id);
+    let html=d.contenido||'';
+    html=html.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>');
+    html=html.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+    html=html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+    html=html.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
+    html=html.replace(/^- (.+)$/gm,'<li>$1</li>');
+    html=html.replace(/```([\s\S]*?)```/g,'<pre>$1</pre>');
+    html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
+    html=html.replace(/\n\n/g,'<br>');
+    document.getElementById('leccion-body').innerHTML=`<h2>${d.icono} ${d.titulo}</h2><div class="lesson-meta" style="margin-bottom:16px"><span>${d.categoria}</span><span>${d.duracion}</span></div>`+html;
+  }catch(e){document.getElementById('leccion-body').innerHTML=`<p style="color:var(--red)">${e.message}</p>`;}
 }
-function backToLessons(){document.getElementById('lecciones-wrap').style.display='grid';document.getElementById('leccion-detail').style.display='none';}
+function backToLessons(){
+  document.getElementById('lecciones-wrap').style.display='grid';
+  document.getElementById('leccion-detail').style.display='none';
+}
 
-// === SIMULADOR ===
 async function loadSim(){
- if(!requireAuth('usar el simulador'))return;
- populateSel(allTickers);
- const sel=document.getElementById('sim-tk');
- if(sel&&!sel.options.length)sel.innerHTML=allTickers.map(t=>`<option value="${t}">${t}</option>`).join('');
- try{const d=await fetch(API+'/simulador/portafolio',{credentials:'include'}).then(r=>r.json());
- document.getElementById('sim-usd').textContent='$'+(d.saldo_usd||0).toLocaleString('en-US',{minimumFractionDigits:2});
- document.getElementById('sim-cop').textContent='$'+(d.saldo_cop||0).toLocaleString('es-CO');
- const ps=d.posiciones||[];
- document.getElementById('sim-pos').textContent=ps.length;
- if(ps.length){
- document.getElementById('sim-positions').innerHTML=`<table><thead><tr><th>Ticker</th><th>Cantidad</th><th>Precio Prom.</th><th>Invertido</th><th>Yahoo</th></tr></thead><tbody>`+
- ps.map(p=>`<tr><td><b>${p.ticker}</b></td><td style="font-family:var(--mono)">${p.cantidad}</td><td style="font-family:var(--mono)">$${p.precio_promedio.toFixed(2)}</td><td style="font-family:var(--mono)">$${p.total_invertido.toFixed(2)}</td><td><a href="${YF+p.ticker}" target="_blank" class="yfl"></a></td></tr>`).join('')+
- '</tbody></table>';
- }else{document.getElementById('sim-positions').innerHTML='<p style="color:var(--muted);padding:14px">No tienes posiciones abiertas. Â¡Compra tu primer activo!</p>';}
- const tx=d.transacciones||[];
- if(tx.length){
- document.getElementById('sim-history').innerHTML=`<table><thead><tr><th>Tipo</th><th>Ticker</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Fecha</th></tr></thead><tbody>`+
- tx.map(t=>`<tr><td><span class="badge ${t.tipo==='compra'?'bg':'br'}">${t.tipo}</span></td><td><b>${t.ticker}</b></td><td style="font-family:var(--mono)">${t.cantidad}</td><td style="font-family:var(--mono)">$${t.precio.toFixed(2)}</td><td style="font-family:var(--mono)">$${t.total.toFixed(2)}</td><td style="font-size:11px;color:var(--muted)">${t.fecha.slice(0,16).replace('T',' ')}</td></tr>`).join('')+
- '</tbody></table>';
- }else{document.getElementById('sim-history').innerHTML='<p style="color:var(--muted);padding:14px">Sin transacciones aún.</p>';}
- }catch(e){console.error(e);}
+  if(!requireAuth('usar el simulador'))return;
+  const sel=document.getElementById('sim-tk');
+  if(sel&&!sel.options.length)sel.innerHTML=allTickers.map(t=>`<option value="${t}">${t}</option>`).join('');
+  try{
+    const d=await fetch(API+'/simulador/portafolio',{credentials:'include'}).then(r=>r.json());
+    document.getElementById('sim-usd').textContent='$'+(d.saldo_usd||0).toLocaleString('en-US',{minimumFractionDigits:2});
+    document.getElementById('sim-cop').textContent='$'+(d.saldo_cop||0).toLocaleString('es-CO');
+    const ps=d.posiciones||[];
+    document.getElementById('sim-pos').textContent=ps.length;
+    if(ps.length){
+      document.getElementById('sim-positions').innerHTML=`<div class="table-wrap"><table><thead><tr><th>Ticker</th><th>Cantidad</th><th>Precio Prom.</th><th>Invertido</th><th>Yahoo</th></tr></thead><tbody>`+
+        ps.map(p=>`<tr><td><b style="color:var(--acc)">${p.ticker}</b></td><td class="mono">${p.cantidad}</td><td class="mono">${p.precio_promedio.toFixed(2)}</td><td class="mono">${p.total_invertido.toFixed(2)}</td><td><a href="${YF+p.ticker}" target="_blank" class="yfl">YF &#x2197;</a></td></tr>`).join('')+
+        '</tbody></table></div>';
+    }else{document.getElementById('sim-positions').innerHTML='<p style="color:var(--txt3);padding:14px">No tienes posiciones abiertas. Compra tu primer activo.</p>';}
+    const tx=d.transacciones||[];
+    if(tx.length){
+      document.getElementById('sim-history').innerHTML=`<div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Ticker</th><th>Cant.</th><th>Precio</th><th>Total</th><th>Fecha</th></tr></thead><tbody>`+
+        tx.map(t=>`<tr><td><span class="badge ${t.tipo==='compra'?'bg':'br'}">${t.tipo}</span></td><td><b>${t.ticker}</b></td><td class="mono">${t.cantidad}</td><td class="mono">${t.precio.toFixed(2)}</td><td class="mono">${t.total.toFixed(2)}</td><td style="font-size:11px;color:var(--txt3)">${t.fecha.slice(0,16).replace('T',' ')}</td></tr>`).join('')+
+        '</tbody></table></div>';
+    }else{document.getElementById('sim-history').innerHTML='<p style="color:var(--txt3);padding:14px">Sin transacciones aun.</p>';}
+  }catch(e){console.error(e);}
 }
 async function simComprar(){
- if(!requireAuth('comprar activos'))return;
- const tk=document.getElementById('sim-tk').value,qty=+document.getElementById('sim-qty').value;
- const msg=document.getElementById('sim-msg');
- try{const r=await fetch(API+'/simulador/comprar',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({ticker:tk,cantidad:qty})});
- const d=await r.json();
- if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.textContent=d.mensaje;loadSim();}
- else{msg.className='add-result err';msg.style.display='block';msg.textContent=' '+d.error;}
- }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=' '+e.message;}
+  if(!requireAuth('comprar activos'))return;
+  const tk=document.getElementById('sim-tk').value,qty=+document.getElementById('sim-qty').value;
+  const msg=document.getElementById('sim-msg');
+  try{
+    const r=await fetch(API+'/simulador/comprar',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({ticker:tk,cantidad:qty})});
+    const d=await r.json();
+    if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.textContent=d.mensaje;loadSim();}
+    else{msg.className='add-result err';msg.style.display='block';msg.textContent=d.error;}
+  }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=e.message;}
 }
 async function simVender(){
- if(!requireAuth('vender activos'))return;
- const tk=document.getElementById('sim-tk').value,qty=+document.getElementById('sim-qty').value;
- const msg=document.getElementById('sim-msg');
- try{const r=await fetch(API+'/simulador/vender',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({ticker:tk,cantidad:qty})});
- const d=await r.json();
- if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.textContent=d.mensaje;loadSim();}
- else{msg.className='add-result err';msg.style.display='block';msg.textContent=' '+d.error;}
- }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=' '+e.message;}
+  if(!requireAuth('vender activos'))return;
+  const tk=document.getElementById('sim-tk').value,qty=+document.getElementById('sim-qty').value;
+  const msg=document.getElementById('sim-msg');
+  try{
+    const r=await fetch(API+'/simulador/vender',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({ticker:tk,cantidad:qty})});
+    const d=await r.json();
+    if(d.ok){msg.className='add-result ok';msg.style.display='block';msg.textContent=d.mensaje;loadSim();}
+    else{msg.className='add-result err';msg.style.display='block';msg.textContent=d.error;}
+  }catch(e){msg.className='add-result err';msg.style.display='block';msg.textContent=e.message;}
 }
 
-// === START ===
 init();
 checkAuth();
 </script>
