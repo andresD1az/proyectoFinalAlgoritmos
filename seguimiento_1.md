@@ -1,554 +1,423 @@
-﻿# Seguimiento 1  Análisis de Algoritmos
+﻿# Seguimiento 1 — BVC Analytics
 
-**Universidad del Quindío**
-**Programa de Ingeniería de Sistemas y Computación**
-**Análisis de Algoritmos  Proyecto Final**
+**Universidad del Quindío**  
+**Programa de Ingeniería de Sistemas y Computación**  
+**Análisis de Algoritmos — Proyecto Final**
 
 ---
-# Instalar dependencia
+
+## Verificación de cumplimiento con el enunciado
+
+### Restricciones generales
+
+| Restricción | Estado | Evidencia |
+|---|---|---|
+| Sin yfinance ni pandas_datareader | CUMPLE | `requirements.txt` solo tiene `psycopg2-binary==2.9.9`. Descarga via `urllib.request` directo. |
+| Sin pandas, numpy, scipy, sklearn | CUMPLE | Ningún import de estas librerías en todo el proyecto. |
+| Sin datasets estáticos | CUMPLE | Los datos se descargan en tiempo de ejecución con `python main.py etl`. |
+| Algoritmos implementados explícitamente | CUMPLE | Cada algoritmo tiene su lógica completa en código, sin llamadas a funciones de alto nivel. |
+| Reproducibilidad | CUMPLE | `python main.py etl` reconstruye el dataset desde cero. |
+| Declaración de uso de IA | CUMPLE | Declarada en `README.md` y en este documento. |
+
+---
+
+## Requerimiento 1 — ETL automatizado
+
+**Veredicto: CUMPLE**
+
+### Dónde está
+
+| Componente | Archivo |
+|---|---|
+| Descarga HTTP | `etl/downloader.py` |
+| Limpieza de datos | `etl/cleaner.py` |
+| Almacenamiento PostgreSQL | `etl/database.py` |
+| Orquestación del pipeline | `main.py` → `pipeline_etl()` |
+| Schema de la BD | `database/init.sql` |
+| Configuración de activos | `config.py` |
+
+### Cómo funciona
+
+**Descarga (`etl/downloader.py`)**
+
+Se construye la URL de Yahoo Finance manualmente con `urllib.parse.urlencode()`:
+
+```
+https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?period1=...&period2=...&interval=1d
+```
+
+Los parámetros `period1` y `period2` son Unix timestamps calculados con `datetime.timestamp()`. La respuesta JSON se parsea con `json.loads()` de stdlib. Los timestamps Unix de cada día se convierten a fecha con `datetime.utcfromtimestamp()`. Se implementan 3 reintentos con pausa de 1 segundo entre peticiones para no ser bloqueado.
+
+**Activos descargados (20):**  
+EC, CIB, GXG, ILF, EWZ, EWW, SPY, QQQ, DIA, EEM, VT, IEMG, GLD, SLV, USO, TLT, XLE, XLF, XLK, VNQ
+
+**Horizonte:** 5 años (`FECHA_INICIO = datetime.today() - timedelta(days=5*365)`)
+
+**Campos por registro:** fecha, apertura, maximo, minimo, cierre, volumen — todos los requeridos por el enunciado.
+
+**Limpieza (`etl/cleaner.py`)**
+
+Algoritmo 1 — Interpolación lineal — O(n):
+```
+V[i] = V[izq] + (V[der] - V[izq]) × (i - izq) / (der - izq)
+```
+Rellena valores `None` entre dos puntos conocidos. Si hay `None` al inicio usa backward fill; al final usa forward fill. Esto maneja diferencias de calendarios bursátiles entre mercados (NYSE vs NASDAQ vs días festivos).
+
+Algoritmo 2 — Detección de outliers Z-Score — O(n):
+```
+z = (x - μ) / σ    →    descarta si |z| > 3.5
+```
+Calcula media y desviación estándar muestral manualmente. El umbral 3.5 es más conservador que el estándar (3.0) para no eliminar movimientos extremos legítimos en mercados financieros.
+
+**Almacenamiento (`etl/database.py`)**
+
+- Tabla `activos`: catálogo de los 20 instrumentos con ticker, nombre, tipo, mercado.
+- Tabla `precios`: datos OHLCV con `UNIQUE(activo_id, fecha)` para evitar duplicados.
+- `ON CONFLICT DO NOTHING` hace el proceso idempotente (re-ejecutable sin duplicar).
+- `executemany()` para inserción en lote eficiente.
+
+---
+
+## Requerimiento 2 — Algoritmos de ordenamiento
+
+**Veredicto: CUMPLE**
+
+### Dónde está
+
+| Componente | Archivo |
+|---|---|
+| 12 algoritmos de ordenamiento | `algorithms/sorting.py` |
+| Benchmark (Tabla 1) | `algorithms/sorting.py` → `ejecutar_benchmark()` |
+| Top-15 mayor volumen | `algorithms/sorting.py` → `top15_mayor_volumen()` |
+| Pipeline que lo ejecuta | `main.py` → `pipeline_ordenamiento()` |
+| Endpoint API Tabla 1 | `api/server.py` → `GET /ordenamiento/benchmark` |
+| Endpoint top-15 | `api/server.py` → `GET /ordenamiento/top-volumen` |
+| Diagrama de barras | `frontend/index.html` (Canvas API) |
+
+### Criterio de ordenamiento
+
+Clave compuesta implementada en `_clave(registro)`:
+- Primario: `fecha` como string ISO `YYYY-MM-DD` (comparable lexicográficamente)
+- Secundario: `cierre` como float
+
+Ningún algoritmo usa `sorted()` ni `.sort()` de Python. Cada uno retorna `(lista_ordenada, tiempo_segundos)` medido con `time.perf_counter()`.
+
+### Los 12 algoritmos — cómo funciona cada uno
+
+**1. TimSort — O(n log n)**  
+Archivo: `algorithms/sorting.py` → `timsort()`  
+Divide el arreglo en bloques de 32 elementos (`_TIM_RUN = 32`). Ordena cada bloque con Insertion Sort (`_insertion_run()`). Luego fusiona los bloques con Merge Sort (`_merge_tim()`), duplicando el tamaño del bloque en cada pasada. Es el algoritmo interno de Python, implementado aquí de forma explícita.
+
+**2. Comb Sort — O(n log n)**  
+Archivo: `algorithms/sorting.py` → `comb_sort()`  
+Mejora de Bubble Sort. La brecha `gap` empieza en `n` y se reduce con factor `1.3` en cada pasada (`gap = int(gap / 1.3)`). Cuando `gap == 1` hace una pasada final de Bubble Sort. Elimina eficientemente los "tortugas" (valores pequeños atrapados al final del arreglo).
+
+**3. Selection Sort — O(n²)**  
+Archivo: `algorithms/sorting.py` → `selection_sort()`  
+En cada iteración `i` recorre `arr[i..n-1]` para encontrar el índice del mínimo y lo intercambia con `arr[i]`. Siempre hace exactamente `n(n-1)/2` comparaciones sin importar el estado inicial.
+
+**4. Tree Sort — O(n log n) promedio**  
+Archivo: `algorithms/sorting.py` → `tree_sort()`, clase `_NodoBST`  
+Inserta cada registro en un Árbol Binario de Búsqueda (BST) implementado con la clase `_NodoBST` (campos: `registro`, `izq`, `der`). El recorrido in-orden (`_bst_inorden()`) produce los elementos en orden ascendente. Peor caso O(n²) si el árbol degenera con datos ya ordenados.
+
+**5. Pigeonhole Sort — O(n + k)**  
+Archivo: `algorithms/sorting.py` → `pigeonhole_sort()`  
+Convierte cada fecha a entero `YYYYMMDD`. Crea una lista de "palomares" de tamaño `max_fecha - min_fecha + 1`. Distribuye cada registro en su palomar según su fecha. Dentro de cada palomar (misma fecha) ordena por cierre con Insertion Sort. Para 5 años: `k ≈ 1826` y `n ≈ 25200`.
+
+**6. Bucket Sort — O(n + k)**  
+Archivo: `algorithms/sorting.py` → `bucket_sort()`  
+Normaliza la fecha al rango `[0, 1]` y distribuye los registros en `n` cubetas. Cada cubeta se ordena con Insertion Sort. Eficiente cuando los datos están distribuidos uniformemente.
+
+**7. QuickSort — O(n log n) promedio**  
+Archivo: `algorithms/sorting.py` → `quicksort()`, `_quicksort_rec()`, `_particionar()`  
+Partición de Lomuto con pivote **mediana-de-tres** (`_mediana_tres()`): compara el primero, el medio y el último elemento para elegir el pivote. Esto evita el peor caso O(n²) en datos ya ordenados. Recursión sobre ambas mitades.
+
+**8. HeapSort — O(n log n)**  
+Archivo: `algorithms/sorting.py` → `heapsort()`, `_heapify()`  
+Fase 1: construye un max-heap de abajo hacia arriba en O(n). El nodo `i` tiene hijos en `2i+1` y `2i+2`. Fase 2: intercambia la raíz (máximo) con el último elemento, reduce el heap en 1 y restaura con `_heapify()`. Repite n veces.
+
+**9. Bitonic Sort — O(n log²n)**  
+Archivo: `algorithms/sorting.py` → `bitonic_sort()`, `_bitonic_sort_rec()`, `_bitonic_merge()`  
+Requiere n potencia de 2. Si no, rellena con centinela `{"fecha": "9999-99-99", "cierre": inf}` y lo elimina al final. Genera secuencias bitónicas recursivamente y las fusiona. Diseñado para hardware paralelo, implementado aquí secuencialmente.
+
+**10. Gnome Sort — O(n²)**  
+Archivo: `algorithms/sorting.py` → `gnome_sort()`  
+El índice `i` avanza si `arr[i] >= arr[i-1]`, retrocede e intercambia si `arr[i] < arr[i-1]`. Sin bucle interno explícito. Equivalente a Insertion Sort con un solo índice que sube y baja.
+
+**11. Binary Insertion Sort — O(n²)**  
+Archivo: `algorithms/sorting.py` → `binary_insertion_sort()`, `_busqueda_binaria_pos()`  
+Usa búsqueda binaria (`_busqueda_binaria_pos()`) para encontrar la posición de inserción en O(log n) comparaciones. El desplazamiento de elementos sigue siendo O(n), por lo que la complejidad total es O(n²). Reduce el número de comparaciones a la mitad respecto a Insertion Sort clásico.
+
+**12. RadixSort — O(nk)**  
+Archivo: `algorithms/sorting.py` → `radix_sort()`, `_counting_sort_por_digito()`  
+Ordena por la clave entera `YYYYMMDD` (8 dígitos, `k=8`). Aplica Counting Sort estable dígito a dígito del menos al más significativo (LSD). La estabilidad garantiza que el orden de pasadas anteriores se preserve. Después aplica Insertion Sort dentro de cada grupo de misma fecha para el criterio secundario (cierre).
+
+### Tabla 1 — cómo se genera
+
+`ejecutar_benchmark()` ejecuta los 12 algoritmos sobre el dataset completo, mide el tiempo con `time.perf_counter()` y retorna la lista ordenada por tiempo ascendente. Se persiste en la tabla `resultados_sorting` de PostgreSQL y se expone en `GET /ordenamiento/benchmark`.
+
+### Top-15 mayor volumen
+
+`top15_mayor_volumen()` usa un max-heap manual (HeapSort) para extraer los 15 registros con mayor volumen en O(n log n). Los reordena ASC por volumen para presentación. Se expone en `GET /ordenamiento/top-volumen`.
+
+### Diagrama de barras
+
+El frontend (`frontend/index.html`) consume `GET /ordenamiento/benchmark` y dibuja el diagrama de barras con Canvas API, ordenado ascendentemente por tiempo.
+
+---
+
+## Requerimiento 3 — Similitud entre activos
+
+**Veredicto: CUMPLE**
+
+### Dónde está
+
+| Componente | Archivo |
+|---|---|
+| 4 algoritmos de similitud | `algorithms/similarity.py` |
+| Matriz de similitud (190 pares) | `algorithms/similarity.py` → `matriz_similitud()` |
+| Pipeline | `main.py` → `pipeline_similitud()` |
+| Endpoint API | `api/server.py` → `GET /similitud` |
+| Mapa de calor | `frontend/index.html` (SVG) |
+
+### Los 4 algoritmos
+
+**Distancia Euclidiana — O(n)**  
+Función: `distancia_euclidiana()`  
+Normaliza ambas series con Min-Max antes de calcular:
+```
+d(A, B) = √( Σᵢ (Aᵢ - Bᵢ)² )
+```
+Valor 0 = series idénticas. Requiere normalización porque compara activos con rangos de precios distintos.
+
+**Correlación de Pearson — O(n)**  
+Función: `correlacion_pearson()`  
+No requiere normalización. Trabaja con desviaciones respecto a la media:
+```
+r = Σ((Aᵢ - Ā)(Bᵢ - B̄)) / √(Σ(Aᵢ - Ā)² · Σ(Bᵢ - B̄)²)
+```
+Rango [-1, 1]. Mide relación lineal entre series.
+
+**Similitud por Coseno — O(n)**  
+Función: `similitud_coseno()`  
+Trata cada serie como vector en ℝⁿ. Invariante a la magnitud:
+```
+cos(θ) = (A · B) / (‖A‖ · ‖B‖)
+```
+
+**DTW — Dynamic Time Warping — O(n²)**  
+Función: `dtw()`  
+Programación dinámica. `matriz[i][j]` = costo mínimo de alinear `A[0..i]` con `B[0..j]`:
+```
+matriz[i][j] = |A[i] - B[j]| + min(arriba, izquierda, diagonal)
+```
+Optimizado con ventana de Sakoe-Chiba (10%) para reducir el costo real.
+
+`matriz_similitud()` calcula los 190 pares posibles entre los 20 activos y los ordena por similitud descendente.
+
+---
+
+## Requerimiento 4 — Patrones y Volatilidad
+
+**Veredicto: CUMPLE**
+
+### Dónde está
+
+| Componente | Archivo |
+|---|---|
+| Ventana deslizante + patrones | `algorithms/patterns.py` → `detectar_patrones()` |
+| Picos y valles | `algorithms/patterns.py` → `detectar_picos_valles()` |
+| Media Móvil Simple | `algorithms/patterns.py` → `media_movil_simple()` |
+| Golden/Death Cross | `algorithms/patterns.py` → `detectar_cruces_medias()` |
+| Retornos logarítmicos | `algorithms/volatility.py` → `calcular_retornos_log()` |
+| Volatilidad histórica | `algorithms/volatility.py` → `calcular_volatilidad()` |
+| Máximo Drawdown | `algorithms/volatility.py` → `calcular_max_drawdown()` |
+| VaR Histórico | `algorithms/volatility.py` → `calcular_var_historico()` |
+| Sharpe Ratio | `algorithms/volatility.py` → `calcular_sharpe()` |
+| Clasificación de riesgo | `api/server.py` → `_clasificacion_riesgo()` |
+| Pipeline | `main.py` → `pipeline_volatilidad()` |
+
+### Patrones (`algorithms/patterns.py`)
+
+**Ventana deslizante — O(n·k)**  
+Recorre la serie con ventana de 20 días. Para cada segmento:
+- Cuenta días de alza (`cierre[j] > cierre[j-1]`) y baja
+- Si ≥75% días positivos → `N_dias_alza`
+- Si ≥75% días negativos → `N_dias_baja`
+- Si primera mitad baja y segunda sube → `rebote`
+- Caso contrario → `neutro`
+- Solo guarda patrones con variación ≥1%
+
+**Detección de picos y valles — O(n)**  
+Un punto `i` es pico si `precios[i] > precios[j]` para todo `j` en vecindad de ±3 días.
+
+**Media Móvil Simple — O(n·k)**  
+`SMA[i] = (P[i] + ... + P[i-k+1]) / k`  
+Implementada de forma directa (sin suma rodante) para transparencia académica.
+
+**Golden/Death Cross — O(n)**  
+Calcula SMA corta (10 días) y SMA larga (30 días). Detecta cruces:
+- Golden Cross: SMA corta pasa de debajo a arriba → señal alcista
+- Death Cross: SMA corta pasa de arriba a abajo → señal bajista
+
+### Volatilidad (`algorithms/volatility.py`)
+
+**Retornos logarítmicos — O(n)**  
+`rᵢ = ln(Pᵢ / Pᵢ₋₁)` — preferidos porque son aditivos en el tiempo.
+
+**Volatilidad histórica — O(n)**  
+Desviación estándar muestral (corrección de Bessel, denominador `k-1`) × √252 para anualizar.
+
+**Máximo Drawdown — O(n)**  
+Mantiene el pico máximo visto hasta cada punto: `MDD = (valle - pico) / pico × 100`. Una sola pasada.
+
+**VaR Histórico (95%) — O(n log n)**  
+Ordena todos los retornos y toma el percentil 5%. "Solo en el 5% de los días la pérdida supera este valor."
+
+**Sharpe Ratio — O(n)**  
+`Sharpe = (R_portfolio - R_libre_riesgo) / σ_portfolio`  
+Tasa libre de riesgo: 5% anual. Sharpe > 1 = buena relación riesgo/retorno.
+
+**Clasificación de riesgo — O(1)**  
+Basada en volatilidad anualizada: Conservador (<15%), Moderado (15-30%), Agresivo (≥30%).
+
+---
+
+## Requerimiento 5 — Dashboard, reporte y despliegue
+
+**Veredicto: CUMPLE**
+
+### Dónde está
+
+| Componente | Archivo |
+|---|---|
+| Dashboard visual completo | `frontend/index.html` |
+| Servidor HTTP | `api/server.py` |
+| Generador de reportes | `reports/generator.py` |
+| Autenticación | `auth/auth.py` |
+| Lecciones financieras | `cms/content.py` |
+| Despliegue Render | `render.yaml` |
+| Despliegue local Docker | `docker-compose.local.yml` + `Dockerfile.local` |
+
+### Dashboard (`frontend/index.html`)
+
+SPA completa sin frameworks. Usa SVG para el mapa de calor de correlaciones y Canvas API para el diagrama de barras de los 12 algoritmos. Incluye:
+- Overview con métricas generales
+- Comparación de activos (% cambio acumulado)
+- Mapa de calor de correlaciones 20×20
+- Velas OHLC con SMA rápida y lenta
+- Clasificación de riesgo
+- Tasa USD/COP en tiempo real
+- Lecciones financieras (CMS)
+- Simulador de portafolio (paper trading)
+
+### API (`api/server.py`)
+
+Servidor HTTP con `http.server` de stdlib. 25+ endpoints. CORS habilitado para el frontend. Manejo de errores con respuestas JSON estructuradas.
+
+### Reportes (`reports/generator.py`)
+
+Genera reportes técnicos en JSON y texto plano con todos los resultados de los algoritmos. Accesible en `GET /reporte` y `GET /reporte/txt`.
+
+---
+
+## Arquitectura del sistema
+
+```
+config.py           ← 20 activos, parámetros algorítmicos
+    │
+    ├── etl/
+    │   ├── downloader.py   ← urllib → Yahoo Finance → JSON crudo
+    │   ├── cleaner.py      ← interpolación lineal + Z-Score
+    │   └── database.py     ← psycopg2 → PostgreSQL
+    │
+    ├── algorithms/
+    │   ├── sorting.py      ← 12 algoritmos de ordenamiento
+    │   ├── similarity.py   ← 4 algoritmos de similitud
+    │   ├── patterns.py     ← ventana deslizante + cruces
+    │   └── volatility.py   ← VaR, Sharpe, Drawdown
+    │
+    ├── api/server.py       ← http.server stdlib, 25+ endpoints
+    ├── frontend/index.html ← SPA, SVG + Canvas API
+    ├── auth/auth.py        ← SHA-256 + salt + sesiones
+    ├── cms/content.py      ← lecciones + paper trading
+    ├── reports/generator.py← reportes JSON y TXT
+    │
+    └── main.py             ← orquestador de pipelines
+```
+
+**Flujo de datos:**
+```
+Yahoo Finance (HTTP) → downloader.py → cleaner.py → PostgreSQL
+                                                         │
+                                              algorithms/ (sorting, similarity,
+                                              patterns, volatility)
+                                                         │
+                                              api/server.py → frontend/index.html
+```
+
+---
+
+## Cómo ejecutar el proyecto completo
+
+```bash
+# 1. Instalar dependencia
 pip install psycopg2-binary==2.9.9
 
-# Opción A — con Docker (BD incluida, recomendado)
-docker compose -f docker-compose.local.yml up --build
-
-# Opción B — sin Docker (necesitas PostgreSQL instalado localmente)
-python main.py etl
-python main.py api
-
-
-## 1. Introducción
-
-El análisis financiero moderno depende en gran medida de la capacidad computacional para procesar grandes volúmenes de datos históricos y detectar patrones relevantes en el comportamiento de los activos financieros. En los mercados actuales, donde la información se genera de manera continua y a gran escala, resulta indispensable el uso de algoritmos eficientes que permitan comparar, agrupar y analizar series de tiempo financieras de forma rigurosa.
-
-Este proyecto aplica métodos cuantitativos, algoritmos clásicos y técnicas de análisis de series temporales sobre datos reales provenientes de la Bolsa de Valores de Colombia (BVC) y de activos globales relevantes para el inversor local, como índices bursátiles y ETFs internacionales (S&P 500). El enfoque principal se centra en el análisis algorítmico del comportamiento histórico de precios, retornos y volatilidad, con el fin de establecer relaciones de similitud, detectar patrones recurrentes y construir agrupamientos basados exclusivamente en criterios matemáticos y computacionales.
-
----
-
-## 2. Fuentes de Información
-
-La información financiera se obtiene de Yahoo Finance mediante peticiones HTTP directas con `urllib.request` (stdlib de Python). No se usa `yfinance`, `pandas_datareader` ni ninguna librería de alto nivel.
-
-| Campo  | Descripción                      |
-|--------|----------------------------------|
-| Fecha  | Fecha de cotización (YYYY-MM-DD) |
-| Open   | Precio de apertura               |
-| Close  | Precio de cierre                 |
-| High   | Precio máximo del día            |
-| Low    | Precio mínimo del día            |
-| Volume | Volumen de negociación           |
-
-Horizonte histórico: **5 años** | Portafolio: **20 activos**
-
----
-
-## 3. Portafolio de Activos
-
-| Ticker | Nombre                   | Tipo   | Mercado |
-|--------|--------------------------|--------|---------|
-| EC     | Ecopetrol S.A.           | Acción | NYSE    |
-| CIB    | Bancolombia S.A.         | Acción | NYSE    |
-| GXG    | iShares MSCI Colombia    | ETF    | NYSE    |
-| ILF    | iShares Latin America 40 | ETF    | NYSE    |
-| EWZ    | iShares MSCI Brazil      | ETF    | NYSE    |
-| EWW    | iShares MSCI Mexico      | ETF    | NYSE    |
-| SPY    | S&P 500 ETF              | ETF    | NYSE    |
-| QQQ    | Nasdaq 100 ETF           | ETF    | NASDAQ  |
-| DIA    | Dow Jones ETF            | ETF    | NYSE    |
-| EEM    | Emerging Markets ETF     | ETF    | NYSE    |
-| VT     | Vanguard Total World     | ETF    | NYSE    |
-| IEMG   | Core Emerging Markets    | ETF    | NYSE    |
-| GLD    | SPDR Gold Shares         | ETF    | NYSE    |
-| SLV    | iShares Silver Trust     | ETF    | NYSE    |
-| USO    | US Oil Fund              | ETF    | NYSE    |
-| TLT    | iShares 20Y Treasury     | ETF    | NASDAQ  |
-| XLE    | Energy Select Sector     | ETF    | NYSE    |
-| XLF    | Financial Select Sector  | ETF    | NYSE    |
-| XLK    | Technology Select Sector | ETF    | NYSE    |
-| VNQ    | Vanguard Real Estate     | ETF    | NYSE    |
-
----
-
-## 4. Arquitectura General del Sistema
-
-```
-bvc-analytics/
- etl/
-    downloader.py     # Descarga HTTP pura (urllib)
-    cleaner.py        # Interpolación lineal + Z-Score
-    database.py       # Acceso a PostgreSQL (psycopg2)
- algorithms/
-    sorting.py        # 12 algoritmos de ordenamiento (Req. 2)
-    similarity.py     # 4 algoritmos de similitud (Req. 2 enunciado completo)
-    patterns.py       # Ventana deslizante, SMA, Golden Cross (Req. 3)
-    volatility.py     # VaR, Sharpe, Drawdown, Volatilidad (Req. 3)
- api/server.py         # Servidor HTTP stdlib  sin Flask/Django
- auth/auth.py          # Autenticación SHA-256 + sesiones
- cms/content.py        # Lecciones financieras + paper trading
- reports/generator.py  # Reportes JSON y TXT (Req. 4)
- frontend/index.html   # Dashboard SPA  SVG + Canvas (Req. 4)
- database/init.sql     # Esquema PostgreSQL completo
- main.py               # Orquestador de pipelines
- config.py             # Configuración global
- docker-compose.yml    # PostgreSQL 15 + API (Req. 5)
-```
-
-**Stack tecnológico:**
-
-| Capa          | Tecnología                              |
-|---------------|-----------------------------------------|
-| Backend       | Python 3.11 (solo stdlib para lógica)   |
-| Base de datos | PostgreSQL 15                           |
-| Servidor HTTP | http.server (stdlib)  sin frameworks   |
-| Frontend      | HTML5 + CSS3 + JavaScript vanilla       |
-| Visualización | SVG + Canvas API  sin matplotlib       |
-| Contenedores  | Docker + Docker Compose                 |
-| Dependencia   | psycopg2-binary (solo driver de BD)     |
-
----
-
-## 5. Requerimiento 1 — ETL Automatizado
-
-### 5.1 Descripcion
-
-Se implemento un proceso completamente automatizado de Extraccion, Transformacion y Carga (ETL)
-que descarga, limpia y almacena 5 anos de datos OHLCV para los 20 activos.
-Archivos: etl/downloader.py, etl/cleaner.py, etl/database.py
-Ejecucion: python main.py etl
-
-### 5.2 Flujo del ETL
-
-```
-Yahoo Finance (API v8 JSON)
-        |
-urllib.request — peticion HTTP directa (stdlib)
-        |
-Parsing manual del JSON (timestamps Unix -> fechas ISO)
-        |
-Deteccion de outliers con Z-Score — O(n)
-        |
-Interpolacion lineal para valores faltantes — O(n)
-        |
-PostgreSQL — tabla unificada `precios`
-```
-
-### 5.3 Descarga — etl/downloader.py
-
-URL: https://query1.finance.yahoo.com/v8/finance/chart/{ticker}
-     ?period1={unix_inicio}&period2={unix_fin}&interval=1d
-
-- Libreria: urllib.request (stdlib — permitida)
-- Sin yfinance, pandas_datareader ni requests
-- Timestamps Unix a fechas: implementado manualmente
-- Manejo de errores: 3 reintentos con pausa entre intentos
-- Pausa entre tickers: 1 segundo (scraping etico)
-
-### 5.4 Limpieza — etl/cleaner.py
-
-**Algoritmo 1: Z-Score para Outliers — O(n)**
-
-```
-z = (x - mu) / sigma
-Si |z| > 3.5 el registro se descarta
-```
-
-Implementado con sumas manuales, sin statistics.stdev ni numpy.
-
-**Algoritmo 2: Interpolacion Lineal — O(n)**
-
-```
-V[i] = V[izq] + (V[der] - V[izq]) * (i - izq) / (der - izq)
-Nones al inicio: backward fill con el primer valor conocido
-Nones al final:  forward fill con el ultimo valor conocido
-```
-
-Justificacion: preserva la tendencia sin distorsionar los datos; adecuado para dias festivos.
-
-### 5.5 Almacenamiento — etl/database.py
-
-Tabla `precios` en PostgreSQL: id, activo_id, fecha, apertura, maximo, minimo, cierre, volumen.
-UNIQUE (activo_id, fecha) — idempotente.
-Manejo de calendarios distintos: interpolacion lineal resuelve desalineaciones entre NYSE y NASDAQ.
-
----
-
-## 6. Requerimiento 2 — Algoritmos de Ordenamiento
-
-### 6.1 Descripcion
-
-12 algoritmos implementados desde cero en algorithms/sorting.py, sin sorted() ni .sort().
-Criterio compuesto: fecha ASC (primario), cierre ASC (secundario).
-Ejecucion: python main.py ordenamiento
-
-### 6.2 Clave de Comparacion
-
-```python
-def _clave(registro: dict) -> tuple:
-    return (str(registro["fecha"]), float(registro["cierre"]))
-```
-
-### 6.3 Tabla 1 — Analisis de Algoritmos de Ordenamiento
-
-Dataset: ~25.000 registros (20 activos x ~1.260 dias habiles). Tiempos con time.perf_counter().
-
-| #  | Metodo de Ordenamiento | Complejidad  | Tamano  | Tiempo (ms)   |
-|----|------------------------|--------------|---------|---------------|
-|  1 | TimSort                | O(n log n)   | ~25.000 | ver benchmark |
-|  2 | Comb Sort              | O(n log n)   | ~25.000 | ver benchmark |
-|  3 | Selection Sort         | O(n^2)       | ~25.000 | ver benchmark |
-|  4 | Tree Sort              | O(n log n)   | ~25.000 | ver benchmark |
-|  5 | Pigeonhole Sort        | O(n + k)     | ~25.000 | ver benchmark |
-|  6 | Bucket Sort            | O(n + k)     | ~25.000 | ver benchmark |
-|  7 | QuickSort              | O(n log n)   | ~25.000 | ver benchmark |
-|  8 | HeapSort               | O(n log n)   | ~25.000 | ver benchmark |
-|  9 | Bitonic Sort           | O(n log^2 n) | ~25.000 | ver benchmark |
-| 10 | Gnome Sort             | O(n^2)       | ~25.000 | ver benchmark |
-| 11 | Binary Insertion Sort  | O(n^2)       | ~25.000 | ver benchmark |
-| 12 | RadixSort              | O(nk)        | ~25.000 | ver benchmark |
-
-Valores exactos: python main.py ordenamiento o GET /ordenamiento/benchmark
-
-### 6.4 Descripcion Tecnica de Cada Algoritmo
-
-1. TimSort O(n log n): Runs de 32 con Insertion Sort, fusionados con Merge Sort progresivo.
-2. Comb Sort O(n log n): Bubble Sort con brecha decreciente factor 1.3 para eliminar tortugas.
-3. Selection Sort O(n^2): Minimo en arr[i..n-1] intercambiado con arr[i]. Siempre n(n-1)/2 comparaciones.
-4. Tree Sort O(n log n): Insercion en BST, extraccion en recorrido in-orden (izq -> raiz -> der).
-5. Pigeonhole Sort O(n+k): Cubeta por cada valor entero de fecha YYYYMMDD en [min, max].
-6. Bucket Sort O(n+k): Normaliza fechas a [0,n-1], n cubetas con Insertion Sort interno.
-7. QuickSort O(n log n) promedio: Particion Lomuto con pivote mediana-de-tres.
-8. HeapSort O(n log n): Build Max-Heap O(n) + extraccion sucesiva O(n log n).
-9. Bitonic Sort O(n log^2 n): Potencia de 2 con centinela. Secuencias bitonicas recursivas.
-10. Gnome Sort O(n^2): Avanza si arr[i]>=arr[i-1], retrocede e intercambia si no.
-11. Binary Insertion Sort O(n^2): Busqueda binaria para posicion O(log n), desplazamiento O(n).
-12. RadixSort O(nk): Counting Sort estable LSD sobre 8 digitos de fecha YYYYMMDD.
-
-### 6.5 Diagrama de Barras de Tiempos
-
-GET /ordenamiento/benchmark retorna los 12 resultados ASC por tiempo.
-El frontend los visualiza con SVG/Canvas API sin librerias externas.
-Los algoritmos O(n^2) aparecen con barras notablemente mas largas que los O(n log n).
-
-### 6.6 Top-15 Dias con Mayor Volumen
-
-top15_mayor_volumen() usa HeapSort manual sobre campo volumen:
-1. Build Max-Heap sobre dataset completo — O(n)
-2. Extraer los 15 maximos del heap — O(15 log n)
-3. Reordenar los 15 ASC por volumen — O(1)
-Resultado: GET /ordenamiento/top-volumen
-
----
-
-## 7. Requerimiento 3 — Similitud de Series de Tiempo
-
-### 7.1 Descripcion
-
-Se implementaron 4 algoritmos de similitud en algorithms/similarity.py desde cero, sin numpy,
-scipy ni sklearn. Permiten comparar cualquier par de los 20 activos.
-Ejecucion: python main.py similitud
-
-### 7.2 Algoritmos Implementados
-
-#### Algoritmo 1: Distancia Euclidiana — O(n)
-
-Mide la distancia geometrica entre dos series normalizadas.
-
-```
-Normalizacion Min-Max:
-  x_norm = (x - min) / (max - min)
-
-Distancia:
-  d(A, B) = sqrt( sum_i (A_i - B_i)^2 )
-```
-
-- Resultado: 0 = series identicas, mayor valor = mas diferentes
-- Normalizacion necesaria cuando las escalas difieren (COP vs USD)
-- Complejidad: O(n) — un barrido de la serie
-
-#### Algoritmo 2: Correlacion de Pearson — O(n)
-
-Mide la relacion lineal entre dos series de retornos.
-
-```
-r = cov(A, B) / (sigma_A * sigma_B)
-
-cov(A, B) = sum_i (A_i - A_mean)(B_i - B_mean) / (n-1)
-sigma_A   = sqrt( sum_i (A_i - A_mean)^2 / (n-1) )
-```
-
-- Resultado: [-1, 1]. 1 = perfectamente correlacionados, -1 = inversamente correlacionados
-- Complejidad: O(n) — calcula medias y covarianza en un barrido
-
-#### Algoritmo 3: Similitud por Coseno — O(n)
-
-Mide el angulo entre dos vectores de rendimientos diarios.
-
-```
-cos(theta) = (A . B) / (|A| * |B|)
-
-A . B = sum_i (A_i * B_i)
-|A|   = sqrt( sum_i A_i^2 )
-```
-
-- Invariante a la escala (no requiere normalizacion previa)
-- Resultado: [0, 1] para retornos positivos
-- Complejidad: O(n)
-
-#### Algoritmo 4: DTW (Dynamic Time Warping) — O(n^2)
-
-Compara secuencias que pueden diferir en velocidad o fase.
-
-```
-DTW(i, j) = dist(A_i, B_j) + min(
-    DTW(i-1, j),    # insercion
-    DTW(i, j-1),    # eliminacion
-    DTW(i-1, j-1)   # coincidencia
-)
-```
-
-- Banda Sakoe-Chiba (10% de n) para reducir complejidad de O(n^2) a O(n * 0.1n)
-- Util para comparar activos con desfases temporales (ej. mercados en distintas zonas horarias)
-- Complejidad: O(n^2) sin banda, O(n * w) con banda w
-
-### 7.3 Comparacion de Algoritmos
-
-| Algoritmo          | Complejidad | Escala-invariante | Desfase temporal | Uso recomendado |
-|--------------------|-------------|-------------------|------------------|-----------------|
-| Euclidiana         | O(n)        | No (requiere norm)| No               | Precios normalizados |
-| Pearson            | O(n)        | Si                | No               | Retornos lineales |
-| Coseno             | O(n)        | Si                | No               | Vectores de rendimiento |
-| DTW                | O(n^2)      | No                | Si               | Series con desfase |
-
-### 7.4 Resultados
-
-- 190 pares de activos (C(20,2) = 190)
-- 4 algoritmos x 190 pares = 760 valores de similitud calculados
-- Almacenados en tabla resultados_similitud en PostgreSQL
-- Disponibles en: GET /similitud?algoritmo=pearson|coseno|euclidiana|dtw
-
----
-
-## 8. Requerimiento 4 — Patrones y Volatilidad
-
-### 8.1 Ventana Deslizante — algorithms/patterns.py
-
-#### Algoritmo: Sliding Window — O(n * k)
-
-Recorre el historial de precios con una ventana de k dias y clasifica cada segmento.
-
-```
-Para cada posicion i (de 0 a n-k):
-    segmento = precios[i : i + k]
-    variacion_pct = (precio_final - precio_inicial) / precio_inicial * 100
-    patron = clasificar_segmento(segmento)
-```
-
-**Patron 1 — Alza consecutiva:** todos los dias del segmento tienen cierre > cierre anterior.
-**Patron 2 — Baja consecutiva:** todos los dias del segmento tienen cierre < cierre anterior.
-**Patron 3 — Rebote:** primera mitad a la baja, segunda mitad al alza.
-**Patron 4 — Neutro:** sin tendencia clara.
-
-Ventana configurable en config.py (default: 20 dias).
-Ejecucion: GET /patrones?ticker=SPY
-
-#### Algoritmo adicional: Golden Cross / Death Cross — O(n)
-
-Detecta cruces entre dos medias moviles simples (SMA).
-
-```
-SMA_corta[i] = promedio(precios[i-c+1 : i+1])
-SMA_larga[i] = promedio(precios[i-l+1 : i+1])
-
-Golden Cross: SMA_corta cruza SMA_larga hacia arriba (senal alcista)
-Death Cross:  SMA_corta cruza SMA_larga hacia abajo (senal bajista)
-```
-
-Ejecucion: GET /patrones/cruces?ticker=SPY&corta=10&larga=30
-
-### 8.2 Volatilidad y Clasificacion de Riesgo — algorithms/volatility.py
-
-#### Algoritmo 1: Retornos Logaritmicos — O(n)
-
-```
-r_i = ln(P_i / P_{i-1})
-```
-
-Ventaja sobre retornos simples: aditivos en el tiempo, distribucion mas cercana a la normal.
-
-#### Algoritmo 2: Volatilidad Historica — O(n)
-
-```
-Paso 1: Calcular retornos logaritmicos
-Paso 2: Para cada ventana de k retornos:
-    media_r = sum(r) / k
-    varianza = sum((r_i - media_r)^2) / (k-1)   [correccion de Bessel]
-    sigma_diaria = sqrt(varianza)
-    sigma_anual  = sigma_diaria * sqrt(252)
-```
-
-#### Algoritmo 3: Maximo Drawdown — O(n)
-
-```
-MDD = (valle_minimo - pico_maximo) / pico_maximo * 100
-```
-
-Mantiene el pico maximo visto hasta i y calcula la caida en cada punto.
-
-#### Algoritmo 4: VaR Historico — O(n log n)
-
-```
-1. Calcular todos los retornos logaritmicos
-2. Ordenar ascendentemente (peores primero)
-3. VaR_95 = retorno en el percentil 5%
-```
-
-Interpretacion: con 95% de confianza, la perdida diaria no superara este valor.
-
-#### Algoritmo 5: Sharpe Ratio — O(n)
-
-```
-Sharpe = (R_portfolio - R_libre_riesgo) / sigma_portfolio
-
-R_portfolio    = media_retornos_diarios * 252
-sigma_portfolio = sigma_diaria * sqrt(252)
-```
-
-#### Clasificacion de Riesgo
-
-| Categoria    | Volatilidad Anualizada |
-|--------------|------------------------|
-| Conservador  | < 15%                  |
-| Moderado     | 15% — 30%              |
-| Agresivo     | > 30%                  |
-
-El sistema genera un listado de los 20 activos ordenados por nivel de riesgo.
-Ejecucion: GET /riesgo/clasificacion
-
----
-
-## 9. Requerimiento 5 — Dashboard Visual y Despliegue
-
-### 9.1 Dashboard — frontend/index.html
-
-SPA completa en HTML5 + CSS3 + JavaScript vanilla, sin React, Vue ni Angular.
-Visualizaciones implementadas con SVG y Canvas API (sin matplotlib, plotly ni Chart.js).
-
-**Secciones del dashboard:**
-
-| Seccion              | Descripcion                                              |
-|----------------------|----------------------------------------------------------|
-| Overview             | Estadisticas generales, top pares similares, distribucion de riesgo |
-| Comparar Activos     | Seleccion de 2 activos, grafico de lineas SVG, 4 metricas de similitud |
-| Mapa de Calor        | Matriz de correlacion 20x20 con gradiente de color SVG   |
-| Velas OHLC           | Grafico candlestick con Canvas API + SMA superpuesta     |
-| Clasificacion Riesgo | Ranking de 20 activos por volatilidad anualizada         |
-| Ordenamiento         | Diagrama de barras de tiempos de los 12 algoritmos       |
-| Top Volumen          | Top-15 dias con mayor volumen de negociacion             |
-| Academia             | 8 lecciones de educacion financiera                      |
-| Simulador            | Paper trading con USD 100.000 virtuales                  |
-| Tasa USD/COP         | Tasa de cambio en tiempo real (Yahoo Finance COP=X)      |
-
-### 9.2 Matriz de Correlacion (Mapa de Calor)
-
-Construida desde los resultados de Pearson almacenados en BD.
-Matriz 20x20 con gradiente de color: rojo (correlacion negativa) -> blanco (0) -> azul (correlacion positiva).
-Endpoint: GET /correlacion/matriz
-
-### 9.3 Graficos de Velas (Candlestick)
-
-Implementados con Canvas API:
-- Cuerpo de la vela: rectangulo verde (cierre > apertura) o rojo (cierre < apertura)
-- Mechas: lineas verticales desde minimo hasta maximo
-- SMA superpuesta: calculada algoritmicamente (sin librerias)
-Endpoint: GET /precios/ohlcv?ticker=SPY&n=120
-
-### 9.4 Reporte Tecnico
-
-El sistema genera reportes en dos formatos:
-- JSON: GET /reporte — consolidado de todos los modulos
-- TXT:  GET /reporte/txt — version legible para exportar
-
-El reporte incluye: cobertura de datos, top similitudes, ranking de volatilidad, VaR, Sharpe y patrones detectados.
-
-### 9.5 Despliegue — Docker
-
-```
-docker-compose up --build
-```
-
-Servicios:
-- PostgreSQL 15 con volumen persistente y health check
-- API Python 3.11-slim en puerto 8000
-- Frontend servido desde GET /
-
-Reproducibilidad total: un evaluador puede ejecutar el proyecto desde cero con un solo comando.
-
----
-
-## 10. Restricciones Academicas — Verificacion de Cumplimiento
-
-| Restriccion                                    | Estado | Evidencia |
-|------------------------------------------------|--------|-----------|
-| Sin yfinance / pandas_datareader               | CUMPLE | etl/downloader.py usa urllib.request directo |
-| Sin pandas / numpy / scipy / sklearn           | CUMPLE | requirements.txt solo contiene psycopg2-binary |
-| Sin Flask / FastAPI / Django                   | CUMPLE | Servidor con http.server (stdlib) |
-| Sin matplotlib / plotly / Chart.js             | CUMPLE | Visualizacion con SVG + Canvas API |
-| Algoritmos implementados explicitamente        | CUMPLE | Codigo transparente, sin funciones de alto nivel |
-| Sin sorted() ni .sort() en algoritmos          | CUMPLE | Cada algoritmo implementa su propia logica |
-| Sin datasets estaticos                         | CUMPLE | Descarga dinamica en cada ejecucion del ETL |
-| Minimo 20 activos                              | CUMPLE | 20 activos en config.py |
-| Horizonte >= 5 anos                            | CUMPLE | FECHA_INICIO = datetime.today() - timedelta(days=5*365) |
-| Reproducibilidad                               | CUMPLE | docker-compose up --build && python main.py todo |
-| Scraping etico                                 | CUMPLE | Pausa de 1s entre tickers, respeta limites de Yahoo Finance |
-| Uso de IA declarado                            | CUMPLE | Ver seccion 11 |
-
----
-
-## 11. Declaracion de Uso de Inteligencia Artificial
-
-En el desarrollo de este proyecto se utilizo **Kiro (IA generativa)** como herramienta de soporte para:
-
-- Revision de sintaxis y estructura del codigo Python.
-- Sugerencias de organizacion modular del proyecto.
-- Verificacion de la correcta implementacion de formulas matematicas.
-- Generacion de documentacion tecnica (docstrings y README).
-
-**El uso de IA NO reemplazo:**
-- El diseno algoritmico de los 12 algoritmos de ordenamiento.
-- El analisis formal de complejidad (notacion O).
-- La implementacion explicita de cada algoritmo desde cero.
-- Las decisiones de arquitectura del sistema.
-
-Conforme a las directrices del curso, toda implementacion algoritmica fue revisada, comprendida y validada por el equipo antes de su inclusion en el proyecto.
-
----
-
-## 12. Como Ejecutar el Proyecto
-
-### Con Docker (recomendado)
-
-```bash
-docker-compose up --build
-```
-
-### Sin Docker
-
-```bash
-pip install -r requirements.txt
+# 2. Configurar variables de entorno
 cp .env.example .env
-psql -U postgres -f database/init.sql
-python main.py etl            # Requerimiento 1: ETL
-python main.py similitud      # Requerimiento 3: similitud
-python main.py volatilidad    # Requerimiento 4: volatilidad
-python main.py ordenamiento   # Requerimiento 2: benchmark
-python main.py api            # Servidor HTTP
+# editar .env con credenciales de PostgreSQL
+
+# 3. Inicializar schema
+python -c "from etl.database import init_schema; init_schema()"
+
+# 4. Ejecutar ETL (descarga ~25.000 registros)
+python main.py etl
+
+# 5. Calcular algoritmos
+python main.py similitud
+python main.py volatilidad
+python main.py ordenamiento
+
+# 6. Iniciar API
+python main.py api
+# → http://localhost:8001
 ```
 
-### Pipeline completo
-
+O todo en un comando:
 ```bash
 python main.py todo
 ```
 
+Con Docker:
+```bash
+docker compose -f docker-compose.local.yml up --build
+```
+
 ---
 
-*Seguimiento 1 — Universidad del Quindio — Analisis de Algoritmos*
+## Despliegue en producción
+
+URL: `https://bvc-analytics-api.onrender.com`
+
+Configurado con `render.yaml` usando runtime Python 3.11 nativo (sin Docker).  
+La BD PostgreSQL es el servicio `bvc-analytics-db` en Render.  
+La variable `DATABASE_URL` es inyectada automáticamente por Render.  
+El puerto es asignado por Render via `$PORT` y leído en `config.py`.
+
+Para poblar la BD después del primer despliegue:
+```javascript
+// Consola del navegador (F12)
+fetch('https://bvc-analytics-api.onrender.com/etl/iniciar', { method: 'POST' })
+  .then(r => r.json()).then(console.log)
+```
+
+---
+
+## Declaración de uso de IA
+
+Este proyecto utilizó herramientas de inteligencia artificial generativa (Kiro/Claude) como apoyo en el desarrollo. El diseño algorítmico, la formulación matemática, la implementación explícita de cada algoritmo y el análisis de complejidad fueron realizados y verificados por los estudiantes. Las herramientas de IA se usaron como soporte de codificación y revisión, no como sustituto del análisis formal requerido por el curso.
+
+---
+
+*Universidad del Quindío — Análisis de Algoritmos — 2025*
