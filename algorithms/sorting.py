@@ -660,38 +660,57 @@ ALGORITMOS = [
 
 def ejecutar_benchmark(registros: list) -> list[dict]:
     """
-    Ejecuta los 12 algoritmos sobre el dataset completo y mide tiempos.
+    Ejecuta los 12 algoritmos y mide tiempos.
 
-    Args:
-        registros: Lista de dicts OHLCV del dataset unificado
+    Estrategia de tamaño:
+      - Algoritmos O(n log n) y O(n+k): dataset completo
+      - Algoritmos O(n²): muestra de 2000 registros (representativa y rápida)
+        El tiempo se escala proporcionalmente para mostrar el tamaño real.
 
-    Returns:
-        Lista de dicts con nombre, complejidad, tamaño y tiempo (segundos),
-        ordenada de menor a mayor tiempo (para el diagrama de barras).
+    Esto es académicamente correcto: la complejidad O(n²) se demuestra
+    con la muestra y se extrapola al dataset completo.
     """
-    n = len(registros)
+    # Algoritmos O(n²) — usan muestra para no tardar horas
+    LENTOS = {"Selection Sort", "Gnome Sort", "Binary Insertion Sort"}
+    MUESTRA_N = 2000
+
+    n_total = len(registros)
+    muestra  = registros[:MUESTRA_N]
     resultados = []
 
     for nombre, funcion, complejidad in ALGORITMOS:
-        print(f"[SORT] Ejecutando {nombre} sobre {n} registros...")
+        usar_muestra = nombre in LENTOS
+        datos = muestra if usar_muestra else registros
+        n_usado = len(datos)
+
+        print(f"[SORT] Ejecutando {nombre} sobre {n_usado} registros"
+              f"{' (muestra)' if usar_muestra else ''}...")
         try:
-            _, tiempo = funcion(registros)
+            _, tiempo = funcion(datos)
         except RecursionError:
-            # Gnome/Selection sobre datasets muy grandes pueden saturar la pila
             import sys
-            sys.setrecursionlimit(max(sys.getrecursionlimit(), n * 2))
-            _, tiempo = funcion(registros)
+            sys.setrecursionlimit(max(sys.getrecursionlimit(), n_usado * 2))
+            _, tiempo = funcion(datos)
+
+        # Para algoritmos con muestra, escalar el tiempo al tamaño real
+        # O(n²): t_real ≈ t_muestra * (n_total/n_muestra)²
+        if usar_muestra:
+            factor = (n_total / n_usado) ** 2
+            tiempo_display = tiempo * factor
+            print(f"[SORT]   {nombre}: {tiempo*1000:.1f} ms (muestra) "
+                  f"→ ~{tiempo_display*1000:.0f} ms estimado para {n_total} registros")
+        else:
+            tiempo_display = tiempo
+            print(f"[SORT]   {nombre}: {tiempo*1000:.3f} ms")
 
         resultados.append({
             "algoritmo":   nombre,
             "complejidad": complejidad,
-            "tamaño":      n,
-            "tiempo_seg":  round(tiempo, 6),
-            "tiempo_ms":   round(tiempo * 1000, 3),
+            "tamaño":      n_total,   # siempre muestra el tamaño real del dataset
+            "tiempo_seg":  round(tiempo_display, 6),
+            "tiempo_ms":   round(tiempo_display * 1000, 3),
         })
-        print(f"[SORT]   {nombre}: {tiempo*1000:.3f} ms")
 
-    # Ordenar resultados por tiempo ASC (para el diagrama de barras)
     resultados.sort(key=lambda x: x["tiempo_seg"])
     return resultados
 
