@@ -79,6 +79,9 @@ class BVCHandler(BaseHTTPRequestHandler):
             # Req 4 — Dashboard
             "/reporte":              self._reporte,
             "/reporte/txt":          self._reporte_txt,
+            # Ordenamiento
+            "/ordenamiento/benchmark":   self._sorting_benchmark,
+            "/ordenamiento/top-volumen": self._sorting_top_volumen,
             # Extra — Conversor
             "/monedas/tasa":         self._monedas_tasa,
         }
@@ -348,6 +351,45 @@ class BVCHandler(BaseHTTPRequestHandler):
             self.wfile.write(contenido)
         except Exception as e:
             _respuesta_json(self, 500, {"error": str(e)})
+
+    # ── ORDENAMIENTO ──────────────────────────────────────────────
+
+    def _sorting_benchmark(self, params):
+        """GET /ordenamiento/benchmark — Tabla 1: 12 algoritmos, tamaño y tiempo (ASC por tiempo)."""
+        try:
+            from etl.database import get_connection
+            import psycopg2.extras
+            conn = get_connection()
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("""
+                    SELECT algoritmo, complejidad, tamanio, tiempo_ms
+                    FROM resultados_sorting ORDER BY tiempo_ms ASC;
+                """)
+                filas = [dict(f) for f in cur.fetchall()]
+            conn.close()
+            if not filas:
+                _respuesta_json(self, 404, {'error': 'Sin resultados. Ejecuta: python main.py ordenamiento'})
+                return
+            _respuesta_json(self, 200, {'tabla1': filas, 'total': len(filas)})
+        except Exception as e:
+            _respuesta_json(self, 500, {'error': str(e)})
+
+    def _sorting_top_volumen(self, params):
+        """GET /ordenamiento/top-volumen — Top-15 días con mayor volumen (ASC)."""
+        try:
+            from etl.database import get_connection
+            import psycopg2.extras
+            conn = get_connection()
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                cur.execute("SELECT ticker, fecha, volumen, cierre FROM top_volumen ORDER BY volumen ASC;")
+                filas = [dict(f) for f in cur.fetchall()]
+            conn.close()
+            if not filas:
+                _respuesta_json(self, 404, {'error': 'Sin resultados. Ejecuta: python main.py ordenamiento'})
+                return
+            _respuesta_json(self, 200, {'top15': filas})
+        except Exception as e:
+            _respuesta_json(self, 500, {'error': str(e)})
 
     # ── EXTRA — CONVERSOR USD/COP ──────────────────────────────────
 

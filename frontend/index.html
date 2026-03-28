@@ -145,6 +145,10 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
     <div class="nav-item" onclick="nav(this,'pat')"><span class="nav-icon">&#x1F50D;</span> Patrones</div>
     <div class="nav-item" onclick="nav(this,'rk')"><span class="nav-icon">&#x26A0;</span> Clasificacion Riesgo</div>
   </div>
+  <div class="nav-group"><div class="nav-lbl">Req 1 &mdash; Ordenamiento</div>
+    <div class="nav-item" onclick="nav(this,'sort')"><span class="nav-icon">&#x1F4CA;</span> Tabla 1 + Barras</div>
+    <div class="nav-item" onclick="nav(this,'vol')"><span class="nav-icon">&#x1F4C8;</span> Top-15 Volumen</div>
+  </div>
   <div class="nav-group"><div class="nav-lbl">Req 4 &mdash; Dashboard</div>
     <div class="nav-item" onclick="nav(this,'cs')"><span class="nav-icon">&#x1F56F;</span> Velas OHLC</div>
     <div class="nav-item" onclick="nav(this,'rp')"><span class="nav-icon">&#x1F4C4;</span> Reporte / PDF</div>
@@ -326,6 +330,29 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
       </div>
     </div>
 
+
+    <!-- ORDENAMIENTO  TABLA 1 -->
+    <div class="sec" id="sec-sort">
+      <div class="card">
+        <div class="ch"><div class="ci ci-b">&#x1F4CA;</div><h3>Tabla 1 &mdash; Benchmark de 12 Algoritmos de Ordenamiento</h3></div>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Dataset unificado ordenado por fecha ASC y cierre ASC. Tiempos medidos con <code style="background:var(--surf2);padding:2px 6px;border-radius:4px;font-family:var(--mono)">time.perf_counter()</code>.</p>
+        <div id="sort-wrap"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ci ci-a">&#x1F4CA;</div><h3>Diagrama de Barras &mdash; Tiempos ASC</h3></div>
+        <div id="sort-chart" style="overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- ORDENAMIENTO  TOP-15 VOLUMEN -->
+    <div class="sec" id="sec-vol">
+      <div class="card">
+        <div class="ch"><div class="ci ci-g">&#x1F4C8;</div><h3>Top-15 Dias con Mayor Volumen de Negociacion (ASC)</h3></div>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Ordenados con HeapSort manual &mdash; O(n log n). Presentados en orden ascendente por volumen.</p>
+        <div id="vol-wrap"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+      </div>
+    </div>
+
   </div></div></div><script>
 const API='';
 const NM={EC:"Ecopetrol",CIB:"Bancolombia",GXG:"iShares Colombia",ILF:"Latin America 40",EWZ:"iShares Brazil",EWW:"iShares Mexico",SPY:"S&P 500 ETF",QQQ:"Nasdaq 100",DIA:"Dow Jones ETF",EEM:"Emerging Markets",VT:"Vanguard World",IEMG:"Core EM",GLD:"Gold SPDR",SLV:"Silver Trust",USO:"US Oil Fund",TLT:"Treasury 20Y",XLE:"Energy",XLF:"Financials",XLK:"Technology",VNQ:"Real Estate"};
@@ -335,7 +362,7 @@ let allTickers=Object.keys(NM);
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('ov-lay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('ov-lay').classList.remove('show');}
 
-const titles={ov:'Overview',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
+const titles={ov:'Overview',sort:'Tabla 1 - Algoritmos de Ordenamiento',vol:'Top-15 Mayor Volumen',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
 function nav(el,id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
@@ -343,6 +370,8 @@ function nav(el,id){
   document.getElementById('sec-'+id).classList.add('on');
   document.getElementById('ptitle').textContent=titles[id]||id;
   closeSidebar();
+  if(id==='sort')loadSorting();
+  if(id==='vol')loadTopVolumen();
   if(id==='hm'&&!hmLoaded)loadHeatmap();
   if(id==='rk'&&!rkLoaded)loadRiesgo();
   if(id==='cs')initCS();
@@ -606,7 +635,163 @@ function convertir(from){
   else{const cop=+document.getElementById('conv-cop').value||0;document.getElementById('conv-usd').value=(cop/tasaUsdCop).toFixed(2);}
 }
 
+// ORDENAMIENTO
+async function loadSorting(){
+  document.getElementById('sort-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('sort-chart').innerHTML='';
+  try{
+    const d=await fno('/ordenamiento/benchmark');
+    const filas=d.tabla1||[];
+    if(!filas.length){
+      document.getElementById('sort-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    // Tabla 1
+    const maxT=Math.max(...filas.map(f=>+f.tiempo_ms));
+    document.getElementById('sort-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Metodo de Ordenamiento</th><th>Complejidad</th><th>Tamano (n)</th><th>Tiempo (ms)</th><th>Barra</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b>${r.algoritmo}</b></td>
+        <td class="mono" style="color:var(--acc)">${r.complejidad}</td>
+        <td class="mono">${(+r.tamanio).toLocaleString()}</td>
+        <td class="mono" style="color:var(--green);font-weight:600">${(+r.tiempo_ms).toFixed(3)}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(+r.tiempo_ms/maxT*100)}%;background:var(--acc)"></div></div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+    // Diagrama de barras SVG
+    drawBarChart(filas);
+  }catch(e){document.getElementById('sort-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
+function drawBarChart(filas){
+  const W=860,PL=180,PR=40,PT=20,PB=50;
+  const n=filas.length,barH=28,gap=8;
+  const H=PT+n*(barH+gap)+PB;
+  const maxT=Math.max(...filas.map(f=>+f.tiempo_ms));
+  const xs=W-PL-PR;
+  const bars=filas.map((r,i)=>{
+    const bw=Math.max((+r.tiempo_ms/maxT)*xs,2);
+    const y=PT+i*(barH+gap);
+    const col=+r.tiempo_ms/maxT<0.33?'#059669':+r.tiempo_ms/maxT<0.66?'#d97706':'#dc2626';
+    return `<g>
+      <text x="${PL-8}" y="${y+barH/2+5}" text-anchor="end" font-size="12" fill="#1e293b" font-family="Inter,sans-serif">${r.algoritmo}</text>
+      <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+      <text x="${PL+bw+6}" y="${y+barH/2+5}" font-size="11" fill="#475569" font-family="JetBrains Mono,monospace">${(+r.tiempo_ms).toFixed(3)} ms</text>
+    </g>`;
+  }).join('');
+  // Gridlines verticales
+  const grids=[0,.25,.5,.75,1].map(p=>{
+    const x=PL+p*xs;
+    const v=(maxT*p).toFixed(1);
+    return `<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-PB}" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="${x}" y="${H-PB+16}" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="JetBrains Mono,monospace">${v}ms</text>`;
+  }).join('');
+  document.getElementById('sort-chart').innerHTML=
+    `<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block;max-width:${W}px">
+      ${grids}${bars}
+      <text x="${W/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="Inter,sans-serif">Tiempo de ejecucion (ms) &mdash; ordenado ASC</text>
+    </svg>`;
+}
+
+async function loadTopVolumen(){
+  document.getElementById('vol-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  try{
+    const d=await fno('/ordenamiento/top-volumen');
+    const filas=d.top15||[];
+    if(!filas.length){
+      document.getElementById('vol-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxV=Math.max(...filas.map(f=>+f.volumen));
+    document.getElementById('vol-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Fecha</th><th>Volumen</th><th>Barra</th><th>Cierre</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${r.ticker}</b></td>
+        <td class="mono">${r.fecha}</td>
+        <td class="mono" style="font-weight:600">${(+r.volumen).toLocaleString()}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(+r.volumen/maxV*100)}%;background:var(--blu)"></div></div></td>
+        <td class="mono">$${(+r.cierre).toFixed(2)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }catch(e){document.getElementById('vol-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
 init();
+// ORDENAMIENTO — TABLA 1 + DIAGRAMA DE BARRAS
+async function loadSorting(){
+  document.getElementById('sort-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('sort-chart').innerHTML='';
+  try{
+    const d=await fno('/ordenamiento/benchmark');
+    const filas=d.tabla1||[];
+    if(!filas.length){
+      document.getElementById('sort-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxMs=Math.max(...filas.map(f=>+f.tiempo_ms));
+    document.getElementById('sort-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Algoritmo</th><th>Complejidad</th><th>Tamano (n)</th><th>Tiempo (ms)</th><th>Barra relativa</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b>${r.algoritmo}</b></td>
+        <td class="mono" style="color:var(--acc)">${r.complejidad}</td>
+        <td class="mono">${(+r.tamanio).toLocaleString()}</td>
+        <td class="mono" style="color:var(--green)">${(+r.tiempo_ms).toFixed(3)}</td>
+        <td style="width:180px"><div class="vbar"><div class="vfill" style="width:${Math.round(r.tiempo_ms/maxMs*100)}%;background:var(--acc)"></div></div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+    // Diagrama de barras SVG
+    drawBarChart(filas);
+  }catch(e){document.getElementById('sort-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
+function drawBarChart(filas){
+  const W=860,PL=160,PR=20,PT=20,PB=40,barH=28,gap=8;
+  const H=PT+filas.length*(barH+gap)+PB;
+  const maxMs=Math.max(...filas.map(f=>+f.tiempo_ms));
+  const xs=W-PL-PR;
+  const bars=filas.map((r,i)=>{
+    const bw=Math.max((+r.tiempo_ms/maxMs)*xs,2);
+    const y=PT+i*(barH+gap);
+    const col=i<4?'#059669':i<8?'#0284c7':'#7c3aed';
+    return `<g>
+      <text x="${PL-8}" y="${y+barH/2+5}" text-anchor="end" font-size="11" fill="#1e293b" font-family="Inter,sans-serif">${r.algoritmo}</text>
+      <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+      <text x="${PL+bw+6}" y="${y+barH/2+5}" font-size="10" fill="#475569" font-family="JetBrains Mono,monospace">${(+r.tiempo_ms).toFixed(3)}ms</text>
+    </g>`;
+  }).join('');
+  // Eje X
+  const ticks=[0,.25,.5,.75,1].map(t=>{
+    const x=PL+t*xs;const v=(maxMs*t).toFixed(1);
+    return `<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-PB}" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="${x}" y="${H-PB+14}" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="JetBrains Mono,monospace">${v}ms</text>`;
+  }).join('');
+  document.getElementById('sort-chart').innerHTML=
+    `<svg width="${W}" height="${H}" style="display:block;max-width:100%">${ticks}${bars}</svg>`;
+}
+
+// ORDENAMIENTO  TOP-15 VOLUMEN
+async function loadTopVolumen(){
+  document.getElementById('vol-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  try{
+    const d=await fno('/ordenamiento/top-volumen');
+    const filas=d.top15||[];
+    if(!filas.length){
+      document.getElementById('vol-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxVol=Math.max(...filas.map(f=>+f.volumen));
+    document.getElementById('vol-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Fecha</th><th>Volumen</th><th>Barra</th><th>Cierre</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${r.ticker}</b></td>
+        <td class="mono">${r.fecha}</td>
+        <td class="mono">${(+r.volumen).toLocaleString()}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(r.volumen/maxVol*100)}%;background:var(--green)"></div></div></td>
+        <td class="mono">$${(+r.cierre).toFixed(2)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }catch(e){document.getElementById('vol-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
 </script>
 </body>
 </html><script>
@@ -618,7 +803,7 @@ let allTickers=Object.keys(NM);
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('ov-lay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('ov-lay').classList.remove('show');}
 
-const titles={ov:'Overview',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
+const titles={ov:'Overview',sort:'Tabla 1 - Algoritmos de Ordenamiento',vol:'Top-15 Mayor Volumen',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
 function nav(el,id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
@@ -626,6 +811,8 @@ function nav(el,id){
   document.getElementById('sec-'+id).classList.add('on');
   document.getElementById('ptitle').textContent=titles[id]||id;
   closeSidebar();
+  if(id==='sort')loadSorting();
+  if(id==='vol')loadTopVolumen();
   if(id==='hm'&&!hmLoaded)loadHeatmap();
   if(id==='rk'&&!rkLoaded)loadRiesgo();
   if(id==='cs')initCS();
@@ -905,7 +1092,163 @@ function convertir(from){
   else{const cop=+document.getElementById('conv-cop').value||0;document.getElementById('conv-usd').value=(cop/tasaUsdCop).toFixed(2);}
 }
 
+// ORDENAMIENTO
+async function loadSorting(){
+  document.getElementById('sort-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('sort-chart').innerHTML='';
+  try{
+    const d=await fno('/ordenamiento/benchmark');
+    const filas=d.tabla1||[];
+    if(!filas.length){
+      document.getElementById('sort-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    // Tabla 1
+    const maxT=Math.max(...filas.map(f=>+f.tiempo_ms));
+    document.getElementById('sort-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Metodo de Ordenamiento</th><th>Complejidad</th><th>Tamano (n)</th><th>Tiempo (ms)</th><th>Barra</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b>${r.algoritmo}</b></td>
+        <td class="mono" style="color:var(--acc)">${r.complejidad}</td>
+        <td class="mono">${(+r.tamanio).toLocaleString()}</td>
+        <td class="mono" style="color:var(--green);font-weight:600">${(+r.tiempo_ms).toFixed(3)}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(+r.tiempo_ms/maxT*100)}%;background:var(--acc)"></div></div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+    // Diagrama de barras SVG
+    drawBarChart(filas);
+  }catch(e){document.getElementById('sort-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
+function drawBarChart(filas){
+  const W=860,PL=180,PR=40,PT=20,PB=50;
+  const n=filas.length,barH=28,gap=8;
+  const H=PT+n*(barH+gap)+PB;
+  const maxT=Math.max(...filas.map(f=>+f.tiempo_ms));
+  const xs=W-PL-PR;
+  const bars=filas.map((r,i)=>{
+    const bw=Math.max((+r.tiempo_ms/maxT)*xs,2);
+    const y=PT+i*(barH+gap);
+    const col=+r.tiempo_ms/maxT<0.33?'#059669':+r.tiempo_ms/maxT<0.66?'#d97706':'#dc2626';
+    return `<g>
+      <text x="${PL-8}" y="${y+barH/2+5}" text-anchor="end" font-size="12" fill="#1e293b" font-family="Inter,sans-serif">${r.algoritmo}</text>
+      <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+      <text x="${PL+bw+6}" y="${y+barH/2+5}" font-size="11" fill="#475569" font-family="JetBrains Mono,monospace">${(+r.tiempo_ms).toFixed(3)} ms</text>
+    </g>`;
+  }).join('');
+  // Gridlines verticales
+  const grids=[0,.25,.5,.75,1].map(p=>{
+    const x=PL+p*xs;
+    const v=(maxT*p).toFixed(1);
+    return `<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-PB}" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="${x}" y="${H-PB+16}" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="JetBrains Mono,monospace">${v}ms</text>`;
+  }).join('');
+  document.getElementById('sort-chart').innerHTML=
+    `<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block;max-width:${W}px">
+      ${grids}${bars}
+      <text x="${W/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="Inter,sans-serif">Tiempo de ejecucion (ms) &mdash; ordenado ASC</text>
+    </svg>`;
+}
+
+async function loadTopVolumen(){
+  document.getElementById('vol-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  try{
+    const d=await fno('/ordenamiento/top-volumen');
+    const filas=d.top15||[];
+    if(!filas.length){
+      document.getElementById('vol-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxV=Math.max(...filas.map(f=>+f.volumen));
+    document.getElementById('vol-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Fecha</th><th>Volumen</th><th>Barra</th><th>Cierre</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${r.ticker}</b></td>
+        <td class="mono">${r.fecha}</td>
+        <td class="mono" style="font-weight:600">${(+r.volumen).toLocaleString()}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(+r.volumen/maxV*100)}%;background:var(--blu)"></div></div></td>
+        <td class="mono">$${(+r.cierre).toFixed(2)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }catch(e){document.getElementById('vol-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
 init();
+// ORDENAMIENTO — TABLA 1 + DIAGRAMA DE BARRAS
+async function loadSorting(){
+  document.getElementById('sort-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('sort-chart').innerHTML='';
+  try{
+    const d=await fno('/ordenamiento/benchmark');
+    const filas=d.tabla1||[];
+    if(!filas.length){
+      document.getElementById('sort-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxMs=Math.max(...filas.map(f=>+f.tiempo_ms));
+    document.getElementById('sort-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Algoritmo</th><th>Complejidad</th><th>Tamano (n)</th><th>Tiempo (ms)</th><th>Barra relativa</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b>${r.algoritmo}</b></td>
+        <td class="mono" style="color:var(--acc)">${r.complejidad}</td>
+        <td class="mono">${(+r.tamanio).toLocaleString()}</td>
+        <td class="mono" style="color:var(--green)">${(+r.tiempo_ms).toFixed(3)}</td>
+        <td style="width:180px"><div class="vbar"><div class="vfill" style="width:${Math.round(r.tiempo_ms/maxMs*100)}%;background:var(--acc)"></div></div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+    // Diagrama de barras SVG
+    drawBarChart(filas);
+  }catch(e){document.getElementById('sort-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
+function drawBarChart(filas){
+  const W=860,PL=160,PR=20,PT=20,PB=40,barH=28,gap=8;
+  const H=PT+filas.length*(barH+gap)+PB;
+  const maxMs=Math.max(...filas.map(f=>+f.tiempo_ms));
+  const xs=W-PL-PR;
+  const bars=filas.map((r,i)=>{
+    const bw=Math.max((+r.tiempo_ms/maxMs)*xs,2);
+    const y=PT+i*(barH+gap);
+    const col=i<4?'#059669':i<8?'#0284c7':'#7c3aed';
+    return `<g>
+      <text x="${PL-8}" y="${y+barH/2+5}" text-anchor="end" font-size="11" fill="#1e293b" font-family="Inter,sans-serif">${r.algoritmo}</text>
+      <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+      <text x="${PL+bw+6}" y="${y+barH/2+5}" font-size="10" fill="#475569" font-family="JetBrains Mono,monospace">${(+r.tiempo_ms).toFixed(3)}ms</text>
+    </g>`;
+  }).join('');
+  // Eje X
+  const ticks=[0,.25,.5,.75,1].map(t=>{
+    const x=PL+t*xs;const v=(maxMs*t).toFixed(1);
+    return `<line x1="${x}" y1="${PT}" x2="${x}" y2="${H-PB}" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="${x}" y="${H-PB+14}" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="JetBrains Mono,monospace">${v}ms</text>`;
+  }).join('');
+  document.getElementById('sort-chart').innerHTML=
+    `<svg width="${W}" height="${H}" style="display:block;max-width:100%">${ticks}${bars}</svg>`;
+}
+
+// ORDENAMIENTO  TOP-15 VOLUMEN
+async function loadTopVolumen(){
+  document.getElementById('vol-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  try{
+    const d=await fno('/ordenamiento/top-volumen');
+    const filas=d.top15||[];
+    if(!filas.length){
+      document.getElementById('vol-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecuta: python main.py ordenamiento</p>';
+      return;
+    }
+    const maxVol=Math.max(...filas.map(f=>+f.volumen));
+    document.getElementById('vol-wrap').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Ticker</th><th>Fecha</th><th>Volumen</th><th>Barra</th><th>Cierre</th></tr></thead>
+      <tbody>${filas.map((r,i)=>`<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${r.ticker}</b></td>
+        <td class="mono">${r.fecha}</td>
+        <td class="mono">${(+r.volumen).toLocaleString()}</td>
+        <td style="width:160px"><div class="vbar"><div class="vfill" style="width:${Math.round(r.volumen/maxVol*100)}%;background:var(--green)"></div></div></td>
+        <td class="mono">$${(+r.cierre).toFixed(2)}</td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }catch(e){document.getElementById('vol-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
 </script>
 </body>
 </html>
