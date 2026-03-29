@@ -1,4 +1,4 @@
-"""
+﻿"""
 scripts/crear_superadmin.py — Crea el usuario administrador del sistema
 
 Ejecutar UNA SOLA VEZ después de levantar los contenedores:
@@ -14,7 +14,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from auth.auth import registrar_usuario
+from autenticacion.auth import registrar_usuario
 from etl.database import get_connection
 
 ADMIN_USERNAME = "admin"

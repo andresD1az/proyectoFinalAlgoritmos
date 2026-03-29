@@ -1,4 +1,4 @@
-"""
+﻿"""
 api/server.py — Servidor HTTP puro (http.server stdlib)
 Endpoints estrictamente limitados a los 5 requerimientos del enunciado:
   Req 1: ETL  |  Req 2: Similitud  |  Req 3: Patrones + Volatilidad
@@ -96,7 +96,7 @@ class BVCHandler(BaseHTTPRequestHandler):
 
     def _app(self, params):
         import os
-        ruta = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'index.html')
+        ruta = os.path.join(os.path.dirname(__file__), '..', 'interfaz', 'index.html')
         try:
             with open(ruta, 'rb') as f:
                 contenido = f.read()
@@ -258,7 +258,7 @@ class BVCHandler(BaseHTTPRequestHandler):
             return
         try:
             from etl.database import obtener_precios
-            from algorithms.patterns import detectar_patrones, detectar_picos_valles
+            from algoritmos.patrones import detectar_patrones, detectar_picos_valles
             from config import VENTANA_DESLIZANTE_DIAS
             filas   = obtener_precios(ticker.upper(), "cierre")
             fechas  = [str(f["fecha"])    for f in filas]
@@ -283,7 +283,7 @@ class BVCHandler(BaseHTTPRequestHandler):
             return
         try:
             from etl.database import obtener_precios
-            from algorithms.patterns import detectar_cruces_medias
+            from algoritmos.patrones import detectar_cruces_medias
             filas   = obtener_precios(ticker.upper(), "cierre")
             fechas  = [str(f["fecha"])    for f in filas]
             precios = [float(f["cierre"]) for f in filas]
@@ -302,7 +302,7 @@ class BVCHandler(BaseHTTPRequestHandler):
         """GET /riesgo/clasificacion — Clasifica los 20 activos por volatilidad."""
         try:
             from etl.database import obtener_todos_cierres
-            from algorithms.volatility import calcular_volatilidad, calcular_sharpe, calcular_var_historico
+            from algoritmos.volatilidad import calcular_volatilidad, calcular_sharpe, calcular_var_historico
             from config import DIAS_VOLATILIDAD
             series = obtener_todos_cierres()
             resultado = []
@@ -333,7 +333,7 @@ class BVCHandler(BaseHTTPRequestHandler):
     def _reporte(self, params):
         """GET /reporte — Reporte técnico completo en JSON."""
         try:
-            from reports.generator import generar_reporte_json
+            from reportes.generador import generar_reporte_json
             _respuesta_json(self, 200, generar_reporte_json())
         except Exception as e:
             _respuesta_json(self, 500, {'error': str(e)})
@@ -341,7 +341,7 @@ class BVCHandler(BaseHTTPRequestHandler):
     def _reporte_txt(self, params):
         """GET /reporte/txt — Reporte técnico en texto plano (para PDF)."""
         try:
-            from reports.generator import generar_reporte_txt
+            from reportes.generador import generar_reporte_txt
             contenido = generar_reporte_txt().encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; charset=utf-8")

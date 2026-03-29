@@ -1,4 +1,4 @@
-"""
+﻿"""
 reports/generator.py — Generador de Reporte Técnico Completo
 Produce un resumen analítico de todos los algoritmos ejecutados.
 Sin dependencias externas — solo stdlib.
@@ -123,7 +123,7 @@ def _seccion_volatilidad() -> dict:
 
 def _seccion_riesgo(max_activos: int = 5) -> dict:
     """VaR y Sharpe Ratio para los primeros N activos con datos."""
-    from algorithms.volatility import resumen_riesgo
+    from algoritmos.volatilidad import resumen_riesgo
 
     resultados = {}
     conteo = 0
@@ -146,7 +146,7 @@ def _seccion_riesgo(max_activos: int = 5) -> dict:
 
 def _seccion_patrones(max_activos: int = 5) -> dict:
     """Resumen de patrones detectados por ventana deslizante."""
-    from algorithms.patterns import detectar_patrones, detectar_picos_valles
+    from algoritmos.patrones import detectar_patrones, detectar_picos_valles
 
     resultados = {}
     conteo = 0

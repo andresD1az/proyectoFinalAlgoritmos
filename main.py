@@ -1,12 +1,12 @@
-"""
+﻿"""
 main.py — Punto de entrada principal del proyecto BVC Analytics
 Requerimientos: ETL | Similitud | Patrones/Volatilidad | Dashboard | Despliegue
 """
 
 import time
 from config import ACTIVOS, TICKERS
-from etl.downloader import descargar_todos
-from etl.cleaner    import limpiar_dataset
+from etl.descargador import descargar_todos
+from etl.limpieza    import limpiar_dataset
 from etl.database   import (
     insertar_activos,
     obtener_id_activo,
@@ -39,7 +39,7 @@ def pipeline_etl():
 
 def pipeline_similitud():
     """Req 2 — Calcula los 4 algoritmos de similitud para todos los pares."""
-    from algorithms.similarity import matriz_similitud
+    from algoritmos.similitud import matriz_similitud
 
     print("\n" + "=" * 60)
     print("  BVC ANALYTICS — Pipeline de Similitud (Requerimiento 2)")
@@ -75,7 +75,7 @@ def pipeline_similitud():
 
 def pipeline_volatilidad():
     """Req 3 — Calcula volatilidad y métricas de riesgo para todos los activos."""
-    from algorithms.volatility import calcular_volatilidad
+    from algoritmos.volatilidad import calcular_volatilidad
     from config import DIAS_VOLATILIDAD
 
     print("\n" + "=" * 60)
@@ -110,7 +110,7 @@ def pipeline_ordenamiento():
     Req 1 (parte visual) — Ejecuta los 12 algoritmos de ordenamiento sobre el
     dataset unificado. Genera Tabla 1 (tamaño + tiempo) y top-15 por volumen.
     """
-    from algorithms.sorting import ejecutar_benchmark, top15_mayor_volumen
+    from algoritmos.ordenamiento import ejecutar_benchmark, top15_mayor_volumen
     from etl.database import get_connection
     import psycopg2.extras
 
