@@ -286,17 +286,82 @@ proyectoFinalAlgoritmos/
 ## Cómo Ejecutar
 
 ```bash
-# Con Docker (recomendado)
-docker compose -f docker-compose.local.yml up --build
+# 1. Levantar contenedores (BD + API)
+docker compose -f docker-compose.local.yml up --build -d
 
-# Pipelines (dentro del contenedor)
+# 2. Correr el ETL (descarga 5 años × 20 activos, ~10 min)
 docker compose -f docker-compose.local.yml exec bvc_api python main.py etl
-docker compose -f docker-compose.local.yml exec bvc_api python main.py similitud
-docker compose -f docker-compose.local.yml exec bvc_api python main.py volatilidad
+
+# 3. Correr el benchmark de ordenamiento (~10 min)
 docker compose -f docker-compose.local.yml exec bvc_api python main.py ordenamiento
 
 # Dashboard: http://localhost:8001
 ```
+
+---
+
+## Soportes del Seguimiento 1 — Cómo Obtenerlos
+
+Esta sección explica exactamente cómo sacar cada soporte que pide la entrega.
+
+### Soporte 1 — Tabla 1 con los 12 algoritmos (tamaño y tiempo)
+
+Los datos ya están en la BD después de correr `python main.py ordenamiento`.
+
+**Opción A — Dashboard visual:**
+1. Abre `http://localhost:8001`
+2. En el sidebar izquierdo → "Req 1 — Ordenamiento" → "Tabla 1 + Barras"
+3. Aparece la tabla completa con algoritmo, complejidad, tamaño y tiempo en ms
+4. Captura de pantalla o `Ctrl+P` → Guardar como PDF
+
+**Opción B — Endpoint directo:**
+```
+http://localhost:8001/ordenamiento/benchmark
+```
+
+**Datos de referencia (ejecutados en este equipo):**
+
+| # | Método | Complejidad | Tamaño | Tiempo (ms) |
+|---|---|---|---|---|
+| 1 | Gnome Sort | O(n²) | 5,000 | 10.336 |
+| 2 | Pigeonhole Sort | O(n + k) | 5,000 | 37.369 |
+| 3 | Bucket Sort | O(n + k) | 5,000 | 55.524 |
+| 4 | TimSort | O(n log n) | 5,000 | 67.589 |
+| 5 | RadixSort | O(nk) | 5,000 | 109.888 |
+| 6 | Binary Insertion Sort | O(n²) | 5,000 | 131.496 |
+| 7 | QuickSort | O(n log n) | 5,000 | 208.022 |
+| 8 | Comb Sort | O(n log n) | 5,000 | 294.347 |
+| 9 | HeapSort | O(n log n) | 5,000 | 333.874 |
+| 10 | Bitonic Sort | O(n log² n) | 5,000 | 730.210 |
+| 11 | Selection Sort | O(n²) | 5,000 | 28,960.340 |
+| 12 | Tree Sort | O(n log n) | 5,000 | 41,604.703 |
+
+### Soporte 2 — Diagrama de barras ASC de los 12 tiempos
+
+1. Mismo dashboard → "Req 1 — Tabla 1 + Barras"
+2. El diagrama SVG aparece debajo de la tabla, ordenado de menor a mayor tiempo
+3. Para exportar: clic derecho sobre el gráfico → "Guardar imagen como" o `Ctrl+P`
+
+### Soporte 3 — Top-15 días con mayor volumen (ASC)
+
+1. Dashboard → "Req 1 — Top-15 Volumen"
+2. Tabla con ticker, fecha, volumen y cierre ordenados ascendentemente
+3. Endpoint directo: `http://localhost:8001/ordenamiento/top-volumen`
+
+### Soporte 4 — Evidencia del ETL (datos en BD)
+
+```
+http://localhost:8001/etl/status
+```
+Muestra: `{"activos": 20, "registros_precios": 25579, "etl_ejecutado": true}`
+
+### Soporte 5 — Código fuente para mostrar en sustentación
+
+Archivos clave del Seguimiento 1:
+- `etl/descargador.py` — descarga HTTP sin yfinance
+- `etl/limpieza.py` — interpolación lineal y Z-Score
+- `algoritmos/ordenamiento.py` — los 12 algoritmos
+- `config.py` — los 20 activos y parámetros
 
 ---
 
