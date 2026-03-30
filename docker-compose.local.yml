@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - bvc_pg_data:/var/lib/postgresql/data # Persistencia entre reinicios
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Schema inicial
+      - ./basedatos/init.sql:/docker-entrypoint-initdb.d/init.sql # Schema inicial
     networks:
       - bvc_network
     healthcheck:
