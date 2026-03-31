@@ -564,3 +564,146 @@ Este proyecto utilizó herramientas de inteligencia artificial generativa (Kiro/
 ---
 
 *Universidad del Quindío — Análisis de Algoritmos — 2025*
+
+---
+
+## Guía de Capturas para el Documento
+
+Esta sección indica exactamente qué capturar, de dónde y en qué orden colocarlo en el documento de sustentación.
+
+---
+
+### BLOQUE 1 — Requerimiento 1: ETL
+
+#### Captura 1.1 — Construcción de la URL de descarga
+- **Archivo:** `etl/descargador.py`
+- **Qué mostrar:** función `descargar_ticker()` — las líneas donde se construye la URL con `urllib.parse.urlencode()` y se hace `urlopen()`
+- **Dónde en el doc:** después de explicar que la descarga es HTTP directa sin yfinance
+
+#### Captura 1.2 — Parseo manual del JSON
+- **Archivo:** `etl/descargador.py`
+- **Qué mostrar:** el bloque `try` donde se extrae `result["timestamp"]`, `indicadores["close"]` y se construye el dict con fecha, apertura, maximo, minimo, cierre, volumen
+- **Dónde en el doc:** después de explicar la estructura del JSON de Yahoo Finance
+
+#### Captura 1.3 — Interpolación lineal
+- **Archivo:** `etl/limpieza.py`
+- **Qué mostrar:** función `interpolar_linealmente()` — el CASO 3 (líneas con `v_izq`, `v_der`, `fraccion`, `resultado[k]`)
+- **Dónde en el doc:** al explicar el algoritmo de limpieza de valores faltantes
+
+#### Captura 1.4 — Z-Score
+- **Archivo:** `etl/limpieza.py`
+- **Qué mostrar:** función `detectar_outliers_zscore()` — el cálculo de `media`, `suma_cuadrados`, `std` y el filtro `abs((v - media) / std) > umbral`
+- **Dónde en el doc:** al explicar la detección de anomalías
+
+#### Captura 1.5 — Evidencia de datos en BD (UI)
+- **Dónde:** abrir `http://localhost:8001/etl/status` en el navegador
+- **Qué mostrar:** el JSON con `"activos": 20, "registros_precios": 25579, "etl_ejecutado": true`
+- **Dónde en el doc:** como evidencia de que el ETL corrió exitosamente
+
+---
+
+### BLOQUE 2 — Requerimiento 2: Ordenamiento
+
+#### Captura 2.1 — Criterio de ordenamiento compuesto
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `_clave(registro)` — las 3 líneas que retornan `(str(fecha), float(cierre))`
+- **Dónde en el doc:** al explicar el criterio fecha ASC + cierre ASC
+
+#### Captura 2.2 — TimSort
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `timsort()` completa (Paso 1 y Paso 2) + `_merge_tim()`
+- **Dónde en el doc:** al describir el algoritmo más rápido del benchmark
+
+#### Captura 2.3 — QuickSort con mediana de tres
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `_mediana_tres()` + `_particionar()` + `quicksort()`
+- **Dónde en el doc:** al explicar la optimización del pivote
+
+#### Captura 2.4 — HeapSort
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `_heapify()` + `heapsort()` (Fase 1 y Fase 2)
+- **Dónde en el doc:** al explicar la estructura heap
+
+#### Captura 2.5 — Tree Sort (BST)
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** clase `_NodoBST` + `_bst_insertar()` + `_bst_inorden()`
+- **Dónde en el doc:** al explicar por qué degeneró a O(n²)
+
+#### Captura 2.6 — RadixSort
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `_counting_sort_por_digito()` + inicio de `radix_sort()` (el bucle de los 8 dígitos)
+- **Dónde en el doc:** al explicar el ordenamiento por dígitos LSD
+
+#### Captura 2.7 — Selection Sort
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `selection_sort()` completa (es corta, cabe en una captura)
+- **Dónde en el doc:** al explicar el algoritmo con más comparaciones
+
+#### Captura 2.8 — Gnome Sort
+- **Archivo:** `algoritmos/ordenamiento.py`
+- **Qué mostrar:** función `gnome_sort()` completa (la más corta de todas)
+- **Dónde en el doc:** al explicar por qué fue el más rápido con datos casi ordenados
+
+#### Captura 2.9 — Tabla 1 con tiempos reales (UI)
+- **Dónde:** `http://localhost:8001` → sidebar "Req 1 — Ordenamiento" → "Tabla 1 + Barras"
+- **Qué mostrar:** la tabla completa con los 12 algoritmos, complejidad, tamaño y tiempo en ms
+- **Dónde en el doc:** como la Tabla 1 oficial del requerimiento
+
+#### Captura 2.10 — Diagrama de barras (UI)
+- **Dónde:** misma sección del dashboard, debajo de la tabla
+- **Qué mostrar:** el diagrama SVG horizontal con las barras ordenadas ASC por tiempo
+- **Dónde en el doc:** inmediatamente después de la Tabla 1
+
+#### Captura 2.11 — Top-15 mayor volumen (UI)
+- **Dónde:** `http://localhost:8001` → sidebar "Req 1 — Top-15 Volumen"
+- **Qué mostrar:** la tabla con ticker, fecha, volumen y cierre ordenados ASC
+- **Dónde en el doc:** al final del Requerimiento 2
+
+---
+
+### BLOQUE 3 — Similitud (entrega posterior)
+
+#### Captura 3.1 — Correlación de Pearson
+- **Archivo:** `algoritmos/similitud.py`
+- **Qué mostrar:** función `correlacion_pearson()` — el cálculo de `numerador`, `var_a`, `var_b`, `denominador`
+
+#### Captura 3.2 — Distancia Euclidiana
+- **Archivo:** `algoritmos/similitud.py`
+- **Qué mostrar:** función `distancia_euclidiana()` + `normalizar_minmax()`
+
+#### Captura 3.3 — DTW
+- **Archivo:** `algoritmos/similitud.py`
+- **Qué mostrar:** función `dtw()` — el bucle de la matriz con la recurrencia `min(arriba, izquierda, diagonal)`
+
+#### Captura 3.4 — Comparación de activos (UI)
+- **Dónde:** `http://localhost:8001` → "Req 2 — Comparar Activos" → seleccionar dos activos → Comparar
+- **Qué mostrar:** los 4 valores de similitud (Euclidiana, Pearson, Coseno, DTW) y el gráfico de % cambio acumulado
+
+#### Captura 3.5 — Mapa de calor (UI)
+- **Dónde:** `http://localhost:8001` → "Req 2 — Mapa de Calor"
+- **Qué mostrar:** la matriz 20×20 con los colores verde/rojo/gris
+
+---
+
+### Cómo hacer las capturas de código
+
+**Opción A — VS Code con CodeSnap:**
+1. Instala la extensión CodeSnap (`Ctrl+Shift+X` → buscar "CodeSnap")
+2. Selecciona las líneas de código
+3. Clic derecho → "CodeSnap"
+4. Ajusta el tema y guarda como imagen
+
+**Opción B — Captura de pantalla simple:**
+1. Abre el archivo en VS Code
+2. Navega a la función (usa `Ctrl+G` + número de línea)
+3. `Win + Shift + S` para captura de área
+
+**Opción C — GitHub:**
+1. Ve a `https://github.com/andresD1az/proyectoFinalAlgoritmos`
+2. Navega al archivo
+3. Haz clic en el número de línea para resaltar
+4. Captura de pantalla
+
+---
+
+*Universidad del Quindío — Análisis de Algoritmos — 2025*
