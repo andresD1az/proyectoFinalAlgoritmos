@@ -224,6 +224,198 @@ docker compose -f docker-compose.local.yml up --build
 
 ---
 
+## Detalle de los Algoritmos de Limpieza ETL
+
+### Interpolación Lineal — O(n)
+
+**Idea:** para cada bloque de valores `None` consecutivos entre dos valores conocidos (izquierdo en posición `izq`, derecho en posición `der`), calcula el valor intermedio con la fórmula:
+
+```
+V[k] = V[izq] + (V[der] - V[izq]) × (k - izq) / (der - izq)
+```
+
+**Tres casos:**
+- Nones al inicio → backward fill (toma el primer valor conocido)
+- Nones al final → forward fill (toma el último valor conocido)
+- Nones en el medio → interpolación lineal entre los dos vecinos
+
+**Por qué lineal y no forward-fill:** la interpolación lineal no introduce sesgo hacia el pasado. Si el precio estaba en $100 el lunes y en $106 el viernes, asume $102 el martes, $103 el miércoles y $104 el jueves — más realista que asumir $100 todos los días.
+
+**Impacto en el análisis:** los valores interpolados son estimaciones. Para el ordenamiento por fecha no importa (la fecha es exacta). Para los algoritmos de similitud y volatilidad introduce un sesgo mínimo que es aceptable dado que los días faltantes son festivos o diferencias de calendarios bursátiles.
+
+**Función:** `interpolar_linealmente()` en `etl/limpieza.py`
+
+---
+
+### Detección de Outliers Z-Score — O(n)
+
+**Idea:** calcula cuántas desviaciones estándar se aleja cada valor de la media:
+
+```
+media    = Σ(vᵢ) / n
+varianza = Σ(vᵢ - media)² / n
+std      = √varianza
+zᵢ       = (vᵢ - media) / std
+```
+
+Un valor es outlier si `|zᵢ| > 3.5`.
+
+**Por qué umbral 3.5 y no 3.0:** el umbral estándar de 3.0 cubre el 99.7% de una distribución normal. Los retornos financieros tienen "colas pesadas" (fat tails) — eventos extremos como el crash de COVID-19 (marzo 2020) o la crisis de 2022 son legítimos y no deben eliminarse. Con 3.5 se preservan esos movimientos reales.
+
+**Función:** `detectar_outliers_zscore()` en `etl/limpieza.py`
+
+---
+
+## Detalle de los 12 Algoritmos de Ordenamiento
+
+### 1. TimSort — O(n log n)
+
+**Idea:** divide el arreglo en bloques pequeños llamados *runs* (tamaño 32), los ordena con Insertion Sort, y luego los fusiona con Merge Sort duplicando el tamaño del bloque en cada pasada.
+
+**Por qué es eficiente:** combina lo mejor de Insertion Sort (muy rápido en datos pequeños o casi ordenados) con Merge Sort (garantiza O(n log n) en el peor caso). Es el algoritmo interno de Python, aquí implementado explícitamente.
+
+**En nuestros datos:** 67.589 ms. Rápido porque los datos venían parcialmente ordenados por fecha desde la BD.
+
+**Funciones:** `timsort()`, `_insertion_run()`, `_merge_tim()`
+
+---
+
+### 2. Comb Sort — O(n log n)
+
+**Idea:** mejora de Bubble Sort. En lugar de comparar elementos adyacentes (gap=1), usa una brecha que empieza en n y se reduce con factor 1.3 en cada pasada. Cuando gap llega a 1, hace una pasada final de Bubble Sort.
+
+**Por qué es mejor que Bubble Sort:** elimina las "tortugas" — valores pequeños atrapados al final del arreglo que en Bubble Sort tardan muchas pasadas en llegar a su posición correcta.
+
+**En nuestros datos:** 294.347 ms. Más lento que TimSort porque no aprovecha el orden parcial existente.
+
+**Función:** `comb_sort()`
+
+---
+
+### 3. Selection Sort — O(n²)
+
+**Idea:** en cada iteración i, recorre todo el subarreglo `arr[i..n-1]` para encontrar el mínimo y lo intercambia con `arr[i]`.
+
+**Característica clave:** siempre hace exactamente `n(n-1)/2` comparaciones sin importar el estado inicial del arreglo. Con n=5,000: 12,497,500 comparaciones.
+
+**En nuestros datos:** 28,960.340 ms — el segundo más lento. No se beneficia del orden parcial porque siempre recorre todo el subarreglo restante.
+
+**Función:** `selection_sort()`
+
+---
+
+### 4. Tree Sort — O(n log n) promedio / O(n²) peor caso
+
+**Idea:** inserta cada elemento en un Árbol Binario de Búsqueda (BST) y luego extrae los elementos con recorrido in-orden (izquierda → raíz → derecha), que produce la lista ordenada.
+
+**Peor caso:** si los datos ya están ordenados, el BST degenera en una lista enlazada (cada nodo solo tiene hijo derecho). Eso convierte las inserciones en O(n) cada una → O(n²) total.
+
+**En nuestros datos:** 41,604.703 ms — el más lento. Los datos venían ordenados por fecha desde la BD, lo que causó exactamente la degeneración descrita.
+
+**Funciones:** `tree_sort()`, `_NodoBST`, `_bst_insertar()`, `_bst_inorden()`
+
+---
+
+### 5. Pigeonhole Sort — O(n + k)
+
+**Idea:** convierte cada fecha a entero YYYYMMDD y crea un "palomar" (lista) por cada valor entero en el rango [min_fecha, max_fecha]. Distribuye los registros en sus palomares y los concatena. Dentro de cada palomar (misma fecha) ordena por cierre con Insertion Sort.
+
+**Condición de eficiencia:** funciona bien cuando k (rango de valores) es comparable a n. En nuestro caso: k ≈ 1,826 días en 5 años, n = 5,000 registros → eficiente.
+
+**En nuestros datos:** 37.369 ms — segundo más rápido. Explota la distribución uniforme de las fechas bursátiles.
+
+**Función:** `pigeonhole_sort()`
+
+---
+
+### 6. Bucket Sort — O(n + k)
+
+**Idea:** normaliza la fecha al rango [0,1] y distribuye los registros en n cubetas según esa normalización. Cada cubeta se ordena internamente con Insertion Sort y luego se concatenan.
+
+**Diferencia con Pigeonhole:** Pigeonhole crea una cubeta por cada valor posible (rango exacto). Bucket crea exactamente n cubetas y distribuye proporcionalmente. Bucket usa menos memoria cuando el rango es grande.
+
+**En nuestros datos:** 55.524 ms. Ligeramente más lento que Pigeonhole porque tiene overhead de normalización y distribución en n cubetas.
+
+**Función:** `bucket_sort()`
+
+---
+
+### 7. QuickSort — O(n log n) promedio / O(n²) peor caso
+
+**Idea:** elige un pivote, coloca los elementos menores a la izquierda y los mayores a la derecha (partición), y recursa sobre ambas mitades.
+
+**Optimización implementada:** pivote mediana-de-tres — compara el primero, el medio y el último elemento y elige la mediana como pivote. Esto evita el peor caso O(n²) que ocurre con datos ya ordenados si se elige siempre el primer o último elemento.
+
+**En nuestros datos:** 208.022 ms. Más lento de lo esperado porque la mediana-de-tres tiene overhead adicional de comparaciones.
+
+**Funciones:** `quicksort()`, `_quicksort_rec()`, `_particionar()`, `_mediana_tres()`
+
+---
+
+### 8. HeapSort — O(n log n) garantizado
+
+**Idea:**
+- Fase 1 — Build Max-Heap: convierte el arreglo en un max-heap (árbol binario donde cada padre es mayor que sus hijos) en O(n).
+- Fase 2 — Extract: intercambia la raíz (máximo) con el último elemento, reduce el heap en 1 y restaura la propiedad heap con `_heapify()`. Repite n veces → O(n log n).
+
+**Ventaja sobre QuickSort:** O(n log n) garantizado en todos los casos, sin peor caso O(n²).
+
+**En nuestros datos:** 333.874 ms. Más lento que QuickSort en la práctica por el overhead de mantener la estructura heap.
+
+**Funciones:** `heapsort()`, `_heapify()`
+
+---
+
+### 9. Bitonic Sort — O(n log² n)
+
+**Idea:** genera secuencias bitónicas (primero creciente, luego decreciente) recursivamente y las fusiona. Requiere que n sea potencia de 2 — si no lo es, se rellena con un centinela máximo `{"fecha": "9999-99-99"}` que se elimina al final.
+
+**Origen:** diseñado para hardware paralelo (GPU/FPGA) donde todas las comparaciones se hacen simultáneamente. En implementación secuencial es más lento que O(n log n).
+
+**En nuestros datos:** 730.210 ms. El más lento de los algoritmos O(n log n) porque en implementación secuencial tiene más operaciones que HeapSort o TimSort.
+
+**Funciones:** `bitonic_sort()`, `_bitonic_sort_rec()`, `_bitonic_merge()`, `_bitonic_compare()`
+
+---
+
+### 10. Gnome Sort — O(n²)
+
+**Idea:** el "gnomo" avanza si `arr[i] >= arr[i-1]`, retrocede e intercambia si `arr[i] < arr[i-1]`. Sin bucle interno explícito — un solo índice que sube y baja.
+
+**Equivalencia:** es funcionalmente idéntico a Insertion Sort pero con un solo índice en lugar de dos bucles anidados.
+
+**En nuestros datos:** 10.336 ms — el más rápido de todos. Los datos venían casi ordenados por fecha desde la BD, por lo que el gnomo casi nunca retrocedió. En datos desordenados sería uno de los más lentos.
+
+**Función:** `gnome_sort()`
+
+---
+
+### 11. Binary Insertion Sort — O(n²)
+
+**Idea:** mejora Insertion Sort usando búsqueda binaria para encontrar la posición de inserción correcta en O(log n) comparaciones en lugar de O(n). Sin embargo, el desplazamiento de elementos sigue siendo O(n) → complejidad total O(n²).
+
+**Ventaja real:** reduce el número de comparaciones a la mitad respecto a Insertion Sort clásico, pero no mejora la complejidad asintótica porque el cuello de botella es el desplazamiento, no las comparaciones.
+
+**En nuestros datos:** 131.496 ms. Más rápido que Selection Sort y Gnome Sort (en datos desordenados) gracias a la búsqueda binaria.
+
+**Funciones:** `binary_insertion_sort()`, `_busqueda_binaria_pos()`
+
+---
+
+### 12. RadixSort — O(nk)
+
+**Idea:** ordena por la clave entera YYYYMMDD (8 dígitos, k=8). Aplica Counting Sort estable dígito a dígito del menos al más significativo (LSD — Least Significant Digit). La estabilidad garantiza que el orden de pasadas anteriores se preserve.
+
+**Subrutina Counting Sort:** para cada dígito, cuenta las ocurrencias, acumula los conteos para determinar posiciones finales, y construye la salida de derecha a izquierda (para mantener estabilidad).
+
+**Criterio secundario:** después de ordenar por fecha, aplica Insertion Sort dentro de cada grupo de misma fecha para ordenar por cierre.
+
+**En nuestros datos:** 109.888 ms. Eficiente porque k=8 es constante y pequeño.
+
+**Funciones:** `radix_sort()`, `_counting_sort_por_digito()`
+
+---
+
 ## Tabla 1 — Resultados Reales del Benchmark
 
 Ejecutado sobre **5,000 registros** del dataset unificado (misma muestra para todos los algoritmos, garantizando comparación justa).
