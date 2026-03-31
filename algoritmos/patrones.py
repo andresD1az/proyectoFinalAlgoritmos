@@ -45,7 +45,6 @@ def detectar_patrones(
     cada segmento en un patrón predefinido.
 
     ALGORITMO — Complejidad: O(n · k)
-    ────────────────────────────────────
         n = longitud de la serie de precios
         k = tamaño de la ventana (default: 20 días)
 
