@@ -8,9 +8,6 @@ Plataforma de análisis financiero cuantitativo sobre datos históricos de la Bo
 
 ---
 
-## Demo
-
-**https://bvc-analytics-api.onrender.com**
 
 ---
 
