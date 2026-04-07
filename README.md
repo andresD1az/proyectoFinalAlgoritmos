@@ -169,6 +169,18 @@ python main.py todo          # Ejecuta todo en secuencia
 
 Este proyecto utilizó herramientas de inteligencia artificial generativa como apoyo puntual en revisión de sintaxis, sugerencia de la optimización Sakoe-Chiba para DTW, corrección de un bug en Tree Sort y formato de documentación. El diseño algorítmico, las fórmulas matemáticas, el análisis de complejidad y la implementación final fueron realizados por el equipo.
 
----
+#
+---# 1. Correr el ETL (descarga 5 años de datos para los 20 activos)
+docker exec bvc_api python main.py etl
+
+# 2. Calcular similitud (los 4 algoritmos — DTW puede tardar varios minutos)
+docker exec bvc_api python main.py similitud
+
+# 3. Calcular volatilidad
+docker exec bvc_api python main.py volatilidad
+
+# 4. Benchmark de ordenamiento
+docker exec bvc_api python main.py ordenamiento
+
 
 *Universidad del Quindío — Análisis de Algoritmos — 2025*

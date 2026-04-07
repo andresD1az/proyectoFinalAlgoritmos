@@ -21,3 +21,6 @@ venv/
 
 # Datos locales
 data/
+
+# Notas locales
+EXPOSICION.md

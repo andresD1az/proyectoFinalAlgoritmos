@@ -1,5 +1,5 @@
 """
-algorithms/sorting.py — 12 Algoritmos de Ordenamiento
+algoritmoas/sorting.py — 12 Algoritmos de Ordenamiento
 Implementados DESDE CERO — SIN sorted(), SIN .sort(), SIN librerías externas
 
 Requerimiento 2 — Análisis de Algoritmos BVC
