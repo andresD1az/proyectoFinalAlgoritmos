@@ -222,39 +222,179 @@ def generar_reporte_json() -> dict:
     return reporte
 
 
-def generar_reporte_txt() -> str:
-    """Versión legible del reporte para exportar como .txt."""
+def generar_reporte_html() -> str:
+    """
+    Genera el reporte técnico completo en HTML con formato para impresión/PDF.
+    Incluye estilos inline para que funcione correctamente con window.print().
+    """
     data = generar_reporte_json()
-    lineas = [
-        "=" * 70,
-        "  BVC ANALYTICS — REPORTE TÉCNICO",
-        f"  Generado: {data['meta']['generado_en']}",
-        "=" * 70,
-        "",
-        "▶ SECCIÓN 1 — COBERTURA DE DATOS",
-        f"  Activos analizados: {data['seccion_1_datos']['activos_totales']}",
-        f"  Total de filas en BD: {data['seccion_1_datos']['filas_totales']:,}",
-        "",
-        "▶ SECCIÓN 2 — TOP 5 PARES MÁS SIMILARES (Pearson)",
-    ]
-    for par in data["seccion_2_similitud"].get("pearson", {}).get("top_5", []):
-        lineas.append(f"  {par['ticker1']} ↔ {par['ticker2']}: r = {par['valor']:.4f}")
+    meta = data["meta"]
+    sec1 = data["seccion_1_datos"]
+    sec2 = data["seccion_2_similitud"]
+    sec3 = data["seccion_3_volatilidad"]
+    sec4 = data["seccion_4_riesgo"]
+    sec5 = data["seccion_5_patrones"]
 
-    lineas += [
-        "",
-        "▶ SECCIÓN 3 — RANKING DE VOLATILIDAD ANUALIZADA",
-    ]
-    for r in data["seccion_3_volatilidad"].get("ranking", [])[:5]:
-        lineas.append(f"  {r['ticker']}: σ = {r['volatilidad_anual']*100:.2f}%")
+    # ── Sección 1: cobertura ──────────────────────────────────
+    filas_cob = "".join(
+        f"<tr><td>{r['ticker']}</td><td>{r['total_dias']}</td>"
+        f"<td>{r['fecha_inicio'] or '-'}</td><td>{r['fecha_fin'] or '-'}</td></tr>"
+        for r in sec1.get("cobertura", [])
+    )
 
-    lineas += [
-        "",
-        "▶ SECCIÓN 4 — RIESGO (VaR 95%)",
-    ]
-    for ticker, riesgo in data["seccion_4_riesgo"].items():
-        var = riesgo.get("var_95", {}).get("var_pct", "N/A")
+    # ── Sección 2: similitud ──────────────────────────────────
+    bloques_sim = ""
+    for algo, info in sec2.items():
+        filas = "".join(
+            f"<tr><td>{p['ticker1']} ↔ {p['ticker2']}</td><td>{p['valor']:.6f}</td></tr>"
+            for p in info.get("top_5", [])
+        )
+        bloques_sim += f"""
+        <h3 style="margin:16px 0 8px;color:#0284c7;font-size:13px;text-transform:uppercase;letter-spacing:.5px">
+            {algo.upper()} — {info['etiqueta']}
+        </h3>
+        <table><thead><tr><th>Par</th><th>Valor</th></tr></thead><tbody>{filas}</tbody></table>
+        """
+
+    # ── Sección 3: volatilidad ────────────────────────────────
+    ranking = sec3.get("ranking", [])
+    filas_vol = "".join(
+        f"<tr><td>{i+1}</td><td>{r['ticker']}</td>"
+        f"<td>{r['volatilidad_anual']*100:.2f}%</td>"
+        f"<td>{'Conservador' if r['volatilidad_anual']<0.15 else 'Moderado' if r['volatilidad_anual']<0.30 else 'Agresivo'}</td></tr>"
+        for i, r in enumerate(ranking)
+    )
+
+    # ── Sección 4: riesgo ─────────────────────────────────────
+    filas_riesgo = ""
+    for ticker, riesgo in sec4.items():
+        var   = riesgo.get("var_95", {}).get("var_pct", "N/A")
         sharpe = riesgo.get("sharpe_ratio", {}).get("sharpe", "N/A")
-        lineas.append(f"  {ticker}: VaR(95%) = {var}%  |  Sharpe = {sharpe}")
+        vol   = riesgo.get("volatilidad_reciente", {}).get("volatilidad_anualizada", "N/A")
+        mdd   = riesgo.get("max_drawdown", {}).get("mdd_pct", "N/A")
+        filas_riesgo += (
+            f"<tr><td>{ticker}</td>"
+            f"<td>{float(vol)*100:.2f}% anual" if isinstance(vol, (int, float)) else f"<td>{vol}"
+            f"</td><td>{sharpe}</td><td>{var}%</td><td>{mdd}%</td></tr>"
+        )
 
-    lineas += ["", "=" * 70, "  FIN DEL REPORTE", "=" * 70]
-    return "\n".join(lineas)
+    # ── Sección 5: patrones ───────────────────────────────────
+    filas_pat = ""
+    for ticker, info in sec5.items():
+        dist = ", ".join(f"{k}: {v}" for k, v in info.get("distribucion", {}).items()) or "—"
+        filas_pat += (
+            f"<tr><td>{ticker}</td><td>{info['patrones_detectados']}</td>"
+            f"<td>{info['picos']}</td><td>{info['valles']}</td><td style='font-size:10px'>{dist}</td></tr>"
+        )
+
+    algos_html = "".join(f"<li>{a}</li>" for a in meta.get("algoritmos_usados", []))
+
+    return f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BVC Analytics — Reporte Técnico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  *{{box-sizing:border-box;margin:0;padding:0}}
+  body{{font-family:'Inter',sans-serif;font-size:12px;color:#0f172a;background:#fff;padding:32px 40px}}
+  h1{{font-size:22px;font-weight:700;color:#0f172a;margin-bottom:4px}}
+  h2{{font-size:15px;font-weight:700;color:#0284c7;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}}
+  h3{{font-size:12px;font-weight:600;color:#334155;margin:14px 0 6px}}
+  .meta{{font-size:11px;color:#64748b;margin-bottom:24px}}
+  .meta span{{margin-right:20px}}
+  table{{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:11px}}
+  th{{background:#f1f5f9;text-align:left;padding:7px 10px;font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0}}
+  td{{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:#1e293b}}
+  tr:last-child td{{border-bottom:none}}
+  .badge{{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}}
+  .badge-g{{background:#d1fae5;color:#065f46}}
+  .badge-y{{background:#fef3c7;color:#92400e}}
+  .badge-r{{background:#fee2e2;color:#991b1b}}
+  .grid2{{display:grid;grid-template-columns:1fr 1fr;gap:20px}}
+  .stat-box{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:12px}}
+  .stat-box .lbl{{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:600}}
+  .stat-box .val{{font-size:24px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#0f172a;margin:4px 0 2px}}
+  .stat-box .sub{{font-size:11px;color:#94a3b8}}
+  .algo-list{{columns:2;gap:20px;list-style:none;padding:0}}
+  .algo-list li{{padding:3px 0;font-size:11px;color:#334155}}
+  .algo-list li::before{{content:"▸ ";color:#0284c7;font-weight:700}}
+  .footer{{margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}}
+  @media print{{
+    body{{padding:16px 20px}}
+    h2{{page-break-before:auto}}
+    table{{page-break-inside:avoid}}
+  }}
+</style>
+</head>
+<body>
+
+<h1>📈 BVC Analytics — Reporte Técnico</h1>
+<div class="meta">
+  <span>🏛 Universidad del Quindío — Análisis de Algoritmos</span>
+  <span>📅 Generado: {meta['generado_en'][:10]}</span>
+  <span>⏱ Ventana deslizante: {meta['ventana_dias']} días</span>
+  <span>📊 Ventana volatilidad: {meta['ventana_vol']} días</span>
+</div>
+
+<!-- SECCIÓN 1 -->
+<h2>Sección 1 — Cobertura de Datos (ETL)</h2>
+<div style="display:flex;gap:16px;margin-bottom:16px">
+  <div class="stat-box" style="flex:1">
+    <div class="lbl">Activos analizados</div>
+    <div class="val">{sec1['activos_totales']}</div>
+    <div class="sub">20 instrumentos financieros</div>
+  </div>
+  <div class="stat-box" style="flex:1">
+    <div class="lbl">Total registros OHLCV</div>
+    <div class="val">{sec1['filas_totales']:,}</div>
+    <div class="sub">5 años de historia diaria</div>
+  </div>
+</div>
+<table>
+  <thead><tr><th>Ticker</th><th>Días en BD</th><th>Fecha inicio</th><th>Fecha fin</th></tr></thead>
+  <tbody>{filas_cob}</tbody>
+</table>
+
+<!-- SECCIÓN 2 -->
+<h2>Sección 2 — Similitud de Series de Tiempo</h2>
+<p style="font-size:11px;color:#64748b;margin-bottom:12px">
+  190 pares calculados — C(20,2). Series alineadas por fecha exacta (intersección de calendarios bursátiles).
+</p>
+{bloques_sim}
+
+<!-- SECCIÓN 3 -->
+<h2>Sección 3 — Ranking de Volatilidad Anualizada</h2>
+<p style="font-size:11px;color:#64748b;margin-bottom:12px">
+  Clasificación: Conservador σ &lt; 15% | Moderado 15% ≤ σ &lt; 30% | Agresivo σ ≥ 30%
+</p>
+<table>
+  <thead><tr><th>#</th><th>Ticker</th><th>Volatilidad Anual (σ)</th><th>Categoría</th></tr></thead>
+  <tbody>{filas_vol}</tbody>
+</table>
+
+<!-- SECCIÓN 4 -->
+<h2>Sección 4 — Métricas de Riesgo Individual</h2>
+<table>
+  <thead><tr><th>Ticker</th><th>Volatilidad</th><th>Sharpe Ratio</th><th>VaR 95%</th><th>Max Drawdown</th></tr></thead>
+  <tbody>{filas_riesgo}</tbody>
+</table>
+
+<!-- SECCIÓN 5 -->
+<h2>Sección 5 — Patrones Detectados (Ventana Deslizante)</h2>
+<table>
+  <thead><tr><th>Ticker</th><th>Patrones</th><th>Picos</th><th>Valles</th><th>Distribución</th></tr></thead>
+  <tbody>{filas_pat}</tbody>
+</table>
+
+<!-- ALGORITMOS -->
+<h2>Algoritmos Implementados</h2>
+<ul class="algo-list">{algos_html}</ul>
+
+<div class="footer">
+  BVC Analytics — Universidad del Quindío — Análisis de Algoritmos 2025 |
+  Implementado en Python 3.11 stdlib pura — sin pandas, numpy, scipy, sklearn
+</div>
+
+</body>
+</html>"""

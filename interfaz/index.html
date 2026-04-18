@@ -294,14 +294,14 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
     <div class="sec" id="sec-rp">
       <div class="card">
         <div class="ch"><div class="ci ci-p">&#x1F4C4;</div><h3>Reporte Tecnico &mdash; Exportar PDF</h3></div>
-        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Consolida resultados de ETL, Similitud, Patrones y Volatilidad. Usa Ctrl+P o el boton para exportar a PDF.</p>
+        <p style="font-size:13px;color:var(--txt3);margin-bottom:14px">Consolida resultados de ETL, Similitud, Patrones y Volatilidad. Haz clic en Exportar PDF para imprimir o guardar como PDF.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-p" onclick="loadRep()">&#x1F504; Cargar reporte</button>
-          <button class="btn btn-g" onclick="window.print()">&#x1F5A8; Exportar PDF</button>
+          <button class="btn btn-g" id="btn-pdf" onclick="exportPDF()" style="display:none">&#x1F5A8; Exportar PDF</button>
         </div>
       </div>
-      <div class="card" id="rep-body" style="display:none">
-        <pre id="rep-txt" style="font-family:var(--mono);font-size:12px;color:#a5d6ff;line-height:1.7;white-space:pre-wrap;max-height:600px;overflow-y:auto"></pre>
+      <div class="card" id="rep-body" style="display:none;padding:0;overflow:hidden">
+        <iframe id="rep-frame" style="width:100%;height:780px;border:none;border-radius:var(--r2)"></iframe>
       </div>
     </div>
 
@@ -612,9 +612,24 @@ function drawCS(datos,smaf,smas){
 // REQ 4  REPORTE
 async function loadRep(){
   document.getElementById('rep-body').style.display='block';
-  document.getElementById('rep-txt').textContent='Cargando...';
-  try{const r=await fetch(API+'/reporte/txt');document.getElementById('rep-txt').textContent=await r.text();}
-  catch(e){document.getElementById('rep-txt').textContent='Error: '+e.message;}
+  document.getElementById('btn-pdf').style.display='none';
+  const frame=document.getElementById('rep-frame');
+  frame.src='';
+  frame.srcdoc='<div style="display:flex;align-items:center;justify-content:center;height:200px;font-family:Inter,sans-serif;color:#64748b;gap:10px"><div style="width:18px;height:18px;border:2px solid #cbd5e1;border-top-color:#0284c7;border-radius:50%;animation:sp .7s linear infinite"></div>Generando reporte...</div><style>@keyframes sp{to{transform:rotate(360deg)}}</style>';
+  try{
+    const r=await fetch(API+'/reporte/txt');
+    const html=await r.text();
+    frame.srcdoc=html;
+    document.getElementById('btn-pdf').style.display='inline-flex';
+  }catch(e){
+    frame.srcdoc=`<p style="color:red;padding:20px;font-family:Inter,sans-serif">Error: ${e.message}</p>`;
+  }
+}
+function exportPDF(){
+  const frame=document.getElementById('rep-frame');
+  if(frame.contentWindow){
+    frame.contentWindow.print();
+  }
 }
 
 // EXTRA  TASA

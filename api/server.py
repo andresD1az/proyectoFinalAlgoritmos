@@ -341,10 +341,10 @@ class BVCHandler(BaseHTTPRequestHandler):
     def _reporte_txt(self, params):
         """GET /reporte/txt — Reporte técnico en texto plano (para PDF)."""
         try:
-            from reportes.generador import generar_reporte_txt
-            contenido = generar_reporte_txt().encode("utf-8")
+            from reportes.generador import generar_reporte_html
+            contenido = generar_reporte_html().encode("utf-8")
             self.send_response(200)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(contenido)))
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()

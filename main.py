@@ -40,23 +40,25 @@ def pipeline_etl():
 def pipeline_similitud():
     """Req 2 — Calcula los 4 algoritmos de similitud para todos los pares."""
     from algoritmos.similitud import matriz_similitud
+    from etl.database import obtener_series_alineadas
 
     print("\n" + "=" * 60)
     print("  BVC ANALYTICS — Pipeline de Similitud (Requerimiento 2)")
     print("=" * 60)
 
-    series = {}
-    for ticker in TICKERS:
-        filas = obtener_precios(ticker, "cierre")
-        if filas:
-            series[ticker] = [float(f["cierre"]) for f in filas]
-            print(f"[SIMILITUD] {ticker}: {len(series[ticker])} precios cargados.")
-        else:
-            print(f"[SIMILITUD] {ticker}: sin datos en BD, saltando.")
+    print("\n[SIMILITUD] Alineando series por fecha exacta (intersección de calendarios)...")
+    series = obtener_series_alineadas(TICKERS)
 
     if len(series) < 2:
         print("[SIMILITUD] Se necesitan al menos 2 activos con datos.")
         return
+
+    # Reportar cobertura
+    longitudes = {t: len(v) for t, v in series.items()}
+    dias_comunes = list(longitudes.values())[0] if longitudes else 0
+    print(f"[SIMILITUD] {len(series)} activos alineados — {dias_comunes} días comunes.")
+    for ticker, n in longitudes.items():
+        print(f"[SIMILITUD]   {ticker}: {n} días")
 
     for algo in ["pearson", "coseno", "euclidiana", "dtw"]:
         print(f"\n[SIMILITUD] Calculando {algo.upper()} ...")

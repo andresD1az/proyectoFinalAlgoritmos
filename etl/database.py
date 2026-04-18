@@ -209,6 +209,68 @@ def obtener_todos_cierres() -> dict[str, list]:
     return resultado
 
 
+def obtener_series_alineadas(tickers: list[str]) -> dict[str, list[float]]:
+    """
+    Retorna series de cierre alineadas por fecha exacta para una lista de tickers.
+
+    PROBLEMA QUE RESUELVE:
+        Dos activos pueden tener diferente número de días de negociación
+        (ej: un ETF colombiano puede tener festivos distintos a un ETF de NYSE).
+        Comparar posición a posición sin alinear introduce ruido en los algoritmos
+        de similitud porque se estarían comparando días distintos.
+
+    ALGORITMO — Complejidad: O(n * k)
+        n = número de tickers
+        k = número de fechas en la intersección
+
+        1. Obtener todas las fechas de cada ticker como conjuntos
+        2. Calcular la intersección de todas las fechas (fechas comunes)
+        3. Para cada ticker, filtrar solo los precios de esas fechas
+        4. Ordenar por fecha ASC para garantizar alineación temporal
+
+    RESULTADO:
+        Todos los tickers retornados tienen exactamente la misma longitud
+        y cada posición i corresponde al mismo día calendario.
+
+    Args:
+        tickers: Lista de tickers a alinear
+
+    Returns:
+        {ticker: [precios_cierre]} donde todas las listas tienen igual longitud
+        y están alineadas por fecha exacta. Tickers sin datos se omiten.
+    """
+    # Paso 1: obtener {ticker: {fecha: cierre}} para todos
+    datos_por_ticker = {}
+    for ticker in tickers:
+        filas = obtener_precios(ticker, "cierre")
+        if filas:
+            datos_por_ticker[ticker] = {
+                str(f["fecha"]): float(f["cierre"]) for f in filas
+            }
+
+    if not datos_por_ticker:
+        return {}
+
+    # Paso 2: intersección de fechas — solo días en que TODOS los activos tienen dato
+    conjuntos = [set(d.keys()) for d in datos_por_ticker.values()]
+    fechas_comunes = conjuntos[0]
+    for s in conjuntos[1:]:
+        fechas_comunes = fechas_comunes & s  # intersección
+
+    if not fechas_comunes:
+        return {}
+
+    # Paso 3: ordenar fechas ASC (strings ISO son comparables lexicográficamente)
+    fechas_ordenadas = sorted(fechas_comunes)
+
+    # Paso 4: construir series alineadas
+    resultado = {}
+    for ticker, mapa in datos_por_ticker.items():
+        resultado[ticker] = [mapa[fecha] for fecha in fechas_ordenadas]
+
+    return resultado
+
+
 # ------------------------------------------------------------------
 # INICIALIZACIÓN DEL SCHEMA (usado en el build de Render)
 # ------------------------------------------------------------------
