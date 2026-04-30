@@ -1,20 +1,14 @@
-# =============================================================
 # etl/database.py — Capa de Acceso a Datos (psycopg2 puro, sin ORM)
-# =============================================================
 
 import psycopg2
 import psycopg2.extras
 from config import DB_CONFIG, ACTIVOS
 
-
 def get_connection():
     """Retorna una conexión activa a PostgreSQL."""
     return psycopg2.connect(**DB_CONFIG)
 
-
-# ------------------------------------------------------------------
 # ACTIVOS
-# ------------------------------------------------------------------
 
 def insertar_activos():
     """
@@ -41,7 +35,6 @@ def insertar_activos():
     finally:
         conn.close()
 
-
 def obtener_id_activo(ticker: str) -> int | None:
     """Retorna el ID de un activo dado su ticker, o None si no existe."""
     sql = "SELECT id FROM activos WHERE ticker = %s;"
@@ -54,10 +47,7 @@ def obtener_id_activo(ticker: str) -> int | None:
     finally:
         conn.close()
 
-
-# ------------------------------------------------------------------
 # PRECIOS
-# ------------------------------------------------------------------
 
 def insertar_precios_lote(activo_id: int, filas: list[dict]):
     """
@@ -89,7 +79,6 @@ def insertar_precios_lote(activo_id: int, filas: list[dict]):
     finally:
         conn.close()
 
-
 def obtener_precios(ticker: str, columna: str = "cierre") -> list[dict]:
     """
     Retorna los precios históricos de un activo ordenados por fecha ASC.
@@ -114,10 +103,7 @@ def obtener_precios(ticker: str, columna: str = "cierre") -> list[dict]:
     finally:
         conn.close()
 
-
-# ------------------------------------------------------------------
 # SIMILITUD
-# ------------------------------------------------------------------
 
 def guardar_similitud(activo1_id: int, activo2_id: int, algoritmo: str, valor: float):
     sql = """
@@ -131,7 +117,6 @@ def guardar_similitud(activo1_id: int, activo2_id: int, algoritmo: str, valor: f
         conn.commit()
     finally:
         conn.close()
-
 
 def obtener_similitudes(algoritmo: str) -> list[dict]:
     sql = """
@@ -151,10 +136,7 @@ def obtener_similitudes(algoritmo: str) -> list[dict]:
     finally:
         conn.close()
 
-
-# ------------------------------------------------------------------
 # VOLATILIDAD
-# ------------------------------------------------------------------
 
 def guardar_volatilidad(activo_id: int, fecha: str, ventana: int,
                          volatilidad: float, retorno_medio: float):
@@ -173,7 +155,6 @@ def guardar_volatilidad(activo_id: int, fecha: str, ventana: int,
         conn.commit()
     finally:
         conn.close()
-
 
 def obtener_ohlcv_completo(ticker: str) -> list[dict]:
     """
@@ -194,7 +175,6 @@ def obtener_ohlcv_completo(ticker: str) -> list[dict]:
     finally:
         conn.close()
 
-
 def obtener_todos_cierres() -> dict[str, list]:
     """
     Retorna {ticker: [precios_cierre]} para todos los activos.
@@ -207,7 +187,6 @@ def obtener_todos_cierres() -> dict[str, list]:
         if filas:
             resultado[ticker] = [float(f["cierre"]) for f in filas]
     return resultado
-
 
 def obtener_series_alineadas(tickers: list[str]) -> dict[str, list[float]]:
     """
@@ -270,10 +249,7 @@ def obtener_series_alineadas(tickers: list[str]) -> dict[str, list[float]]:
 
     return resultado
 
-
-# ------------------------------------------------------------------
 # INICIALIZACIÓN DEL SCHEMA (usado en el build de Render)
-# ------------------------------------------------------------------
 
 def init_schema():
     """

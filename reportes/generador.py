@@ -9,10 +9,7 @@ from datetime import datetime
 from config import ACTIVOS, TICKERS, VENTANA_DESLIZANTE_DIAS, DIAS_VOLATILIDAD
 from etl.database import get_connection, obtener_precios, obtener_id_activo
 
-
-# ------------------------------------------------------------------
 # HELPERS DE CONSULTA
-# ------------------------------------------------------------------
 
 def _consultar(sql: str, params: tuple = ()) -> list[tuple]:
     conn = get_connection()
@@ -23,10 +20,7 @@ def _consultar(sql: str, params: tuple = ()) -> list[tuple]:
     finally:
         conn.close()
 
-
-# ------------------------------------------------------------------
 # SECCIÓN 1: Resumen de la base de datos
-# ------------------------------------------------------------------
 
 def _seccion_datos() -> dict:
     """Cuántos registros hay en la BD por activo."""
@@ -54,10 +48,7 @@ def _seccion_datos() -> dict:
         "cobertura":        registros,
     }
 
-
-# ------------------------------------------------------------------
 # SECCIÓN 2: Top similitudes por algoritmo
-# ------------------------------------------------------------------
 
 def _seccion_similitud() -> dict:
     """Top 5 pares más similares para cada algoritmo."""
@@ -87,10 +78,7 @@ def _seccion_similitud() -> dict:
         }
     return resultado
 
-
-# ------------------------------------------------------------------
 # SECCIÓN 3: Activos más volátiles
-# ------------------------------------------------------------------
 
 def _seccion_volatilidad() -> dict:
     """Ranking de activos por volatilidad anualizada reciente."""
@@ -116,10 +104,7 @@ def _seccion_volatilidad() -> dict:
         "ranking":       ranking,
     }
 
-
-# ------------------------------------------------------------------
 # SECCIÓN 4: Resumen de riesgo individual
-# ------------------------------------------------------------------
 
 def _seccion_riesgo(max_activos: int = 5) -> dict:
     """VaR y Sharpe Ratio para los primeros N activos con datos."""
@@ -139,10 +124,7 @@ def _seccion_riesgo(max_activos: int = 5) -> dict:
 
     return resultados
 
-
-# ------------------------------------------------------------------
 # SECCIÓN 5: Patrones detectados por activo
-# ------------------------------------------------------------------
 
 def _seccion_patrones(max_activos: int = 5) -> dict:
     """Resumen de patrones detectados por ventana deslizante."""
@@ -177,10 +159,7 @@ def _seccion_patrones(max_activos: int = 5) -> dict:
 
     return resultados
 
-
-# ------------------------------------------------------------------
 # FUNCIÓN PRINCIPAL
-# ------------------------------------------------------------------
 
 def generar_reporte_json() -> dict:
     """
@@ -220,7 +199,6 @@ def generar_reporte_json() -> dict:
     }
 
     return reporte
-
 
 def generar_reporte_html() -> str:
     """

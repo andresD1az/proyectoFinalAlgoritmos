@@ -1,4 +1,3 @@
-# =============================================================
 # config.py — Configuración Global del Proyecto BVC Analytics
 # Universidad del Quindío — Análisis de Algoritmos
 #
@@ -9,23 +8,19 @@
 #   - Configuración del servidor HTTP
 #
 # PRINCIPIO: Un solo lugar para cambiar cualquier parámetro.
-# =============================================================
 
 import os
 from datetime import datetime, timedelta
 
-# ------------------------------------------------------------------
 # PARÁMETROS TEMPORALES
 # Horizonte de análisis: 5 años hacia atrás desde hoy.
 # El enunciado exige "al menos cinco años" de datos históricos.
-# ------------------------------------------------------------------
 FECHA_FIN    = datetime.today()
 FECHA_INICIO = FECHA_FIN - timedelta(days=5 * 365)   # ~1826 días
 
 # Formato de fecha usado en todo el sistema (ISO 8601)
 DATE_FORMAT = "%Y-%m-%d"
 
-# ------------------------------------------------------------------
 # PORTAFOLIO DE 20 ACTIVOS
 #
 # Composición:
@@ -36,7 +31,6 @@ DATE_FORMAT = "%Y-%m-%d"
 #   - 8 ETFs sectoriales y de commodities: GLD, SLV, USO, TLT, XLE, XLF, XLK, VNQ
 #
 # Todos cotizan en NYSE o NASDAQ y tienen datos disponibles en Yahoo Finance.
-# ------------------------------------------------------------------
 ACTIVOS = [
     # ── BVC / Colombia ADRs (cotizados en NYSE) ──────────────────
     # EC: Ecopetrol es la principal empresa petrolera de Colombia.
@@ -110,12 +104,10 @@ ACTIVOS = [
 # Lista plana de tickers para iterar fácilmente
 TICKERS = [a["ticker"] for a in ACTIVOS]
 
-# ------------------------------------------------------------------
 # PARÁMETROS ALGORÍTMICOS
 #
 # Estos valores controlan el comportamiento de los algoritmos.
 # Se pueden modificar para experimentar con diferentes configuraciones.
-# ------------------------------------------------------------------
 
 # Tamaño de la ventana deslizante para detección de patrones (Req 3).
 # Con 20 días se capturan tendencias de ~1 mes bursátil.
@@ -129,7 +121,6 @@ DIAS_VOLATILIDAD = 30
 # Solo se reportan pares con similitud >= 0.75 (75%).
 MIN_SIMILITUD_THRESHOLD = 0.75
 
-# ------------------------------------------------------------------
 # CONFIGURACIÓN DE BASE DE DATOS
 #
 # Estrategia de configuración (en orden de prioridad):
@@ -140,7 +131,6 @@ MIN_SIMILITUD_THRESHOLD = 0.75
 #
 # Para desarrollo local: editar el archivo .env
 # Para producción (Render): DATABASE_URL se inyecta automáticamente
-# ------------------------------------------------------------------
 _DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 if _DATABASE_URL:
@@ -175,7 +165,6 @@ else:
         "password": os.getenv("DB_PASSWORD", "changeme"),
     }
 
-# ------------------------------------------------------------------
 # CONFIGURACIÓN DEL SERVIDOR HTTP
 #
 # API_HOST: "0.0.0.0" significa "escuchar en todas las interfaces de red".
@@ -183,6 +172,5 @@ else:
 #
 # API_PORT: Render asigna el puerto dinámicamente via la variable $PORT.
 #           Se lee $PORT primero, luego API_PORT, y por defecto 8001.
-# ------------------------------------------------------------------
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("PORT", os.getenv("API_PORT", "8001")))

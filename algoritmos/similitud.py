@@ -27,10 +27,7 @@ CUÁNDO USAR CADA ALGORITMO:
 
 import math
 
-
-# ------------------------------------------------------------------
 # UTILIDADES COMPARTIDAS
-# ------------------------------------------------------------------
 
 def _validar_series(a: list[float], b: list[float], nombre: str):
     """
@@ -45,7 +42,6 @@ def _validar_series(a: list[float], b: list[float], nombre: str):
     """
     if not a or not b:
         raise ValueError(f"[{nombre}] Las series no pueden estar vacías.")
-
 
 def normalizar_minmax(serie: list[float]) -> list[float]:
     """
@@ -77,7 +73,6 @@ def normalizar_minmax(serie: list[float]) -> list[float]:
         return [0.0] * len(serie)   # Serie constante → todos los valores son 0
     return [(v - minimo) / rango for v in serie]
 
-
 def _media(serie: list[float]) -> float:
     """
     Calcula la media aritmética de una serie.
@@ -86,10 +81,7 @@ def _media(serie: list[float]) -> float:
     """
     return sum(serie) / len(serie)
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 1: DISTANCIA EUCLIDIANA
-# ------------------------------------------------------------------
 
 def distancia_euclidiana(a: list[float], b: list[float],
                           normalizar: bool = True) -> float:
@@ -140,10 +132,7 @@ def distancia_euclidiana(a: list[float], b: list[float],
     suma_cuadrados = sum((ai - bi) ** 2 for ai, bi in zip(a, b))
     return math.sqrt(suma_cuadrados)
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 2: CORRELACIÓN DE PEARSON
-# ------------------------------------------------------------------
 
 def correlacion_pearson(a: list[float], b: list[float]) -> float:
     """
@@ -204,10 +193,7 @@ def correlacion_pearson(a: list[float], b: list[float]) -> float:
 
     return numerador / denominador
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 3: SIMILITUD POR COSENO
-# ------------------------------------------------------------------
 
 def similitud_coseno(a: list[float], b: list[float]) -> float:
     """
@@ -262,10 +248,7 @@ def similitud_coseno(a: list[float], b: list[float]) -> float:
 
     return producto_punto / (norma_a * norma_b)
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 4: DTW — DYNAMIC TIME WARPING
-# ------------------------------------------------------------------
 
 def dtw(a: list[float], b: list[float],
         normalizar: bool = True, window_pct: float = 0.1) -> float:
@@ -354,10 +337,7 @@ def dtw(a: list[float], b: list[float],
 
     return matriz[n][m]
 
-
-# ------------------------------------------------------------------
 # FUNCIÓN DE CONVENIENCIA: Calcular los 4 algoritmos para un par
-# ------------------------------------------------------------------
 
 def calcular_todas(ticker_a: str, serie_a: list[float],
                    ticker_b: str, serie_b: list[float]) -> dict:
@@ -386,10 +366,7 @@ def calcular_todas(ticker_a: str, serie_a: list[float],
         "dtw":        dtw(serie_a, serie_b, normalizar=True),
     }
 
-
-# ------------------------------------------------------------------
 # FUNCIÓN PRINCIPAL: Matriz de similitud para todos los pares
-# ------------------------------------------------------------------
 
 def matriz_similitud(series: dict[str, list[float]],
                      algoritmo: str = "pearson") -> list[dict]:

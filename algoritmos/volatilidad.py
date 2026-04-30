@@ -28,10 +28,7 @@ RESTRICCIONES DEL ENUNCIADO CUMPLIDAS:
 import math
 from config import DIAS_VOLATILIDAD
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 1: RETORNOS LOGARÍTMICOS
-# ------------------------------------------------------------------
 
 def calcular_retornos_log(precios: list[float]) -> list[float]:
     """
@@ -67,10 +64,7 @@ def calcular_retornos_log(precios: list[float]) -> list[float]:
             retornos.append(math.log(precios[i] / precios[i - 1]))
     return retornos
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 2: VOLATILIDAD HISTÓRICA RODANTE
-# ------------------------------------------------------------------
 
 def calcular_volatilidad(
     precios: list[float],
@@ -159,10 +153,7 @@ def calcular_volatilidad(
 
     return resultados
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 3: MÁXIMO DRAWDOWN
-# ------------------------------------------------------------------
 
 def calcular_max_drawdown(precios: list[float]) -> dict:
     """
@@ -233,10 +224,7 @@ def calcular_max_drawdown(precios: list[float]) -> dict:
         "precio_valle": round(precio_valle, 4),
     }
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 4: VALUE AT RISK (VaR) HISTÓRICO
-# ------------------------------------------------------------------
 
 def calcular_var_historico(
     precios: list[float],
@@ -305,10 +293,7 @@ def calcular_var_historico(
         )
     }
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 5: SHARPE RATIO
-# ------------------------------------------------------------------
 
 def calcular_sharpe(
     precios: list[float],
@@ -391,10 +376,7 @@ def calcular_sharpe(
         "tasa_libre_riesgo_pct": round(tasa_libre_riesgo_anual * 100, 2),
     }
 
-
-# ------------------------------------------------------------------
 # FUNCIÓN PRINCIPAL: Resumen completo de riesgo para un activo
-# ------------------------------------------------------------------
 
 def resumen_riesgo(ticker: str, precios: list[float]) -> dict:
     """

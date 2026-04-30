@@ -16,7 +16,6 @@ from etl.database   import (
     guardar_volatilidad,
 )
 
-
 def pipeline_etl():
     """Req 1 — Descarga → Limpieza → Carga en PostgreSQL."""
     print("=" * 60)
@@ -35,7 +34,6 @@ def pipeline_etl():
         else:
             print(f"[ETL] Saltando {ticker} — sin ID o sin datos limpios.")
     print("\n✅ Pipeline ETL completado.")
-
 
 def pipeline_similitud():
     """Req 2 — Calcula los 4 algoritmos de similitud para todos los pares."""
@@ -74,7 +72,6 @@ def pipeline_similitud():
 
     print("\n✅ Pipeline de Similitud completado.")
 
-
 def pipeline_volatilidad():
     """Req 3 — Calcula volatilidad y métricas de riesgo para todos los activos."""
     from algoritmos.volatilidad import calcular_volatilidad
@@ -105,7 +102,6 @@ def pipeline_volatilidad():
         print(f"[VOL] {ticker}: {len(volatilidades)} ventanas guardadas.")
 
     print("\n✅ Pipeline de Volatilidad completado.")
-
 
 def pipeline_ordenamiento():
     """
@@ -196,7 +192,6 @@ def pipeline_ordenamiento():
     print("\n✅ Pipeline de Ordenamiento completado.")
     return resultados, top15
 
-
 def iniciar_api():
     """Req 5 — Inicia el servidor HTTP."""
     try:
@@ -206,7 +201,6 @@ def iniciar_api():
         print(f"[API] Advertencia al inicializar schema: {e}")
     from api.server import iniciar_servidor
     iniciar_servidor()
-
 
 if __name__ == "__main__":
     import sys

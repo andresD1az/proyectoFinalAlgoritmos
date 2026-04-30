@@ -30,10 +30,7 @@ RESTRICCIONES DEL ENUNCIADO CUMPLIDAS:
 import math
 from config import VENTANA_DESLIZANTE_DIAS
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 1: VENTANA DESLIZANTE (SLIDING WINDOW)
-# ------------------------------------------------------------------
 
 def detectar_patrones(
     fechas: list[str],
@@ -125,7 +122,6 @@ def detectar_patrones(
 
     return resultados
 
-
 def _clasificar_segmento(segmento: list[float]) -> str:
     """
     Clasifica un segmento de precios en uno de los patrones definidos.
@@ -171,10 +167,7 @@ def _clasificar_segmento(segmento: list[float]) -> str:
 
     return "neutro"
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 2: DETECCIÓN DE PICOS Y VALLES
-# ------------------------------------------------------------------
 
 def detectar_picos_valles(
     fechas: list[str],
@@ -234,10 +227,7 @@ def detectar_picos_valles(
 
     return {"picos": picos, "valles": valles}
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 3: MEDIA MÓVIL SIMPLE (SMA)
-# ------------------------------------------------------------------
 
 def media_movil_simple(precios: list[float], ventana: int) -> list[float | None]:
     """
@@ -280,10 +270,7 @@ def media_movil_simple(precios: list[float], ventana: int) -> list[float | None]
 
     return resultado
 
-
-# ------------------------------------------------------------------
 # ALGORITMO 4: GOLDEN CROSS / DEATH CROSS
-# ------------------------------------------------------------------
 
 def detectar_cruces_medias(
     fechas: list[str],

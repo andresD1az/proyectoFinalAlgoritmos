@@ -11,7 +11,6 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from config import API_HOST, API_PORT
 
-
 def _respuesta_json(handler, codigo: int, datos):
     cuerpo = json.dumps(datos, ensure_ascii=False, default=str).encode("utf-8")
     handler.send_response(codigo)
@@ -21,11 +20,9 @@ def _respuesta_json(handler, codigo: int, datos):
     handler.end_headers()
     handler.wfile.write(cuerpo)
 
-
 def _parsear_query(path: str) -> dict:
     partes = urllib.parse.urlparse(path)
     return dict(urllib.parse.parse_qsl(partes.query))
-
 
 class BVCHandler(BaseHTTPRequestHandler):
 
@@ -411,7 +408,6 @@ class BVCHandler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             _respuesta_json(self, 500, {"error": str(e)})
-
 
 # ── INICIO ────────────────────────────────────────────────────────
 

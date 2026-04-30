@@ -49,10 +49,7 @@ import time
 from datetime import datetime
 from config import ACTIVOS, FECHA_INICIO, FECHA_FIN, DATE_FORMAT
 
-
-# ------------------------------------------------------------------
 # CONSTANTES DE CONFIGURACIÓN HTTP
-# ------------------------------------------------------------------
 
 # URL base de la API de Yahoo Finance (versión 8, retorna JSON crudo)
 _YAHOO_BASE = "https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
@@ -66,7 +63,6 @@ _HEADERS = {
         "Chrome/120.0.0.0 Safari/537.36"
     )
 }
-
 
 def _timestamp(fecha: datetime) -> int:
     """
@@ -85,7 +81,6 @@ def _timestamp(fecha: datetime) -> int:
         Entero con el Unix timestamp
     """
     return int(fecha.timestamp())
-
 
 def descargar_ticker(ticker: str) -> list[dict] | None:
     """
@@ -171,7 +166,6 @@ def descargar_ticker(ticker: str) -> list[dict] | None:
         # Error al parsear la respuesta (estructura inesperada del JSON)
         print(f"[DOWNLOAD] Error parseando respuesta de {ticker}: {e}")
         return None
-
 
 def descargar_todos(pausa_segundos: float = 1.0) -> dict[str, list[dict]]:
     """

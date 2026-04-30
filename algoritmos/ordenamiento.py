@@ -25,7 +25,6 @@ Complejidades implementadas:
 import time
 import math
 
-
 # ──────────────────────────────────────────────────────────────────
 # CLAVE DE COMPARACIÓN COMPARTIDA
 # ──────────────────────────────────────────────────────────────────
@@ -38,19 +37,13 @@ def _clave(registro: dict) -> tuple:
     """
     return (str(registro.get("fecha", "")), float(registro.get("cierre", 0.0)))
 
-
 def _menor_o_igual(a: dict, b: dict) -> bool:
     return _clave(a) <= _clave(b)
-
 
 def _menor(a: dict, b: dict) -> bool:
     return _clave(a) < _clave(b)
 
-
-
-# ======================================================= #
 # 1. TIMSORT  —  O(n log n)                               #
-# ======================================================= #
 _TIM_RUN = 32   # Tamaño mínimo de run para inserción
 
 def _insertion_run(arr: list, izq: int, der: int):
@@ -62,7 +55,6 @@ def _insertion_run(arr: list, izq: int, der: int):
             arr[j + 1] = arr[j]
             j -= 1
         arr[j + 1] = temp
-
 
 def _merge_tim(arr: list, izq: int, mid: int, der: int):
     """Merge de dos mitades ordenadas arr[izq..mid] y arr[mid+1..der]."""
@@ -80,7 +72,6 @@ def _merge_tim(arr: list, izq: int, mid: int, der: int):
         arr[k] = izq_parte[i]; i += 1; k += 1
     while j < len(der_parte):
         arr[k] = der_parte[j]; j += 1; k += 1
-
 
 def timsort(registros: list) -> tuple[list, float]:
     """
@@ -111,10 +102,7 @@ def timsort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 2. COMB SORT  —  O(n log n)                             #
-# ======================================================= #
 
 def comb_sort(registros: list) -> tuple[list, float]:
     """
@@ -149,10 +137,7 @@ def comb_sort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 3. SELECTION SORT  —  O(n²)                             #
-# ======================================================= #
 
 def selection_sort(registros: list) -> tuple[list, float]:
     """
@@ -174,11 +159,7 @@ def selection_sort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-
-# ======================================================= #
 # 4. TREE SORT  —  O(n log n)                             #
-# ======================================================= #
 
 class _NodoBST:
     """Nodo de un Árbol Binario de Búsqueda (BST)."""
@@ -187,7 +168,6 @@ class _NodoBST:
         self.registro = registro
         self.izq = None
         self.der = None
-
 
 def _bst_insertar(raiz: _NodoBST, registro: dict) -> _NodoBST:
     if raiz is None:
@@ -198,7 +178,6 @@ def _bst_insertar(raiz: _NodoBST, registro: dict) -> _NodoBST:
         raiz.der = _bst_insertar(raiz.der, registro)
     return raiz
 
-
 def _bst_inorden(nodo: _NodoBST, resultado: list):
     """Recorrido in-orden (izq → raíz → der) produce la lista ordenada."""
     if nodo is None:
@@ -206,7 +185,6 @@ def _bst_inorden(nodo: _NodoBST, resultado: list):
     _bst_inorden(nodo.izq, resultado)
     resultado.append(nodo.registro)
     _bst_inorden(nodo.der, resultado)
-
 
 def tree_sort(registros: list) -> tuple[list, float]:
     """
@@ -222,10 +200,7 @@ def tree_sort(registros: list) -> tuple[list, float]:
     _bst_inorden(raiz, resultado)
     return resultado, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 5. PIGEONHOLE SORT  —  O(n + k)                         #
-# ======================================================= #
 
 def pigeonhole_sort(registros: list) -> tuple[list, float]:
     """
@@ -271,10 +246,7 @@ def pigeonhole_sort(registros: list) -> tuple[list, float]:
 
     return resultado, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 6. BUCKET SORT  —  O(n + k)                             #
-# ======================================================= #
 
 def bucket_sort(registros: list) -> tuple[list, float]:
     """
@@ -319,11 +291,7 @@ def bucket_sort(registros: list) -> tuple[list, float]:
 
     return resultado, time.perf_counter() - inicio
 
-
-
-# ======================================================= #
 # 7. QUICKSORT  —  O(n log n) promedio, O(n²) peor caso  #
-# ======================================================= #
 
 def _quicksort_rec(arr: list, bajo: int, alto: int):
     """QuickSort recursivo con pivote mediana-de-tres."""
@@ -331,7 +299,6 @@ def _quicksort_rec(arr: list, bajo: int, alto: int):
         pi = _particionar(arr, bajo, alto)
         _quicksort_rec(arr, bajo, pi - 1)
         _quicksort_rec(arr, pi + 1, alto)
-
 
 def _mediana_tres(arr: list, bajo: int, alto: int) -> int:
     """Selecciona el pivote como la mediana entre primero, medio y último."""
@@ -346,7 +313,6 @@ def _mediana_tres(arr: list, bajo: int, alto: int) -> int:
     # Colocar pivote en alto-1
     arr[mid], arr[alto - 1] = arr[alto - 1], arr[mid]
     return alto - 1
-
 
 def _particionar(arr: list, bajo: int, alto: int) -> int:
     """Partición de Lomuto con pivote mediana-de-tres."""
@@ -365,7 +331,6 @@ def _particionar(arr: list, bajo: int, alto: int) -> int:
     arr[i + 1], arr[alto] = arr[alto], arr[i + 1]
     return i + 1
 
-
 def quicksort(registros: list) -> tuple[list, float]:
     """
     QuickSort — O(n log n) promedio, O(n²) peor caso
@@ -379,10 +344,7 @@ def quicksort(registros: list) -> tuple[list, float]:
         _quicksort_rec(arr, 0, len(arr) - 1)
     return arr, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 8. HEAPSORT  —  O(n log n)                              #
-# ======================================================= #
 
 def _heapify(arr: list, n: int, i: int):
     """
@@ -401,7 +363,6 @@ def _heapify(arr: list, n: int, i: int):
     if mayor != i:
         arr[i], arr[mayor] = arr[mayor], arr[i]
         _heapify(arr, n, mayor)
-
 
 def heapsort(registros: list) -> tuple[list, float]:
     """
@@ -426,17 +387,12 @@ def heapsort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-
-# ======================================================= #
 # 9. BITONIC SORT  —  O(n log² n)                         #
-# ======================================================= #
 
 def _bitonic_compare(arr: list, i: int, j: int, ascendente: bool):
     """Compara e intercambia arr[i] y arr[j] según la dirección."""
     if ascendente == _menor(arr[j], arr[i]):
         arr[i], arr[j] = arr[j], arr[i]
-
 
 def _bitonic_merge(arr: list, bajo: int, cnt: int, ascendente: bool):
     """Fusiona una secuencia bitónica de longitud cnt a partir de bajo."""
@@ -447,7 +403,6 @@ def _bitonic_merge(arr: list, bajo: int, cnt: int, ascendente: bool):
         _bitonic_merge(arr, bajo, k, ascendente)
         _bitonic_merge(arr, bajo + k, k, ascendente)
 
-
 def _bitonic_sort_rec(arr: list, bajo: int, cnt: int, ascendente: bool):
     """Genera y fusiona secuencias bitónicas recursivamente."""
     if cnt > 1:
@@ -456,14 +411,12 @@ def _bitonic_sort_rec(arr: list, bajo: int, cnt: int, ascendente: bool):
         _bitonic_sort_rec(arr, bajo + k, k, False)     # segunda mitad DESC
         _bitonic_merge(arr, bajo, cnt, ascendente)     # fusionar
 
-
 def _siguiente_potencia_2(n: int) -> int:
     """Retorna la menor potencia de 2 >= n."""
     p = 1
     while p < n:
         p <<= 1
     return p
-
 
 def bitonic_sort(registros: list) -> tuple[list, float]:
     """
@@ -490,10 +443,7 @@ def bitonic_sort(registros: list) -> tuple[list, float]:
     resultado = [r for r in arr if r.get("fecha") != "9999-99-99"]
     return resultado, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 10. GNOME SORT  —  O(n²)                                #
-# ======================================================= #
 
 def gnome_sort(registros: list) -> tuple[list, float]:
     """
@@ -520,10 +470,7 @@ def gnome_sort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-# ======================================================= #
 # 11. BINARY INSERTION SORT  —  O(n²)                     #
-# ======================================================= #
 
 def _busqueda_binaria_pos(arr: list, item: dict, izq: int, der: int) -> int:
     """
@@ -538,7 +485,6 @@ def _busqueda_binaria_pos(arr: list, item: dict, izq: int, der: int) -> int:
         else:
             izq = mid + 1
     return izq
-
 
 def binary_insertion_sort(registros: list) -> tuple[list, float]:
     """
@@ -563,11 +509,7 @@ def binary_insertion_sort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
-
-# ======================================================= #
 # 12. RADIX SORT  —  O(nk)                                #
-# ======================================================= #
 
 def _counting_sort_por_digito(arr: list, exp: int, base: int = 10):
     """
@@ -598,7 +540,6 @@ def _counting_sort_por_digito(arr: list, exp: int, base: int = 10):
 
     for i in range(n):
         arr[i] = salida[i]
-
 
 def radix_sort(registros: list) -> tuple[list, float]:
     """
@@ -637,7 +578,6 @@ def radix_sort(registros: list) -> tuple[list, float]:
 
     return arr, time.perf_counter() - inicio
 
-
 # ──────────────────────────────────────────────────────────────────
 # BENCHMARK — Tabla 1 del Requerimiento 2
 # ──────────────────────────────────────────────────────────────────
@@ -656,7 +596,6 @@ ALGORITMOS = [
     ("Binary Insertion Sort",binary_insertion_sort, "O(n²)"),
     ("RadixSort",            radix_sort,            "O(nk)"),
 ]
-
 
 def ejecutar_benchmark(registros: list) -> list[dict]:
     """
@@ -693,7 +632,6 @@ def ejecutar_benchmark(registros: list) -> list[dict]:
 
     resultados.sort(key=lambda x: x["tiempo_seg"])
     return resultados
-
 
 def top15_mayor_volumen(registros: list) -> list[dict]:
     """

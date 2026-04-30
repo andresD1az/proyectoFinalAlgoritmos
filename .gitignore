@@ -22,5 +22,7 @@ venv/
 # Datos locales
 data/
 
-# Notas locales
+# Notas locales (no subir al repo)
 EXPOSICION.md
+DOCUMENTACION_TECNICA.md
+DOCUMENTACION_ACTIVOS.md

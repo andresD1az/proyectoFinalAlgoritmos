@@ -24,7 +24,6 @@ JUSTIFICACIÓN DE LAS TÉCNICAS (requerida por el enunciado):
       imposible en acciones y ETFs, por lo que se elimina directamente.
 """
 
-
 def interpolar_linealmente(valores: list) -> list:
     """
     Rellena valores None en una lista usando interpolación lineal.
@@ -103,7 +102,6 @@ def interpolar_linealmente(valores: list) -> list:
 
     return resultado
 
-
 def limpiar_dataset(filas: list[dict]) -> list[dict]:
     """
     Limpia un dataset OHLCV completo aplicando los algoritmos de limpieza.
@@ -162,7 +160,6 @@ def limpiar_dataset(filas: list[dict]) -> list[dict]:
             fila["volumen"] = 0
 
     return filas_validas
-
 
 def detectar_outliers_zscore(valores: list[float], umbral: float = 3.5) -> list[int]:
     """
