@@ -136,6 +136,7 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
   </div>
   <div class="nav-group"><div class="nav-lbl">General</div>
     <div class="nav-item active" onclick="nav(this,'ov')"><span class="nav-icon">&#x1F3E0;</span> Overview</div>
+    <div class="nav-item" onclick="nav(this,'port')"><span class="nav-icon">&#x1F4F0;</span> Portafolio</div>
   </div>
   <div class="nav-group"><div class="nav-lbl">Req 2 &mdash; Similitud</div>
     <div class="nav-item" onclick="nav(this,'cmp')"><span class="nav-icon">&#x1F4CA;</span> Comparar Activos</div>
@@ -167,22 +168,119 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
   <div class="content">
     <!-- OVERVIEW -->
     <div class="sec on" id="sec-ov">
+      <!-- KPI cards -->
       <div class="g4">
         <div class="stat bl"><div class="slbl">Activos</div><div class="sval" id="st-act">-</div><div class="ssub">20 en portafolio</div></div>
         <div class="stat gr"><div class="slbl">Registros en BD</div><div class="sval" id="st-reg">-</div><div class="ssub">5 anos historico</div></div>
         <div class="stat yl"><div class="slbl">Pares similitud</div><div class="sval">190</div><div class="ssub">4 algoritmos</div></div>
         <div class="stat pu"><div class="slbl">Algoritmos</div><div class="sval">28</div><div class="ssub">Desde cero, sin libs</div></div>
       </div>
+
+      <!-- Fila 1: Top Pearson + Dona riesgo -->
       <div class="g2">
         <div class="card">
-          <div class="ch"><div class="ci ci-g">&#x1F4C8;</div><h3>Top 5 pares Pearson</h3></div>
-          <div class="table-wrap"><table><thead><tr><th>#</th><th>Par</th><th>r</th><th>Nivel</th></tr></thead>
-          <tbody id="top-p"><tr><td colspan="4"><div class="ld"><div class="spin"></div>Cargando...</div></td></tr></tbody></table></div>
+          <div class="ch"><div class="ci ci-g">&#x1F4C8;</div><h3>Top 5 pares &mdash; Correlacion Pearson</h3></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>Par</th><th>r</th><th>Barra</th><th>Nivel</th></tr></thead>
+          <tbody id="top-p"><tr><td colspan="5"><div class="ld"><div class="spin"></div>Cargando...</div></td></tr></tbody></table></div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column">
+          <div class="ch"><div class="ci ci-r">&#x26A0;</div><h3>Distribucion de Riesgo</h3></div>
+          <div style="display:flex;align-items:center;gap:20px;flex:1">
+            <canvas id="dona-riesgo" width="140" height="140" style="flex-shrink:0"></canvas>
+            <div id="risk-sum" style="flex:1"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila 2: Sparklines de activos -->
+      <div class="card">
+        <div class="ch"><div class="ci ci-a">&#x26A1;</div><h3>Rendimiento reciente &mdash; Ultimos 60 dias</h3>
+          <span style="margin-left:auto;font-size:11px;color:var(--txt3)">% cambio acumulado</span>
+        </div>
+        <div id="sparklines-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+          <div class="ld"><div class="spin"></div>Cargando sparklines...</div>
+        </div>
+      </div>
+
+      <!-- Fila 3: Mini heatmap preview + Top volatilidad -->
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ci ci-y">&#x1F321;</div><h3>Correlacion &mdash; Preview</h3>
+            <button class="btn btn-s" style="margin-left:auto;font-size:11px;padding:5px 10px" onclick="goSection('hm')">Ver completo &rarr;</button>
+          </div>
+          <div id="ov-hm"><div class="ld"><div class="spin"></div>Cargando...</div></div>
         </div>
         <div class="card">
-          <div class="ch"><div class="ci ci-r">&#x26A0;</div><h3>Distribucion de Riesgo</h3></div>
-          <div id="risk-sum"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+          <div class="ch"><div class="ci ci-p">&#x1F4CA;</div><h3>Top 8 &mdash; Volatilidad anualizada</h3>
+            <button class="btn btn-s" style="margin-left:auto;font-size:11px;padding:5px 10px" onclick="goSection('rk')">Ver ranking &rarr;</button>
+          </div>
+          <div id="ov-vol-chart"><div class="ld"><div class="spin"></div>Cargando...</div></div>
         </div>
+      </div>
+
+      <!-- Fila 4: Patrones frecuentes + Algoritmos de ordenamiento preview -->
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ci ci-b">&#x1F50D;</div><h3>Patrones mas frecuentes</h3>
+            <select id="ov-pat-tk" onchange="ovPatrones()" style="margin-left:auto;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt)">
+              <option value="SPY">SPY</option>
+              <option value="QQQ">QQQ</option>
+              <option value="EC">EC</option>
+              <option value="CIB">CIB</option>
+              <option value="GXG">GXG</option>
+              <option value="GLD">GLD</option>
+              <option value="USO">USO</option>
+              <option value="TLT">TLT</option>
+              <option value="EEM">EEM</option>
+              <option value="XLK">XLK</option>
+            </select>
+            <button class="btn btn-s" style="font-size:11px;padding:5px 10px" onclick="goSection('pat')">Explorar &rarr;</button>
+          </div>
+          <div id="ov-patrones"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ci ci-a">&#x23F1;</div><h3>Benchmark ordenamiento &mdash; Top 6</h3>
+            <button class="btn btn-s" style="margin-left:auto;font-size:11px;padding:5px 10px" onclick="goSection('sort')">Ver tabla &rarr;</button>
+          </div>
+          <div id="ov-sort-chart"><div class="ld"><div class="spin"></div>Cargando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTAFOLIO -->
+    <div class="sec" id="sec-port">
+      <!-- Controles -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div class="ci ci-a" style="font-size:16px">&#x1F4F0;</div>
+          <div>
+            <div style="font-size:14px;font-weight:600">Graficos individuales &mdash; 20 activos</div>
+            <div style="font-size:11px;color:var(--txt3)">Precio de cierre historico completo (5 anos). Haz clic en cualquier grafico para ver velas OHLC.</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div>
+              <label style="font-size:11px;color:var(--txt3);font-weight:500;display:block;margin-bottom:3px">Periodo</label>
+              <select id="port-period" onchange="loadPortfolio()" style="font-size:12px;padding:6px 10px">
+                <option value="60">60 dias</option>
+                <option value="180">6 meses</option>
+                <option value="365" selected>1 ano</option>
+                <option value="0">Todo</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--txt3);font-weight:500;display:block;margin-bottom:3px">Ordenar por</label>
+              <select id="port-sort" onchange="loadPortfolio()" style="font-size:12px;padding:6px 10px">
+                <option value="alpha">Alfabetico</option>
+                <option value="chg_desc">Mayor rendimiento</option>
+                <option value="chg_asc">Menor rendimiento</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Grid de graficos -->
+      <div id="port-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <div class="ld" style="grid-column:1/-1"><div class="spin"></div>Cargando graficos...</div>
       </div>
     </div>
 
@@ -362,7 +460,7 @@ let allTickers=Object.keys(NM);
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('ov-lay').classList.toggle('show');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('ov-lay').classList.remove('show');}
 
-const titles={ov:'Overview',sort:'Tabla 1 - Algoritmos de Ordenamiento',vol:'Top-15 Mayor Volumen',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
+const titles={ov:'Overview',port:'Portafolio — 20 Activos',sort:'Tabla 1 - Algoritmos de Ordenamiento',vol:'Top-15 Mayor Volumen',cmp:'Comparar Activos',hm:'Mapa de Calor',pat:'Patrones',rk:'Clasificacion de Riesgo',cs:'Velas OHLC',rp:'Reporte / PDF',fx:'Tasa USD/COP'};
 function nav(el,id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
@@ -376,6 +474,7 @@ function nav(el,id){
   if(id==='rk'&&!rkLoaded)loadRiesgo();
   if(id==='cs')initCS();
   if(id==='fx')loadTasa();
+  if(id==='port')loadPortfolio();
 }
 
 function populateSel(tickers){
@@ -407,32 +506,51 @@ async function checkStatus(){
 }
 
 async function loadOV(){
+  // KPIs básicos
   try{
     const da=await fno('/activos');
     document.getElementById('st-act').textContent=(da.total||da.activos?.length||'');
     const d=await f('/reporte');
     const tot=d.seccion_1_datos?.filas_totales;
     if(tot)document.getElementById('st-reg').textContent=tot.toLocaleString();
+
+    // Top 5 Pearson con barra visual
     const top=(d.seccion_2_similitud?.pearson?.top_5||[]);
-    document.getElementById('top-p').innerHTML=top.map((p,i)=>`
-      <tr><td style="color:var(--txt3)">${i+1}</td>
-      <td><b>${p.ticker1}</b> &mdash; <b>${p.ticker2}</b></td>
-      <td class="mono">${p.valor.toFixed(4)}</td>
-      <td><span class="badge ${p.valor>.9?'bg':'by'}">${p.valor>.9?'Muy alta':'Alta'}</span></td></tr>`).join('')||
-      '<tr><td colspan="4" style="padding:14px;color:var(--txt3)">Ejecutar pipeline de similitud primero</td></tr>';
+    document.getElementById('top-p').innerHTML=top.map((p,i)=>{
+      const pct=Math.round(p.valor*100);
+      const cl=p.valor>.95?'var(--green)':p.valor>.85?'var(--yel)':'var(--acc)';
+      return `<tr>
+        <td style="color:var(--txt3)">${i+1}</td>
+        <td><b style="color:var(--acc)">${p.ticker1}</b> <span style="color:var(--txt3)">↔</span> <b style="color:var(--acc)">${p.ticker2}</b></td>
+        <td class="mono" style="font-weight:700;color:${cl}">${p.valor.toFixed(4)}</td>
+        <td style="width:90px"><div class="vbar"><div class="vfill" style="width:${pct}%;background:${cl}"></div></div></td>
+        <td><span class="badge ${p.valor>.9?'bg':'by'}">${p.valor>.95?'Perfecta':p.valor>.9?'Muy alta':'Alta'}</span></td></tr>`;
+    }).join('')||'<tr><td colspan="5" style="padding:14px;color:var(--txt3)">Ejecutar pipeline de similitud primero</td></tr>';
+
+    // Dona de riesgo
     const rk=d.seccion_3_volatilidad?.ranking||[];
     if(rk.length){
       const c=rk.filter(x=>x.volatilidad_anual<.15).length;
       const m=rk.filter(x=>x.volatilidad_anual>=.15&&x.volatilidad_anual<.3).length;
       const a=rk.filter(x=>x.volatilidad_anual>=.3).length;
-      document.getElementById('risk-sum').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
-        ${rbar('Conservadores',c,rk.length,'var(--green)')}
-        ${rbar('Moderados',m,rk.length,'var(--yel)')}
-        ${rbar('Agresivos',a,rk.length,'var(--red)')}</div>`;
+      drawDona(c,m,a);
+      document.getElementById('risk-sum').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
+        ${rbar('Conservador',c,rk.length,'var(--green)')}
+        ${rbar('Moderado',m,rk.length,'var(--yel)')}
+        ${rbar('Agresivo',a,rk.length,'var(--red)')}
+        <div style="font-size:10px;color:var(--txt3);margin-top:4px">σ anual: &lt;15% / 15-30% / &ge;30%</div>
+      </div>`;
+      // Gráfico de barras horizontales de volatilidad (top 8)
+      ovVolChart(rk.slice(0,8));
     }
+
+    // Patrones SPY
+    ovPatrones();
   }catch(e){console.error(e)}
+
+  // Ticker strip
   try{
-    const sample=allTickers.slice(0,6);
+    const sample=allTickers.slice(0,8);
     const items=await Promise.all(sample.map(async t=>{
       try{const d=await f(`/precios?ticker=${t}&columna=cierre`);const p=d.datos||[];if(p.length<2)return null;
       const last=+p[p.length-1].cierre,prev=+p[p.length-2].cierre,chg=(last-prev)/prev*100;
@@ -440,6 +558,226 @@ async function loadOV(){
     }));
     document.getElementById('strip').innerHTML=items.filter(Boolean).join('');
   }catch(e){}
+
+  // Sparklines
+  ovSparklines();
+  // Mini heatmap
+  ovMiniHeatmap();
+  // Sort preview
+  ovSortPreview();
+}
+
+function drawDona(c,m,a){
+  const cv=document.getElementById('dona-riesgo');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=140,cx=70,cy=70,r=52,ri=34;
+  ctx.clearRect(0,0,W,W);
+  const total=c+m+a||1;
+  const segs=[
+    {v:c,color:'#059669'},{v:m,color:'#d97706'},{v:a,color:'#dc2626'}
+  ];
+  let angle=-Math.PI/2;
+  segs.forEach(s=>{
+    const sweep=(s.v/total)*2*Math.PI;
+    if(sweep===0)return;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,angle,angle+sweep);
+    ctx.closePath();
+    ctx.fillStyle=s.color;
+    ctx.fill();
+    angle+=sweep;
+  });
+  // Hueco central
+  ctx.beginPath();ctx.arc(cx,cy,ri,0,2*Math.PI);
+  ctx.fillStyle='#ffffff';ctx.fill();
+  // Texto central
+  ctx.fillStyle='#0f172a';ctx.font='bold 18px Inter,sans-serif';ctx.textAlign='center';
+  ctx.fillText(total,cx,cy+4);
+  ctx.fillStyle='#64748b';ctx.font='9px Inter,sans-serif';
+  ctx.fillText('activos',cx,cy+16);
+}
+
+async function ovSparklines(){
+  const grid=document.getElementById('sparklines-grid');
+  const DIAS=60;
+  const items=await Promise.all(allTickers.map(async t=>{
+    try{
+      const d=await f(`/precios?ticker=${t}&columna=cierre`);
+      const raw=(d.datos||[]).slice(-DIAS);
+      if(raw.length<5)return null;
+      const prices=raw.map(x=>+x.cierre);
+      const first=prices[0],last=prices[prices.length-1];
+      const chg=(last-first)/first*100;
+      const mn=Math.min(...prices),mx=Math.max(...prices),rng=mx-mn||1;
+      const W=140,H=44,PL=4,PR=4,PT=4,PB=4;
+      const xs=W-PL-PR,ys=H-PT-PB;
+      const px=i=>PL+i/(prices.length-1)*xs;
+      const py=v=>PT+(1-(v-mn)/rng)*ys;
+      const path=prices.map((v,i)=>`${i===0?'M':'L'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+      const areaPath=path+` L${px(prices.length-1)},${PT+ys} L${px(0)},${PT+ys} Z`;
+      const col=chg>=0?'#10b981':'#f43f5e';
+      const colA=chg>=0?'rgba(16,185,129,.15)':'rgba(244,63,94,.15)';
+      return `<div class="acard" style="padding:10px 12px;cursor:pointer" onclick="goSection('port')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <b style="font-size:12px;color:var(--acc)">${t}</b>
+          <span style="font-size:11px;font-weight:700;color:${col}">${chg>=0?'+':''}${chg.toFixed(2)}%</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:44px;display:block">
+          <path d="${areaPath}" fill="${colA}"/>
+          <path d="${path}" fill="none" stroke="${col}" stroke-width="1.8"/>
+        </svg>
+        <div style="font-size:10px;color:var(--txt3);margin-top:4px">${last.toFixed(2)} USD</div>
+      </div>`;
+    }catch{return null;}
+  }));
+  grid.innerHTML=items.filter(Boolean).join('')||'<p style="color:var(--txt3);padding:14px">Sin datos de precios</p>';
+}
+
+function goSection(id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  const navEl=document.querySelector(`.nav-item[onclick*="${id}"]`);
+  if(navEl)navEl.classList.add('active');
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('on');
+  document.getElementById('ptitle').textContent=titles[id]||id;
+  closeSidebar();
+  if(id==='sort')loadSorting();
+  if(id==='vol')loadTopVolumen();
+  if(id==='hm'&&!hmLoaded)loadHeatmap();
+  if(id==='rk'&&!rkLoaded)loadRiesgo();
+  if(id==='cs')initCS();
+  if(id==='fx')loadTasa();
+  if(id==='port')loadPortfolio();
+}
+
+function goCompare(t){
+  // Navegar a la sección sin depender del elemento nav
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  const navEl=document.querySelector('.nav-item[onclick*="cmp"]');
+  if(navEl)navEl.classList.add('active');
+  const sec=document.getElementById('sec-cmp');
+  if(sec)sec.classList.add('on');
+  document.getElementById('ptitle').textContent='Comparar Activos';
+  closeSidebar();
+  // Seleccionar el ticker en ca1
+  const s=document.getElementById('ca1');
+  if(s){
+    for(let i=0;i<s.options.length;i++){
+      if(s.options[i].value===t){s.selectedIndex=i;break;}
+    }
+  }
+}
+
+async function ovMiniHeatmap(){
+  try{
+    const d=await fno('/correlacion/matriz');
+    const tks=d.tickers||[],mat=d.matriz||[];
+    if(!tks.length){document.getElementById('ov-hm').innerHTML='<p style="color:var(--txt3);font-size:12px">Sin datos. Ejecutar similitud primero.</p>';return;}
+    const n=tks.length,cell=22,lbl=30;
+    const W=lbl+n*cell,H=lbl+n*cell;
+    function corColor(v){if(v>=0){return `rgb(${Math.round(16+(240-16)*(1-v))},185,${Math.round(129*v)})`;}const t=-v;return `rgb(244,${Math.round(63+90*(1-t))},${Math.round(94*(1-t))})`;}
+    let rects='',xl='',yl='';
+    for(let i=0;i<n;i++){
+      xl+=`<text x="${lbl+i*cell+cell/2}" y="${lbl-3}" text-anchor="middle" font-size="7" fill="#64748b" transform="rotate(-45,${lbl+i*cell+cell/2},${lbl-3})">${tks[i]}</text>`;
+      yl+=`<text x="${lbl-3}" y="${lbl+i*cell+cell/2+3}" text-anchor="end" font-size="7" fill="#64748b">${tks[i]}</text>`;
+      for(let j=0;j<n;j++){const v=mat[i]?.[j]??0;
+        rects+=`<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" fill="${corColor(v)}" rx="2"
+          onmouseenter="showTip(event,'${tks[i]} ↔ ${tks[j]}: r=${v.toFixed(3)}')" onmouseleave="hideTip()"/>`;
+      }
+    }
+    document.getElementById('ov-hm').innerHTML=`<div style="overflow-x:auto">
+      <svg width="${W}" height="${H}" style="display:block">${xl}${yl}${rects}</svg>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:10px;color:var(--txt3)">
+        <div style="width:80px;height:6px;border-radius:3px;background:linear-gradient(to right,#f43f5e,#334155,#10b981)"></div>
+        <span>-1 inversa &nbsp; 0 nula &nbsp; +1 perfecta</span>
+      </div>
+    </div>`;
+  }catch(e){document.getElementById('ov-hm').innerHTML=`<p style="color:var(--red);font-size:12px">${e.message}</p>`;}
+}
+
+function ovVolChart(ranking){
+  const el=document.getElementById('ov-vol-chart');
+  if(!ranking||!ranking.length){el.innerHTML='<p style="color:var(--txt3);font-size:12px">Sin datos de volatilidad.</p>';return;}
+  const maxV=Math.max(...ranking.map(r=>r.volatilidad_anual));
+  const W=340,PL=52,PR=60,PT=8,PB=8,barH=22,gap=7;
+  const H=PT+(ranking.length*(barH+gap))+PB;
+  const xs=W-PL-PR;
+  const bars=ranking.map((r,i)=>{
+    const bw=Math.max((r.volatilidad_anual/maxV)*xs,3);
+    const y=PT+i*(barH+gap);
+    const col=r.volatilidad_anual<.15?'#059669':r.volatilidad_anual<.3?'#d97706':'#dc2626';
+    const pct=(r.volatilidad_anual*100).toFixed(1);
+    return `<g>
+      <text x="${PL-5}" y="${y+barH/2+4}" text-anchor="end" font-size="11" fill="#1e293b" font-family="Inter,sans-serif" font-weight="600">${r.ticker}</text>
+      <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+      <text x="${PL+bw+5}" y="${y+barH/2+4}" font-size="10" fill="#475569" font-family="JetBrains Mono,monospace">${pct}%</text>
+    </g>`;
+  }).join('');
+  el.innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block">${bars}</svg>`;
+}
+
+async function ovPatrones(){
+  // Agregar selector de ticker al card
+  const el=document.getElementById('ov-patrones');
+  const tkSel=document.getElementById('ov-pat-tk');
+  const ticker=tkSel?tkSel.value:'SPY';
+  try{
+    const dp=await fno(`/patrones?ticker=${ticker}`);
+    const pats=dp.patrones||[];
+    const freq={};
+    pats.forEach(p=>freq[p.patron]=(freq[p.patron]||0)+1);
+    const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    if(!sorted.length){el.innerHTML='<p style="color:var(--txt3);font-size:12px">Sin datos. Ejecutar pipeline de patrones.</p>';return;}
+    const maxF=sorted[0][1];
+    const cols=['#0284c7','#059669','#7c3aed','#d97706','#dc2626','#0891b2'];
+    const W=340,PL=120,PR=50,PT=8,PB=8,barH=22,gap=7;
+    const H=PT+(sorted.length*(barH+gap))+PB;
+    const xs=W-PL-PR;
+    const bars=sorted.map(([pat,cnt],i)=>{
+      const bw=Math.max((cnt/maxF)*xs,3);
+      const y=PT+i*(barH+gap);
+      const col=cols[i%cols.length];
+      const lbl=pat.length>14?pat.slice(0,13)+'…':pat;
+      return `<g>
+        <text x="${PL-5}" y="${y+barH/2+4}" text-anchor="end" font-size="10" fill="#1e293b" font-family="Inter,sans-serif">${lbl}</text>
+        <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+        <text x="${PL+bw+5}" y="${y+barH/2+4}" font-size="10" fill="#475569" font-family="JetBrains Mono,monospace">${cnt}x</text>
+      </g>`;
+    }).join('');
+    el.innerHTML=`
+      <div style="font-size:11px;color:var(--txt3);margin-bottom:8px">
+        <b style="color:var(--acc)">${ticker}</b> &mdash; Ventana 20 dias &mdash; ${dp.total_patrones} patrones totales
+        &mdash; Picos: ${dp.picos_recientes?.length||0} &mdash; Valles: ${dp.valles_recientes?.length||0}
+      </div>
+      <svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block">${bars}</svg>`;
+  }catch(e){el.innerHTML=`<p style="color:var(--red);font-size:12px">${e.message}</p>`;}
+}
+
+async function ovSortPreview(){
+  try{
+    const d=await fno('/ordenamiento/benchmark');
+    const filas=(d.tabla1||[]).slice(0,6);
+    if(!filas.length){document.getElementById('ov-sort-chart').innerHTML='<p style="color:var(--txt3);font-size:12px">Sin datos. Ejecutar: python main.py ordenamiento</p>';return;}
+    const maxT=Math.max(...filas.map(f=>+f.tiempo_ms));
+    const W=340,PL=140,PR=60,PT=8,PB=8,barH=22,gap=7;
+    const H=PT+(filas.length*(barH+gap))+PB;
+    const xs=W-PL-PR;
+    const bars=filas.map((r,i)=>{
+      const bw=Math.max((+r.tiempo_ms/maxT)*xs,3);
+      const y=PT+i*(barH+gap);
+      const col=i<2?'#059669':i<4?'#0284c7':'#7c3aed';
+      return `<g>
+        <text x="${PL-5}" y="${y+barH/2+4}" text-anchor="end" font-size="10" fill="#1e293b" font-family="Inter,sans-serif">${r.algoritmo}</text>
+        <rect x="${PL}" y="${y}" width="${bw.toFixed(1)}" height="${barH}" fill="${col}" rx="4" opacity="0.85"/>
+        <text x="${PL+bw+5}" y="${y+barH/2+4}" font-size="10" fill="#475569" font-family="JetBrains Mono,monospace">${(+r.tiempo_ms).toFixed(1)}ms</text>
+      </g>`;
+    }).join('');
+    document.getElementById('ov-sort-chart').innerHTML=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block">${bars}</svg>`;
+  }catch(e){document.getElementById('ov-sort-chart').innerHTML=`<p style="color:var(--red);font-size:12px">${e.message}</p>`;}
 }
 function rbar(lbl,n,tot,cl){
   const p=tot>0?n/tot*100:0;
@@ -729,6 +1067,115 @@ async function loadTopVolumen(){
         <td class="mono">$${(+r.cierre).toFixed(2)}</td>
       </tr>`).join('')}</tbody></table></div>`;
   }catch(e){document.getElementById('vol-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+}
+
+// PORTAFOLIO — gráficos individuales de los 20 activos
+let portLoaded=false;
+async function loadPortfolio(){
+  const grid=document.getElementById('port-grid');
+  const periodRaw=document.getElementById('port-period').value;
+  const period=periodRaw===''?365:+periodRaw;  // 0 = todo el histórico
+  const sortBy=document.getElementById('port-sort').value;
+  grid.innerHTML='<div class="ld" style="grid-column:1/-1"><div class="spin"></div>Cargando graficos...</div>';
+
+  // Cargar de a 5 en paralelo para no saturar la API
+  const results=[];
+  for(let i=0;i<allTickers.length;i+=5){
+    const batch=allTickers.slice(i,i+5);
+    const batchRes=await Promise.all(batch.map(async t=>{
+      try{
+        const url=`/precios?ticker=${t}&columna=cierre`;
+        const r=await fetch(API+url);
+        const d=await r.json();
+        const all=(d.datos||[]);
+        const raw=period===0?all:all.slice(-period);
+        if(raw.length<5)return null;
+        const prices=raw.map(x=>+x.cierre);
+        const dates=raw.map(x=>String(x.fecha));
+        const first=prices[0],last=prices[prices.length-1];
+        const chg=(last-first)/first*100;
+        return {t,prices,dates,chg,last};
+      }catch(e){
+        console.warn('Error cargando',t,e);
+        return null;
+      }
+    }));
+    results.push(...batchRes);
+  }
+
+  let valid=results.filter(Boolean);
+
+  if(!valid.length){
+    grid.innerHTML='<p style="color:var(--txt3);padding:20px">Sin datos. Ejecutar ETL primero (python main.py etl).</p>';
+    return;
+  }
+
+  // Ordenar
+  if(sortBy==='chg_desc') valid.sort((a,b)=>b.chg-a.chg);
+  else if(sortBy==='chg_asc') valid.sort((a,b)=>a.chg-b.chg);
+  else valid.sort((a,b)=>a.t.localeCompare(b.t));
+
+  grid.innerHTML=valid.map(({t,prices,dates,chg,last})=>{
+    const col=chg>=0?'#10b981':'#f43f5e';
+    const colA=chg>=0?'rgba(16,185,129,.12)':'rgba(244,63,94,.12)';
+    const mn=Math.min(...prices),mx=Math.max(...prices),rng=mx-mn||1;
+    const n=prices.length;
+    const W=260,H=90,PL=2,PR=30,PT=6,PB=6;
+    const xs=W-PL-PR,ys=H-PT-PB;
+    const px=i=>PL+i/(Math.max(n-1,1))*xs;
+    const py=v=>PT+(1-(v-mn)/rng)*ys;
+    const path=prices.map((v,i)=>`${i===0?'M':'L'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+    const area=path+` L${px(n-1)},${PT+ys} L${px(0)},${PT+ys} Z`;
+    const yLabels=[
+      {v:mx,y:PT+5},{v:(mn+mx)/2,y:PT+ys/2+4},{v:mn,y:PT+ys}
+    ];
+    const xStart=dates[0]?String(dates[0]).slice(0,7):'';
+    const xEnd=dates[n-1]?String(dates[n-1]).slice(0,7):'';
+    const yLblSvg=yLabels.map(({v,y})=>
+      `<text x="${W-PR+4}" y="${y}" font-size="7" fill="#94a3b8" font-family="JetBrains Mono,monospace" text-anchor="start">${v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(1)}</text>`
+    ).join('');
+    const xLblSvg=`
+      <text x="${PL}" y="${H+6}" font-size="7" fill="#94a3b8" font-family="Inter,sans-serif">${xStart}</text>
+      <text x="${W-PR}" y="${H+6}" font-size="7" fill="#94a3b8" font-family="Inter,sans-serif" text-anchor="end">${xEnd}</text>`;
+    const refY=py(prices[0]).toFixed(1);
+    const refLine=`<line x1="${PL}" y1="${refY}" x2="${W-PR}" y2="${refY}" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="3,3"/>`;
+
+    return `<div class="card" style="padding:14px;cursor:pointer;transition:all .15s;border:1px solid var(--brd)"
+        onmouseenter="this.style.boxShadow='0 4px 20px rgba(0,0,0,.1)';this.style.borderColor='${col}'"
+        onmouseleave="this.style.boxShadow='';this.style.borderColor='var(--brd)'"
+        onclick="openVelas('${t}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--acc)">${t}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:1px">${NM[t]||t}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:700;color:${col}">${chg>=0?'+':''}${chg.toFixed(2)}%</div>
+          <div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">${last.toFixed(2)} USD</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 ${W} ${H+10}" style="width:100%;display:block;overflow:visible">
+        ${refLine}
+        <path d="${area}" fill="${colA}"/>
+        <path d="${path}" fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round"/>
+        ${yLblSvg}${xLblSvg}
+      </svg>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--txt3)">
+        <span>Min: <b style="font-family:var(--mono);color:var(--txt2)">${mn.toFixed(2)}</b></span>
+        <span style="color:var(--txt3)">&#x1F56F; ver velas</span>
+        <span>Max: <b style="font-family:var(--mono);color:var(--txt2)">${mx.toFixed(2)}</b></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openVelas(ticker){
+  goSection('cs');
+  setTimeout(()=>{
+    const s=document.getElementById('cst');
+    if(s)for(let i=0;i<s.options.length;i++)if(s.options[i].value===ticker){s.selectedIndex=i;break;}
+    loadCS();
+  },80);
 }
 
 init();
