@@ -11,6 +11,7 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+*.pyc
 
 # Docker
 *.log
@@ -18,11 +19,32 @@ venv/
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Datos locales
 data/
 
-# Notas locales (no subir al repo)
-EXPOSICION.md
-DOCUMENTACION_TECNICA.md
-DOCUMENTACION_ACTIVOS.md
+# Archivos temporales de Office
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# Archivos de debug
+*debug*.html
+reporte_debug.html
+
+# Archivos personales que no pertenecen al proyecto
+expediente-*.html
+Zerena_*.docx
+*zerena*.html
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de backup
+*.bak
+*.backup
+*~

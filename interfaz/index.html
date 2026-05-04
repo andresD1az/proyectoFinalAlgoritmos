@@ -111,7 +111,7 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
 @keyframes sp{to{transform:rotate(360deg)}}
 .legend{display:flex;gap:16px;font-size:11px;color:var(--txt3);margin-bottom:12px;flex-wrap:wrap}
 .leg-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:middle}
-#tip{position:fixed;background:var(--surf);border:1px solid var(--brd2);border-radius:8px;padding:7px 12px;font-size:11px;pointer-events:none;display:none;z-index:999;font-family:var(--mono);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+#tip{position:fixed;background:var(--surf);border:1px solid var(--brd2);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;display:none;z-index:999;font-family:var(--mono);box-shadow:0 4px 24px rgba(0,0,0,.4);max-width:280px;line-height:1.5}
 @media(max-width:1024px){.g4{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.strip{display:none}}
 @media(max-width:640px){
@@ -170,9 +170,9 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
     <div class="sec on" id="sec-ov">
       <!-- KPI cards -->
       <div class="g4">
-        <div class="stat bl"><div class="slbl">Activos</div><div class="sval" id="st-act">-</div><div class="ssub">20 en portafolio</div></div>
+        <div class="stat bl"><div class="slbl">Activos</div><div class="sval" id="st-act">-</div><div class="ssub">25 en portafolio</div></div>
         <div class="stat gr"><div class="slbl">Registros en BD</div><div class="sval" id="st-reg">-</div><div class="ssub">5 anos historico</div></div>
-        <div class="stat yl"><div class="slbl">Pares similitud</div><div class="sval">190</div><div class="ssub">4 algoritmos</div></div>
+        <div class="stat yl"><div class="slbl">Pares similitud</div><div class="sval">300</div><div class="ssub">4 algoritmos</div></div>
         <div class="stat pu"><div class="slbl">Algoritmos</div><div class="sval">28</div><div class="ssub">Desde cero, sin libs</div></div>
       </div>
 
@@ -254,7 +254,7 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <div class="ci ci-a" style="font-size:16px">&#x1F4F0;</div>
           <div>
-            <div style="font-size:14px;font-weight:600">Graficos individuales &mdash; 20 activos</div>
+            <div style="font-size:14px;font-weight:600">Graficos individuales &mdash; 25 activos</div>
             <div style="font-size:11px;color:var(--txt3)">Precio de cierre historico completo (5 anos). Haz clic en cualquier grafico para ver velas OHLC.</div>
           </div>
           <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -294,28 +294,153 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
           <button class="btn btn-p" onclick="comparar()">&#x25B6; Comparar</button>
         </div>
       </div>
+      
+      <!-- Gráfico de líneas -->
       <div class="card">
         <div class="ch"><div class="ci ci-a">&#x1F4C9;</div><h3 id="ctitle">% Cambio acumulado</h3></div>
         <div id="line-wrap" style="height:270px"><div class="ld">Selecciona activos y haz clic en Comparar</div></div>
       </div>
+      
+      <!-- Resultados de similitud con interpretación -->
       <div class="card">
         <div class="ch"><div class="ci ci-p">&#x1F9EE;</div><h3>Resultados de similitud</h3></div>
         <div class="agrid">
-          <div class="acard"><div class="an">Distancia Euclidiana &mdash; O(n)</div><div class="av" id="v-eu">-</div><div class="ac">Menor = mas similar. Requiere normalizacion Min-Max</div></div>
-          <div class="acard"><div class="an">Correlacion de Pearson &mdash; O(n)</div><div class="av" id="v-pe">-</div><div class="ac">Rango [-1, 1]. Mide relacion lineal</div></div>
-          <div class="acard"><div class="an">Similitud por Coseno &mdash; O(n)</div><div class="av" id="v-co">-</div><div class="ac">Rango [-1, 1]. Invariante a escala</div></div>
-          <div class="acard"><div class="an">DTW Dynamic Time Warping &mdash; O(n&sup2;)</div><div class="av" id="v-dt">-</div><div class="ac">Menor = mas similar. Banda Sakoe-Chiba 10%</div></div>
+          <div class="acard">
+            <div class="an">Correlación de Pearson &mdash; O(n)</div>
+            <div class="av" id="v-pe">-</div>
+            <div class="ac">Rango [-1, 1]. Mide relación lineal</div>
+            <div style="margin-top:8px">
+              <div class="vbar"><div class="vfill" id="bar-pe" style="width:0%;background:var(--acc)"></div></div>
+            </div>
+            <div id="interp-pe" style="font-size:11px;color:var(--txt3);margin-top:6px;font-weight:600"></div>
+          </div>
+          
+          <div class="acard">
+            <div class="an">Similitud por Coseno &mdash; O(n)</div>
+            <div class="av" id="v-co">-</div>
+            <div class="ac">Rango [-1, 1]. Invariante a escala</div>
+            <div style="margin-top:8px">
+              <div class="vbar"><div class="vfill" id="bar-co" style="width:0%;background:var(--pur)"></div></div>
+            </div>
+            <div id="interp-co" style="font-size:11px;color:var(--txt3);margin-top:6px;font-weight:600"></div>
+          </div>
+          
+          <div class="acard">
+            <div class="an">Distancia Euclidiana &mdash; O(n)</div>
+            <div class="av" id="v-eu">-</div>
+            <div class="ac">Menor = más similar. Normalización Min-Max</div>
+            <div style="margin-top:8px">
+              <div class="vbar"><div class="vfill" id="bar-eu" style="width:0%;background:var(--green)"></div></div>
+            </div>
+            <div id="interp-eu" style="font-size:11px;color:var(--txt3);margin-top:6px;font-weight:600"></div>
+          </div>
+          
+          <div class="acard">
+            <div class="an">DTW Dynamic Time Warping &mdash; O(n²)</div>
+            <div class="av" id="v-dt">-</div>
+            <div class="ac">Menor = más similar. Banda Sakoe-Chiba 10%</div>
+            <div style="margin-top:8px">
+              <div class="vbar"><div class="vfill" id="bar-dt" style="width:0%;background:var(--yel)"></div></div>
+            </div>
+            <div id="interp-dt" style="font-size:11px;color:var(--txt3);margin-top:6px;font-weight:600"></div>
+          </div>
         </div>
+      </div>
+      
+      <!-- Tabla comparativa de estadísticas -->
+      <div class="card" id="cmp-stats-card" style="display:none">
+        <div class="ch"><div class="ci ci-g">&#x1F4CA;</div><h3>Estadísticas Comparativas</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Métrica</th>
+                <th id="cmp-th1">Activo 1</th>
+                <th id="cmp-th2">Activo 2</th>
+                <th>Diferencia</th>
+              </tr>
+            </thead>
+            <tbody id="cmp-stats-body">
+              <tr><td colspan="4"><div class="ld"><div class="spin"></div>Calculando...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Interpretación y recomendación -->
+      <div class="card" id="cmp-recommendation" style="display:none">
+        <div class="ch"><div class="ci ci-y">&#x1F4A1;</div><h3>Interpretación y Recomendación</h3></div>
+        <div id="cmp-rec-content" style="font-size:13px;line-height:1.6"></div>
       </div>
     </div>
 
     <!-- REQ 2  HEATMAP -->
     <div class="sec" id="sec-hm">
+      <!-- Estadísticas Resumidas -->
+      <div class="g4" id="hm-stats" style="display:none">
+        <div class="stat gr">
+          <div class="slbl">Mayor Correlación +</div>
+          <div class="sval" id="hm-max-val">-</div>
+          <div class="ssub" id="hm-max-pair">-</div>
+        </div>
+        <div class="stat rd">
+          <div class="slbl">Mayor Correlación -</div>
+          <div class="sval" id="hm-min-val">-</div>
+          <div class="ssub" id="hm-min-pair">-</div>
+        </div>
+        <div class="stat bl">
+          <div class="slbl">Promedio General</div>
+          <div class="sval" id="hm-avg-val">-</div>
+          <div class="ssub">Todas las correlaciones</div>
+        </div>
+        <div class="stat pu">
+          <div class="slbl">Más Correlacionado</div>
+          <div class="sval" id="hm-most-corr">-</div>
+          <div class="ssub">Mayor promedio con otros</div>
+        </div>
+      </div>
+
       <div class="card">
-        <div class="ch"><div class="ci ci-y">&#x1F321;</div><h3>Matriz de Correlacion &mdash; Pearson (20x20)</h3></div>
+        <div class="ch">
+          <div class="ci ci-y">&#x1F321;</div>
+          <h3>Matriz de Correlacion &mdash; Pearson (25x25)</h3>
+        </div>
+        
+        <!-- Filtros Interactivos -->
+        <div class="ctrls" style="margin-bottom:14px">
+          <div>
+            <label>Filtrar por nivel</label>
+            <select id="hm-filter" onchange="applyHeatmapFilter()">
+              <option value="all">Todos los valores</option>
+              <option value="high">Alta correlación (≥ 0.7)</option>
+              <option value="medium">Moderada (0.3 - 0.7)</option>
+              <option value="low">Baja (< 0.3)</option>
+              <option value="negative">Negativa (< 0)</option>
+            </select>
+          </div>
+          <div>
+            <label>Categoría de activo</label>
+            <select id="hm-category" onchange="applyHeatmapFilter()">
+              <option value="all">Todas las categorías</option>
+              <option value="colombia">Colombia (EC, CIB, GXG)</option>
+              <option value="latam">Latinoamérica (ILF, EWZ, EWW, ECH)</option>
+              <option value="global">Globales (SPY, QQQ, DIA, etc.)</option>
+              <option value="sector">Sectores (XLE, XLF, XLK, etc.)</option>
+              <option value="commodity">Commodities (GLD, SLV, USO)</option>
+            </select>
+          </div>
+          <div>
+            <label>Resaltar activo</label>
+            <select id="hm-highlight" onchange="highlightAsset()">
+              <option value="">Ninguno</option>
+            </select>
+          </div>
+          <button class="btn btn-s" onclick="resetHeatmapFilters()">Resetear filtros</button>
+        </div>
+
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:11px;color:var(--txt3)">
           <div style="width:140px;height:8px;border-radius:4px;background:linear-gradient(to right,#f43f5e,#334155,#10b981)"></div>
-          <span>-1 inversa</span><span>0 sin relacion</span><span>+1 perfecta</span>
+          <span>-1 inversa</span><span>0 sin relación</span><span>+1 perfecta</span>
         </div>
         <div id="hm-wrap"><div class="ld"><div class="spin"></div>Cargando matriz...</div></div>
       </div>
@@ -366,10 +491,14 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
           <div><label>SMA lenta</label><input type="number" id="sm2" value="30" min="5" max="200" style="width:70px"></div>
           <div><label>Periodo</label>
             <select id="csp">
-              <option value="60">60 dias</option>
-              <option value="120" selected>120 dias</option>
-              <option value="180">180 dias</option>
-              <option value="252">1 ano</option>
+              <option value="60">60 días</option>
+              <option value="120" selected>120 días</option>
+              <option value="180">180 días</option>
+              <option value="252">1 año</option>
+              <option value="504">2 años</option>
+              <option value="756">3 años</option>
+              <option value="1260">5 años</option>
+              <option value="0">Todo (5+ años)</option>
             </select>
           </div>
           <button class="btn btn-p" onclick="loadCS()">&#x25B6; Mostrar</button>
@@ -453,7 +582,7 @@ tbody tr:hover td{background:var(--acc3);color:var(--txt)}
 
   </div></div></div><script>
 const API='';
-const NM={EC:"Ecopetrol",CIB:"Bancolombia",GXG:"iShares Colombia",ILF:"Latin America 40",EWZ:"iShares Brazil",EWW:"iShares Mexico",SPY:"S&P 500 ETF",QQQ:"Nasdaq 100",DIA:"Dow Jones ETF",EEM:"Emerging Markets",VT:"Vanguard World",IEMG:"Core EM",GLD:"Gold SPDR",SLV:"Silver Trust",USO:"US Oil Fund",TLT:"Treasury 20Y",XLE:"Energy",XLF:"Financials",XLK:"Technology",VNQ:"Real Estate"};
+const NM={EC:"Ecopetrol",CIB:"Bancolombia",GXG:"iShares Colombia",ILF:"Latin America 40",EWZ:"iShares Brazil",EWW:"iShares Mexico",ECH:"iShares Chile",SPY:"S&P 500 ETF",QQQ:"Nasdaq 100",DIA:"Dow Jones ETF",EEM:"Emerging Markets",VT:"Vanguard World",IEMG:"Core EM",VEA:"Developed Markets",GLD:"Gold SPDR",SLV:"Silver Trust",USO:"US Oil Fund",TLT:"Treasury 20Y",XLE:"Energy",XLF:"Financials",XLK:"Technology",VNQ:"Real Estate",XLV:"Health Care",XLI:"Industrials",XLP:"Consumer Staples"};
 let hmLoaded=false,rkLoaded=false,cache={};
 let allTickers=Object.keys(NM);
 
@@ -552,9 +681,24 @@ async function loadOV(){
   try{
     const sample=allTickers.slice(0,8);
     const items=await Promise.all(sample.map(async t=>{
-      try{const d=await f(`/precios?ticker=${t}&columna=cierre`);const p=d.datos||[];if(p.length<2)return null;
-      const last=+p[p.length-1].cierre,prev=+p[p.length-2].cierre,chg=(last-prev)/prev*100;
-      return `<div class="tick"><b>${t}</b><span class="pr">${last.toFixed(2)}</span><span class="${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span></div>`;}catch{return null;}
+      try{
+        const d=await f(`/precios?ticker=${t}&columna=cierre`);
+        const p=d.datos||[];
+        if(p.length<2)return null;
+        
+        const last=+p[p.length-1].cierre;
+        const prev=+p[p.length-2].cierre;
+        const chg=(last-prev)/prev*100;
+        const fecha=p[p.length-1].fecha;
+        const fechaCorta=fecha.slice(5); // MM-DD
+        
+        return `<div class="tick" title="${t} — Último precio: ${fecha}">
+          <b>${t}</b>
+          <span class="pr">${last.toFixed(2)}</span>
+          <span class="${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</span>
+          <span style="color:var(--txt3);font-size:9px">(${fechaCorta})</span>
+        </div>`;
+      }catch{return null;}
     }));
     document.getElementById('strip').innerHTML=items.filter(Boolean).join('');
   }catch(e){}
@@ -795,24 +939,243 @@ async function getSim(t1,t2,algo){
   const row=rs.find(r=>(r.ticker1===t1&&r.ticker2===t2)||(r.ticker1===t2&&r.ticker2===t1));return row?+row.valor:null;}catch{return null;}
 }
 async function comparar(){
-  const t1=document.getElementById('ca1').value,t2=document.getElementById('ca2').value;
-  document.getElementById('ctitle').textContent=`${t1} vs ${t2} % Cambio acumulado`;
+  const t1=document.getElementById('ca1').value, t2=document.getElementById('ca2').value;
+  document.getElementById('ctitle').textContent=`${t1} vs ${t2} — % Cambio acumulado`;
   document.getElementById('line-wrap').innerHTML='<div class="ld"><div class="spin"></div>Calculando...</div>';
+  
+  // Resetear valores
   ['v-eu','v-pe','v-co','v-dt'].forEach(id=>document.getElementById(id).textContent='-');
-  try{const [p1,p2]=await Promise.all([getPr(t1),getPr(t2)]);drawLine(p1,p2,t1,t2);}
-  catch(e){document.getElementById('line-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
-  for(const[algo,id]of[['euclidiana','v-eu'],['pearson','v-pe'],['coseno','v-co'],['dtw','v-dt']]){
-    const val=await getSim(t1,t2,algo);document.getElementById(id).textContent=val!=null?val.toFixed(4):'N/D';}
+  ['bar-eu','bar-pe','bar-co','bar-dt'].forEach(id=>document.getElementById(id).style.width='0%');
+  ['interp-eu','interp-pe','interp-co','interp-dt'].forEach(id=>document.getElementById(id).textContent='');
+  
+  // Ocultar cards adicionales
+  document.getElementById('cmp-stats-card').style.display='none';
+  document.getElementById('cmp-recommendation').style.display='none';
+  
+  try{
+    // Obtener precios y dibujar gráfico
+    const [p1,p2]=await Promise.all([getPr(t1),getPr(t2)]);
+    drawLine(p1,p2,t1,t2);
+    
+    // Calcular similitudes
+    const resultados = {};
+    for(const[algo,id]of[['euclidiana','v-eu'],['pearson','v-pe'],['coseno','v-co'],['dtw','v-dt']]){
+      const val=await getSim(t1,t2,algo);
+      resultados[algo] = val;
+      document.getElementById(id).textContent=val!=null?val.toFixed(4):'N/D';
+    }
+    
+    // Actualizar barras e interpretaciones
+    updateSimilarityBars(resultados);
+    
+    // Calcular estadísticas comparativas
+    await calculateComparisonStats(t1, t2, p1, p2);
+    
+    // Generar recomendación
+    generateRecommendation(t1, t2, resultados);
+    
+  }catch(e){
+    document.getElementById('line-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;
+  }
+}
+
+function updateSimilarityBars(resultados){
+  // Pearson y Coseno: convertir de [-1,1] a [0,100]
+  if(resultados.pearson !== null){
+    const pct = ((resultados.pearson + 1) / 2 * 100).toFixed(0);
+    document.getElementById('bar-pe').style.width = pct + '%';
+    document.getElementById('interp-pe').innerHTML = interpretPearson(resultados.pearson);
+  }
+  
+  if(resultados.coseno !== null){
+    const pct = ((resultados.coseno + 1) / 2 * 100).toFixed(0);
+    document.getElementById('bar-co').style.width = pct + '%';
+    document.getElementById('interp-co').innerHTML = interpretCoseno(resultados.coseno);
+  }
+  
+  // Euclidiana: invertir (menor es mejor) y normalizar
+  if(resultados.euclidiana !== null){
+    const pct = Math.max(0, 100 - resultados.euclidiana * 10).toFixed(0);
+    document.getElementById('bar-eu').style.width = pct + '%';
+    document.getElementById('interp-eu').innerHTML = interpretEuclidiana(resultados.euclidiana);
+  }
+  
+  // DTW: invertir (menor es mejor) y normalizar
+  if(resultados.dtw !== null){
+    const pct = Math.max(0, 100 - resultados.dtw / 10).toFixed(0);
+    document.getElementById('bar-dt').style.width = pct + '%';
+    document.getElementById('interp-dt').innerHTML = interpretDTW(resultados.dtw);
+  }
+}
+
+function interpretPearson(val){
+  if(val >= 0.9) return '🟢 Correlación muy alta — Se mueven casi idénticos';
+  if(val >= 0.7) return '🟢 Correlación alta — Se mueven juntos';
+  if(val >= 0.5) return '🟡 Correlación moderada-alta';
+  if(val >= 0.3) return '🟡 Correlación moderada';
+  if(val >= 0) return '⚪ Correlación baja — Poca relación';
+  if(val >= -0.3) return '🔴 Correlación negativa débil';
+  return '🔴 Correlación negativa — Se mueven en direcciones opuestas';
+}
+
+function interpretCoseno(val){
+  if(val >= 0.9) return '🟢 Muy similar — Misma dirección';
+  if(val >= 0.7) return '🟢 Similar — Dirección parecida';
+  if(val >= 0.5) return '🟡 Moderadamente similar';
+  if(val >= 0.3) return '🟡 Algo similar';
+  if(val >= 0) return '⚪ Poco similar';
+  return '🔴 Direcciones opuestas';
+}
+
+function interpretEuclidiana(val){
+  if(val < 2) return '🟢 Muy similar — Distancia muy pequeña';
+  if(val < 5) return '🟢 Similar — Distancia pequeña';
+  if(val < 10) return '🟡 Moderadamente similar';
+  if(val < 20) return '🟡 Algo diferente';
+  return '🔴 Muy diferente — Distancia grande';
+}
+
+function interpretDTW(val){
+  if(val < 50) return '🟢 Patrones muy similares';
+  if(val < 100) return '🟢 Patrones similares';
+  if(val < 200) return '🟡 Patrones moderadamente similares';
+  if(val < 400) return '🟡 Patrones algo diferentes';
+  return '🔴 Patrones muy diferentes';
+}
+
+async function calculateComparisonStats(t1, t2, p1, p2){
+  const card = document.getElementById('cmp-stats-card');
+  const tbody = document.getElementById('cmp-stats-body');
+  
+  // Actualizar headers
+  document.getElementById('cmp-th1').textContent = t1;
+  document.getElementById('cmp-th2').textContent = t2;
+  
+  // Calcular estadísticas
+  const stats1 = calculateStats(p1);
+  const stats2 = calculateStats(p2);
+  
+  const rows = [
+    ['Precio Actual', `$${p1[p1.length-1].toFixed(2)}`, `$${p2[p2.length-1].toFixed(2)}`, 
+     `${(p1[p1.length-1] - p2[p2.length-1]) >= 0 ? '+' : ''}$${(p1[p1.length-1] - p2[p2.length-1]).toFixed(2)}`],
+    ['Precio Promedio', `$${stats1.avg.toFixed(2)}`, `$${stats2.avg.toFixed(2)}`, `${((stats1.avg-stats2.avg)/stats2.avg*100).toFixed(2)}%`],
+    ['Precio Máximo', `$${stats1.max.toFixed(2)}`, `$${stats2.max.toFixed(2)}`, `${((stats1.max-stats2.max)/stats2.max*100).toFixed(2)}%`],
+    ['Precio Mínimo', `$${stats1.min.toFixed(2)}`, `$${stats2.min.toFixed(2)}`, `${((stats1.min-stats2.min)/stats2.min*100).toFixed(2)}%`],
+    ['Volatilidad (σ)', `${(stats1.std/stats1.avg*100).toFixed(2)}%`, `${(stats2.std/stats2.avg*100).toFixed(2)}%`, 
+     `${((stats1.std/stats1.avg - stats2.std/stats2.avg)*100).toFixed(2)}pp`],
+    ['Rendimiento Total', `${((p1[p1.length-1]-p1[0])/p1[0]*100).toFixed(2)}%`, 
+     `${((p2[p2.length-1]-p2[0])/p2[0]*100).toFixed(2)}%`,
+     `${(((p1[p1.length-1]-p1[0])/p1[0] - (p2[p2.length-1]-p2[0])/p2[0])*100).toFixed(2)}pp`]
+  ];
+  
+  tbody.innerHTML = rows.map(([metric, v1, v2, diff]) => `
+    <tr>
+      <td style="font-weight:600">${metric}</td>
+      <td class="mono">${v1}</td>
+      <td class="mono">${v2}</td>
+      <td class="mono" style="color:${diff.includes('-')?'var(--red)':'var(--green)'}">${diff}</td>
+    </tr>
+  `).join('');
+  
+  card.style.display = 'block';
+}
+
+function calculateStats(prices){
+  const n = prices.length;
+  const sum = prices.reduce((a,b)=>a+b,0);
+  const avg = sum / n;
+  const max = Math.max(...prices);
+  const min = Math.min(...prices);
+  const variance = prices.reduce((a,b)=>a+Math.pow(b-avg,2),0) / n;
+  const std = Math.sqrt(variance);
+  return {avg, max, min, std};
+}
+
+function generateRecommendation(t1, t2, resultados){
+  const card = document.getElementById('cmp-recommendation');
+  const content = document.getElementById('cmp-rec-content');
+  
+  const pearson = resultados.pearson || 0;
+  const coseno = resultados.coseno || 0;
+  
+  let recommendation = '';
+  let icon = '';
+  let color = '';
+  
+  if(pearson >= 0.7 && coseno >= 0.7){
+    icon = '🟢';
+    color = 'var(--green)';
+    recommendation = `
+      <div style="padding:14px;background:var(--green2);border-left:3px solid var(--green);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--green)">${icon} Alta Similitud</div>
+        <p><b>${t1}</b> y <b>${t2}</b> tienen una <b>correlación muy alta</b> (Pearson: ${pearson.toFixed(4)}). 
+        Se mueven juntos en la misma dirección.</p>
+        <p style="margin-top:8px"><b>Recomendación:</b> No son buenos para diversificar. Si uno baja, el otro probablemente también bajará. 
+        Considera agregar activos con correlación baja o negativa para reducir riesgo.</p>
+      </div>
+    `;
+  } else if(pearson >= 0.3 && pearson < 0.7){
+    icon = '🟡';
+    color = 'var(--yel)';
+    recommendation = `
+      <div style="padding:14px;background:var(--yel2);border-left:3px solid var(--yel);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--yel)">${icon} Similitud Moderada</div>
+        <p><b>${t1}</b> y <b>${t2}</b> tienen una <b>correlación moderada</b> (Pearson: ${pearson.toFixed(4)}). 
+        A veces se mueven juntos, pero no siempre.</p>
+        <p style="margin-top:8px"><b>Recomendación:</b> Ofrecen algo de diversificación. Pueden estar en el mismo portafolio 
+        sin duplicar completamente el riesgo.</p>
+      </div>
+    `;
+  } else if(pearson < 0){
+    icon = '🔴';
+    color = 'var(--red)';
+    recommendation = `
+      <div style="padding:14px;background:var(--red2);border-left:3px solid var(--red);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--red)">${icon} Correlación Negativa</div>
+        <p><b>${t1}</b> y <b>${t2}</b> tienen una <b>correlación negativa</b> (Pearson: ${pearson.toFixed(4)}). 
+        Tienden a moverse en direcciones opuestas.</p>
+        <p style="margin-top:8px"><b>Recomendación:</b> ¡Excelente para diversificación! Cuando uno baja, el otro tiende a subir. 
+        Esta combinación reduce el riesgo del portafolio.</p>
+      </div>
+    `;
+  } else {
+    icon = '⚪';
+    color = 'var(--txt3)';
+    recommendation = `
+      <div style="padding:14px;background:var(--surf2);border-left:3px solid var(--brd2);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:8px;color:var(--txt3)">${icon} Baja Correlación</div>
+        <p><b>${t1}</b> y <b>${t2}</b> tienen <b>poca correlación</b> (Pearson: ${pearson.toFixed(4)}). 
+        Se mueven de forma independiente.</p>
+        <p style="margin-top:8px"><b>Recomendación:</b> Buenos para diversificar. No están relacionados, 
+        por lo que ofrecen exposición a diferentes factores de mercado.</p>
+      </div>
+    `;
+  }
+  
+  content.innerHTML = recommendation;
+  card.style.display = 'block';
 }
 function drawLine(p1,p2,l1,l2){
   const n=Math.min(p1.length,p2.length);
   const s1=p1.slice(-n),s2=p2.slice(-n);
   const n1=s1.map(v=>((v-s1[0])/s1[0])*100),n2=s2.map(v=>((v-s2[0])/s2[0])*100);
-  const W=900,H=250,PL=52,PR=12,PT=12,PB=32;const xs=W-PL-PR,ys=H-PT-PB;
+  const W=900,H=280,PL=52,PR=12,PT=20,PB=48;const xs=W-PL-PR,ys=H-PT-PB;
   const all=[...n1,...n2],mn=Math.min(...all),mx=Math.max(...all),rng=mx-mn||1;
   const px=i=>PL+i/(n-1)*xs,py=v=>PT+(1-(v-mn)/rng)*ys;
   const pt=a=>a.map((v,i)=>`${i===0?'M':'L'}${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+  
+  // Etiquetas eje Y
   const yL=[];for(let i=0;i<=4;i++){const v=mn+i/4*rng;yL.push({y:py(v),l:(v>=0?'+':'')+v.toFixed(1)+'%'});}
+  
+  // Etiquetas eje X (mostrar días para evidenciar cantidad de datos)
+  const xL=[];
+  for(let i=0;i<=4;i++){
+    const idx=Math.round(i/4*(n-1));
+    const x=px(idx);
+    const label=`Día ${idx}`;
+    xL.push({x:x,l:label});
+  }
+  
   const svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%;overflow:visible">
     <defs>
       <linearGradient id="g1" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity=".2"/><stop offset="100%" stop-color="#10b981" stop-opacity="0"/></linearGradient>
@@ -820,37 +1183,259 @@ function drawLine(p1,p2,l1,l2){
     </defs>
     ${yL.map(({y,l})=>`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#e2e8f0" stroke-width="1"/>
     <text x="${PL-5}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="9" fill="#64748b">${l}</text>`).join('')}
+    ${xL.map(({x,l})=>`<line x1="${x.toFixed(1)}" y1="${PT+ys}" x2="${x.toFixed(1)}" y2="${PT+ys+4}" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="${x.toFixed(1)}" y="${PT+ys+16}" text-anchor="middle" font-size="10" fill="#64748b">${l}</text>`).join('')}
     <path d="${pt(n1)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g1)"/>
     <path d="${pt(n2)} L${px(n-1)},${py(mn)} L${px(0)},${py(mn)} Z" fill="url(#g2)"/>
     <path d="${pt(n1)}" fill="none" stroke="#10b981" stroke-width="2.5"/>
     <path d="${pt(n2)}" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
-    <g transform="translate(${PL},${H-6})">
+    <text x="${PL+(xs/2)}" y="${H-2}" text-anchor="middle" font-size="11" fill="#475569" font-weight="500">Días de negociación (${n} días ≈ 5 años de mercado)</text>
+    <g transform="translate(${PL},${PT-8})">
       <circle cx="0" cy="0" r="5" fill="#10b981"/><text x="10" y="4" font-size="12" fill="#10b981" font-weight="600">${l1}</text>
-      <circle cx="60" cy="0" r="5" fill="#38bdf8"/><text x="70" y="4" font-size="12" fill="#38bdf8" font-weight="600">${l2}</text>
+      <circle cx="80" cy="0" r="5" fill="#38bdf8"/><text x="90" y="4" font-size="12" fill="#38bdf8" font-weight="600">${l2}</text>
     </g></svg>`;
-  document.getElementById('line-wrap').innerHTML=`<div style="height:260px">${svg}</div>`;
+  document.getElementById('line-wrap').innerHTML=`<div style="height:290px">${svg}</div>`;
 }
 
 // REQ 2 — HEATMAP
+let hmData = null; // Cache de datos del heatmap
+let hmHighlighted = null; // Activo resaltado
+
 async function loadHeatmap(){
   hmLoaded=true;
   try{
-    const d=await fno('/correlacion/matriz');const tks=d.tickers||[],mat=d.matriz||[];
-    if(!tks.length){document.getElementById('hm-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecutar: python main.py similitud</p>';return;}
-    const n=tks.length,cell=32,lbl=48;const W=lbl+n*cell,H=lbl+n*cell;
-    let rects='',xl='',yl='';
-    function corColor(v){if(v>=0){return `rgb(${Math.round(16+(240-16)*(1-v))},185,${Math.round(129*v)})`;}const t=-v;return `rgb(244,${Math.round(63+90*(1-t))},${Math.round(94*(1-t))})`;}
-    for(let i=0;i<n;i++){
-      xl+=`<text x="${lbl+i*cell+cell/2}" y="${lbl-4}" text-anchor="middle" font-size="8" fill="#64748b" transform="rotate(-45,${lbl+i*cell+cell/2},${lbl-4})">${tks[i]}</text>`;
-      yl+=`<text x="${lbl-5}" y="${lbl+i*cell+cell/2+4}" text-anchor="end" font-size="9" fill="#64748b">${tks[i]}</text>`;
-      for(let j=0;j<n;j++){const v=mat[i]?.[j]??0;
-        rects+=`<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" fill="${corColor(v)}" rx="3"
-          onmouseenter="showTip(event,'${tks[i]} vs ${tks[j]}: r=${v.toFixed(4)}')" onmouseleave="hideTip()"/>`;
+    const d=await fno('/correlacion/matriz');
+    const tks=d.tickers||[],mat=d.matriz||[];
+    if(!tks.length){
+      document.getElementById('hm-wrap').innerHTML='<p style="color:var(--txt3);padding:14px">Sin datos. Ejecutar: python main.py similitud</p>';
+      return;
+    }
+    
+    // Guardar datos en cache
+    hmData = {tickers: tks, matriz: mat};
+    
+    // Calcular estadísticas
+    calculateHeatmapStats(tks, mat);
+    
+    // Poblar selector de resaltado
+    const hmHighlightSel = document.getElementById('hm-highlight');
+    hmHighlightSel.innerHTML = '<option value="">Ninguno</option>' + 
+      tks.map(t => `<option value="${t}">${t}</option>`).join('');
+    
+    // Renderizar heatmap
+    renderHeatmap(tks, mat);
+    
+  }catch(e){
+    document.getElementById('hm-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;
+  }
+}
+
+function calculateHeatmapStats(tks, mat) {
+  const n = tks.length;
+  let maxVal = -2, minVal = 2, maxPair = '', minPair = '';
+  let sum = 0, count = 0;
+  const avgByTicker = {};
+  
+  // Calcular promedios por ticker
+  for(let i = 0; i < n; i++) {
+    let tickerSum = 0, tickerCount = 0;
+    for(let j = 0; j < n; j++) {
+      if(i === j) continue; // Excluir diagonal
+      const v = mat[i]?.[j] ?? 0;
+      tickerSum += v;
+      tickerCount++;
+      sum += v;
+      count++;
+      
+      // Buscar máximos y mínimos (excluir diagonal)
+      if(v > maxVal && i !== j) {
+        maxVal = v;
+        maxPair = `${tks[i]} ↔ ${tks[j]}`;
+      }
+      if(v < minVal && i !== j) {
+        minVal = v;
+        minPair = `${tks[i]} ↔ ${tks[j]}`;
       }
     }
-    document.getElementById('hm-wrap').innerHTML=`<div style="overflow-x:auto"><svg width="${W}" height="${H}" style="display:block">${xl}${yl}${rects}</svg></div>`;
-  }catch(e){document.getElementById('hm-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+    avgByTicker[tks[i]] = tickerSum / tickerCount;
+  }
+  
+  // Encontrar el activo más correlacionado
+  let mostCorr = '', mostCorrAvg = -2;
+  for(const [ticker, avg] of Object.entries(avgByTicker)) {
+    if(avg > mostCorrAvg) {
+      mostCorrAvg = avg;
+      mostCorr = ticker;
+    }
+  }
+  
+  const avgVal = sum / count;
+  
+  // Actualizar UI
+  document.getElementById('hm-stats').style.display = 'grid';
+  document.getElementById('hm-max-val').textContent = maxVal.toFixed(4);
+  document.getElementById('hm-max-pair').textContent = maxPair;
+  document.getElementById('hm-min-val').textContent = minVal.toFixed(4);
+  document.getElementById('hm-min-pair').textContent = minPair;
+  document.getElementById('hm-avg-val').textContent = avgVal.toFixed(4);
+  document.getElementById('hm-most-corr').textContent = mostCorr;
+  document.querySelector('#hm-most-corr').parentElement.querySelector('.ssub').textContent = 
+    `Promedio: ${avgByTicker[mostCorr].toFixed(4)}`;
 }
+
+function renderHeatmap(tks, mat, filterFn = null, highlightTicker = null) {
+  const n = tks.length, cell = 28, lbl = 48;
+  const W = lbl + n * cell, H = lbl + n * cell;
+  let rects = '', xl = '', yl = '';
+  
+  function corColor(v) {
+    if(v >= 0) {
+      return `rgb(${Math.round(16+(240-16)*(1-v))},185,${Math.round(129*v)})`;
+    }
+    const t = -v;
+    return `rgb(244,${Math.round(63+90*(1-t))},${Math.round(94*(1-t))})`;
+  }
+  
+  function getCorrelationLevel(v) {
+    if(v >= 0.9) return 'Muy Alta';
+    if(v >= 0.7) return 'Alta';
+    if(v >= 0.5) return 'Moderada-Alta';
+    if(v >= 0.3) return 'Moderada';
+    if(v >= 0) return 'Baja';
+    if(v >= -0.3) return 'Baja Negativa';
+    if(v >= -0.5) return 'Moderada Negativa';
+    return 'Alta Negativa';
+  }
+  
+  for(let i = 0; i < n; i++) {
+    const isHighlightedRow = highlightTicker && tks[i] === highlightTicker;
+    xl += `<text x="${lbl+i*cell+cell/2}" y="${lbl-4}" text-anchor="middle" font-size="8" 
+      fill="${isHighlightedRow ? '#0284c7' : '#64748b'}" font-weight="${isHighlightedRow ? '700' : '400'}"
+      transform="rotate(-45,${lbl+i*cell+cell/2},${lbl-4})">${tks[i]}</text>`;
+    yl += `<text x="${lbl-5}" y="${lbl+i*cell+cell/2+4}" text-anchor="end" font-size="9" 
+      fill="${isHighlightedRow ? '#0284c7' : '#64748b'}" font-weight="${isHighlightedRow ? '700' : '400'}">${tks[i]}</text>`;
+    
+    for(let j = 0; j < n; j++) {
+      const v = mat[i]?.[j] ?? 0;
+      const isHighlightedCol = highlightTicker && tks[j] === highlightTicker;
+      const isHighlighted = isHighlightedRow || isHighlightedCol;
+      
+      // Aplicar filtro si existe
+      if(filterFn && !filterFn(v, i, j)) {
+        rects += `<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" 
+          fill="#f1f5f9" rx="3" opacity="0.3"/>`;
+        continue;
+      }
+      
+      const level = getCorrelationLevel(v);
+      const opacity = isHighlighted ? '1' : '0.85';
+      const strokeWidth = isHighlighted ? '2' : '0';
+      const stroke = isHighlighted ? '#0284c7' : 'none';
+      
+      rects += `<rect x="${lbl+j*cell}" y="${lbl+i*cell}" width="${cell-1}" height="${cell-1}" 
+        fill="${corColor(v)}" rx="3" opacity="${opacity}" stroke="${stroke}" stroke-width="${strokeWidth}"
+        onmouseenter="showEnhancedTip(event,'${tks[i]}','${tks[j]}',${v},'${level}')" 
+        onmouseleave="hideTip()"/>`;
+    }
+  }
+  
+  document.getElementById('hm-wrap').innerHTML = 
+    `<div style="overflow-x:auto"><svg width="${W}" height="${H}" style="display:block">${xl}${yl}${rects}</svg></div>`;
+}
+
+function showEnhancedTip(e, t1, t2, val, level) {
+  const tp = document.getElementById('tip');
+  const name1 = NM[t1] || t1;
+  const name2 = NM[t2] || t2;
+  
+  if(t1 === t2) {
+    tp.innerHTML = `<b>${t1}</b><br>${name1}<br>Correlación: 1.0000 (consigo mismo)`;
+  } else {
+    const interpretation = val >= 0.7 ? 'Se mueven juntos' : 
+                          val >= 0.3 ? 'Relación moderada' :
+                          val >= 0 ? 'Poca relación' :
+                          val >= -0.3 ? 'Relación inversa débil' :
+                          'Se mueven en direcciones opuestas';
+    
+    tp.innerHTML = `
+      <div style="font-weight:600;margin-bottom:4px">${t1} ↔ ${t2}</div>
+      <div style="font-size:10px;color:#64748b;margin-bottom:6px">${name1} vs ${name2}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+        <span style="color:#0284c7;font-weight:700;font-size:16px">${val.toFixed(4)}</span>
+        <span style="background:${val>=0.7?'#dcfce7':val>=0.3?'#fef3c7':val>=0?'#f1f5f9':'#fee2e2'};
+          color:${val>=0.7?'#059669':val>=0.3?'#d97706':val>=0?'#64748b':'#dc2626'};
+          padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600">${level}</span>
+      </div>
+      <div style="font-size:10px;color:#64748b">${interpretation}</div>
+    `;
+  }
+  
+  tp.style.display = 'block';
+  tp.style.left = (e.clientX + 12) + 'px';
+  tp.style.top = (e.clientY + 12) + 'px';
+}
+
+function applyHeatmapFilter() {
+  if(!hmData) return;
+  
+  const filterLevel = document.getElementById('hm-filter').value;
+  const category = document.getElementById('hm-category').value;
+  const {tickers, matriz} = hmData;
+  
+  // Definir categorías
+  const categories = {
+    colombia: ['EC', 'CIB', 'GXG'],
+    latam: ['ILF', 'EWZ', 'EWW', 'ECH'],
+    global: ['SPY', 'QQQ', 'DIA', 'EEM', 'VT', 'IEMG', 'VEA'],
+    sector: ['XLE', 'XLF', 'XLK', 'VNQ', 'XLV', 'XLI', 'XLP'],
+    commodity: ['GLD', 'SLV', 'USO', 'TLT']
+  };
+  
+  let filterFn = null;
+  
+  // Filtro por nivel de correlación
+  if(filterLevel !== 'all') {
+    filterFn = (v, i, j) => {
+      if(i === j) return true; // Siempre mostrar diagonal
+      if(filterLevel === 'high') return v >= 0.7;
+      if(filterLevel === 'medium') return v >= 0.3 && v < 0.7;
+      if(filterLevel === 'low') return v >= 0 && v < 0.3;
+      if(filterLevel === 'negative') return v < 0;
+      return true;
+    };
+  }
+  
+  // Filtro por categoría
+  if(category !== 'all') {
+    const catTickers = categories[category] || [];
+    const oldFilter = filterFn;
+    filterFn = (v, i, j) => {
+      const t1 = tickers[i], t2 = tickers[j];
+      const inCategory = catTickers.includes(t1) || catTickers.includes(t2);
+      if(!inCategory) return false;
+      return oldFilter ? oldFilter(v, i, j) : true;
+    };
+  }
+  
+  renderHeatmap(tickers, matriz, filterFn, hmHighlighted);
+}
+
+function highlightAsset() {
+  if(!hmData) return;
+  hmHighlighted = document.getElementById('hm-highlight').value || null;
+  applyHeatmapFilter();
+}
+
+function resetHeatmapFilters() {
+  document.getElementById('hm-filter').value = 'all';
+  document.getElementById('hm-category').value = 'all';
+  document.getElementById('hm-highlight').value = '';
+  hmHighlighted = null;
+  if(hmData) {
+    renderHeatmap(hmData.tickers, hmData.matriz);
+  }
+}
+
 function showTip(e,t){const tp=document.getElementById('tip');tp.textContent=t;tp.style.display='block';tp.style.left=(e.clientX+12)+'px';tp.style.top=(e.clientY+12)+'px';}
 function hideTip(){document.getElementById('tip').style.display='none';}
 
@@ -907,44 +1492,209 @@ async function loadRiesgo(){
 function initCS(){if(!document.getElementById('cst').options.length)populateSel(allTickers);}
 function sma(arr,w){return arr.map((_,i)=>i<w-1?null:arr.slice(i-w+1,i+1).reduce((a,b)=>a+b,0)/w);}
 async function loadCS(){
-  const tk=document.getElementById('cst').value,n=+document.getElementById('csp').value;
+  const tk=document.getElementById('cst').value;
+  let n=+document.getElementById('csp').value;
   const w1=+document.getElementById('sm1').value,w2=+document.getElementById('sm2').value;
-  document.getElementById('cs-title').textContent=`${tk} - Ultimos ${n} dias`;
+  
+  // Determinar el texto del periodo
+  let periodoTexto = '';
+  if(n === 0) periodoTexto = 'Todo el histórico (5 años)';
+  else if(n >= 1260) periodoTexto = '5 años';
+  else if(n >= 756) periodoTexto = '3 años';
+  else if(n >= 504) periodoTexto = '2 años';
+  else if(n >= 252) periodoTexto = '1 año';
+  else periodoTexto = `Últimos ${n} días`;
+  
+  document.getElementById('cs-title').textContent=`${tk} — ${periodoTexto}`;
   document.getElementById('cs-wrap').style.display='block';
-  document.getElementById('cs-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando...</div>';
+  document.getElementById('cs-wrap').innerHTML='<div class="ld"><div class="spin"></div>Cargando datos OHLCV...</div>';
   document.getElementById('cv').style.display='none';
+  
   try{
-    const d=await fno(`/precios/ohlcv?ticker=${tk}&n=${n+Math.max(w1,w2)}`);
-    const datos=(d.datos||[]).slice(-n);
-    if(!datos.length){document.getElementById('cs-wrap').innerHTML='<p style="color:var(--red);padding:14px">Sin datos OHLCV</p>';return;}
-    drawCS(datos,sma(datos.map(x=>x.cierre),w1),sma(datos.map(x=>x.cierre),w2));
-  }catch(e){document.getElementById('cs-wrap').innerHTML=`<p style="color:var(--red);padding:14px">${e.message}</p>`;}
+    // Si n=0, obtener todos los datos disponibles
+    const fetchN = n === 0 ? 9999 : n + Math.max(w1, w2);
+    const d=await fno(`/precios/ohlcv?ticker=${tk}&n=${fetchN}`);
+    let datos = d.datos || [];
+    
+    // Si n=0, usar todos los datos; si no, tomar los últimos n
+    if(n > 0 && datos.length > n) {
+      datos = datos.slice(-n);
+    }
+    
+    if(!datos.length){
+      document.getElementById('cs-wrap').innerHTML='<p style="color:var(--red);padding:14px">Sin datos OHLCV para este activo</p>';
+      return;
+    }
+    
+    drawCS(datos, sma(datos.map(x=>x.cierre), w1), sma(datos.map(x=>x.cierre), w2), tk);
+  }catch(e){
+    document.getElementById('cs-wrap').innerHTML=`<p style="color:var(--red);padding:14px">Error: ${e.message}</p>`;
+  }
 }
-function drawCS(datos,smaf,smas){
+function drawCS(datos, smaf, smas, ticker){
   const cv=document.getElementById('cv');
-  const W=cv.parentElement.offsetWidth||900,H=380;
-  cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
-  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
-  const n=datos.length,PL=60,PR=14,PT=18,PB=56;
-  const xs=W-PL-PR,ys=H-PT-PB,pw=xs/n,cw=Math.max(pw*.65,2);
-  const mn=Math.min(...datos.map(d=>d.minimo)),mx=Math.max(...datos.map(d=>d.maximo)),rng=mx-mn||1;
-  const px=i=>PL+i*pw+pw/2,py=v=>PT+(1-(v-mn)/rng)*ys;
-  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=1;
-  for(let i=0;i<=5;i++){const v=mn+i/5*rng,y=py(v);
-    ctx.beginPath();ctx.moveTo(PL,y);ctx.lineTo(W-PR,y);ctx.stroke();
-    ctx.fillStyle='#64748b';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='right';
-    ctx.fillText('$'+v.toFixed(2),PL-5,y+4);}
+  const W=cv.parentElement.offsetWidth||900, H=420;
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  
+  // Fondo blanco
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,W,H);
+  
+  const n=datos.length, PL=60, PR=14, PT=28, PB=56;
+  const xs=W-PL-PR, ys=H-PT-PB;
+  const pw=xs/n, cw=Math.max(pw*.65, 2);
+  
+  // Calcular rango de precios
+  const mn=Math.min(...datos.map(d=>d.minimo));
+  const mx=Math.max(...datos.map(d=>d.maximo));
+  const rng=mx-mn||1;
+  
+  const px=i=>PL+i*pw+pw/2;
+  const py=v=>PT+(1-(v-mn)/rng)*ys;
+  
+  // Grid horizontal
+  ctx.strokeStyle='#e2e8f0';
+  ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const v=mn+i/5*rng, y=py(v);
+    ctx.beginPath();
+    ctx.moveTo(PL,y);
+    ctx.lineTo(W-PR,y);
+    ctx.stroke();
+    
+    // Etiquetas de precio
+    ctx.fillStyle='#64748b';
+    ctx.font='10px JetBrains Mono,monospace';
+    ctx.textAlign='right';
+    ctx.fillText('$'+v.toFixed(2), PL-5, y+4);
+  }
+  
+  // Dibujar velas
   for(let i=0;i<n;i++){
-    const{apertura:o,maximo:h,minimo:l,cierre:c}=datos[i],bull=c>=o,col=bull?'#10b981':'#f43f5e',cx=px(i);
-    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx,py(h));ctx.lineTo(cx,py(l));ctx.stroke();
-    const top=py(Math.max(o,c)),bot=py(Math.min(o,c)),bh=Math.max(bot-top,1);
-    ctx.fillStyle=col;ctx.fillRect(cx-cw/2,top,cw,bh);}
-  const drawSMA=(arr,color)=>{ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.beginPath();let first=true;arr.forEach((v,i)=>{if(v===null)return;if(first){ctx.moveTo(px(i),py(v));first=false;}else ctx.lineTo(px(i),py(v));});ctx.stroke();};
-  drawSMA(smaf,'#38bdf8');drawSMA(smas,'#f59e0b');
-  ctx.fillStyle='#64748b';ctx.textAlign='center';ctx.font='9px JetBrains Mono,monospace';
-  const step=Math.max(1,Math.floor(n/10));
-  for(let i=0;i<n;i+=step)ctx.fillText(datos[i].fecha.slice(5),px(i),H-PT-8);
-  document.getElementById('cs-wrap').style.display='none';cv.style.display='block';
+    const {apertura:o, maximo:h, minimo:l, cierre:c} = datos[i];
+    const bull = c >= o;
+    const col = bull ? '#10b981' : '#f43f5e';
+    const cx = px(i);
+    
+    // Mecha (high-low)
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, py(h));
+    ctx.lineTo(cx, py(l));
+    ctx.stroke();
+    
+    // Cuerpo (open-close)
+    const top = py(Math.max(o,c));
+    const bot = py(Math.min(o,c));
+    const bh = Math.max(bot-top, 1);
+    ctx.fillStyle = col;
+    ctx.fillRect(cx-cw/2, top, cw, bh);
+  }
+  
+  // Dibujar SMAs
+  const drawSMA = (arr, color, lineWidth=2) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.beginPath();
+    let first = true;
+    arr.forEach((v,i) => {
+      if(v === null) return;
+      if(first){
+        ctx.moveTo(px(i), py(v));
+        first = false;
+      } else {
+        ctx.lineTo(px(i), py(v));
+      }
+    });
+    ctx.stroke();
+  };
+  
+  drawSMA(smaf, '#38bdf8', 2);
+  drawSMA(smas, '#f59e0b', 2);
+  
+  // Etiquetas de fechas en el eje X
+  ctx.fillStyle='#64748b';
+  ctx.textAlign='center';
+  ctx.font='9px JetBrains Mono,monospace';
+  
+  // Ajustar el step según la cantidad de datos
+  let step;
+  if(n <= 60) step = Math.max(1, Math.floor(n/10));
+  else if(n <= 252) step = Math.max(1, Math.floor(n/12));
+  else if(n <= 504) step = Math.max(1, Math.floor(n/15));
+  else step = Math.max(1, Math.floor(n/20));
+  
+  for(let i=0; i<n; i+=step) {
+    const fecha = datos[i].fecha;
+    // Mostrar formato según el rango
+    let label;
+    if(n <= 180) {
+      label = fecha.slice(5); // MM-DD
+    } else {
+      label = fecha.slice(2,7); // YY-MM
+    }
+    ctx.fillText(label, px(i), H-PB+18);
+  }
+  
+  // Título con información adicional
+  ctx.fillStyle='#0f172a';
+  ctx.font='600 12px Inter,sans-serif';
+  ctx.textAlign='left';
+  const ultimoPrecio = datos[n-1].cierre;
+  const primerPrecio = datos[0].cierre;
+  const cambio = ((ultimoPrecio - primerPrecio) / primerPrecio * 100).toFixed(2);
+  const cambioColor = cambio >= 0 ? '#059669' : '#dc2626';
+  
+  ctx.fillText(`${ticker} — ${n} días`, PL, PT-10);
+  ctx.fillStyle = cambioColor;
+  ctx.fillText(`${cambio >= 0 ? '+' : ''}${cambio}%`, PL + 120, PT-10);
+  
+  // Agregar interactividad con mousemove
+  cv.onmousemove = (e) => {
+    const rect = cv.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    
+    // Encontrar la vela más cercana
+    let closestIdx = -1;
+    let minDist = Infinity;
+    for(let i=0; i<n; i++){
+      const dist = Math.abs(mx - px(i));
+      if(dist < minDist && dist < pw){
+        minDist = dist;
+        closestIdx = i;
+      }
+    }
+    
+    if(closestIdx >= 0 && my >= PT && my <= H-PB){
+      const d = datos[closestIdx];
+      const cambioVela = ((d.cierre - d.apertura) / d.apertura * 100).toFixed(2);
+      const tip = document.getElementById('tip');
+      tip.innerHTML = `
+        <div style="font-weight:600;margin-bottom:4px">${d.fecha}</div>
+        <div style="display:grid;grid-template-columns:auto auto;gap:4px 12px;font-size:10px">
+          <span style="color:#64748b">Apertura:</span><span style="font-weight:600">$${d.apertura.toFixed(2)}</span>
+          <span style="color:#64748b">Máximo:</span><span style="font-weight:600;color:#059669">$${d.maximo.toFixed(2)}</span>
+          <span style="color:#64748b">Mínimo:</span><span style="font-weight:600;color:#dc2626">$${d.minimo.toFixed(2)}</span>
+          <span style="color:#64748b">Cierre:</span><span style="font-weight:600">$${d.cierre.toFixed(2)}</span>
+          <span style="color:#64748b">Volumen:</span><span style="font-weight:600">${d.volumen.toLocaleString()}</span>
+          <span style="color:#64748b">Cambio:</span><span style="font-weight:600;color:${cambioVela>=0?'#059669':'#dc2626'}">${cambioVela>=0?'+':''}${cambioVela}%</span>
+        </div>
+      `;
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top = (e.clientY + 12) + 'px';
+    } else {
+      hideTip();
+    }
+  };
+  
+  cv.onmouseleave = () => hideTip();
+  
+  document.getElementById('cs-wrap').style.display='none';
+  cv.style.display='block';
 }
 
 // REQ 4  REPORTE

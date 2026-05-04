@@ -21,14 +21,14 @@ FECHA_INICIO = FECHA_FIN - timedelta(days=5 * 365)   # ~1826 días
 # Formato de fecha usado en todo el sistema (ISO 8601)
 DATE_FORMAT = "%Y-%m-%d"
 
-# PORTAFOLIO DE 20 ACTIVOS
+# PORTAFOLIO DE 25 ACTIVOS
 #
 # Composición:
 #   - 2 acciones colombianas cotizadas en NYSE (ADRs): EC, CIB
 #   - 1 ETF de Colombia: GXG
-#   - 3 ETFs de Latinoamérica: ILF, EWZ, EWW
-#   - 6 ETFs globales de referencia: SPY, QQQ, DIA, EEM, VT, IEMG
-#   - 8 ETFs sectoriales y de commodities: GLD, SLV, USO, TLT, XLE, XLF, XLK, VNQ
+#   - 4 ETFs de Latinoamérica: ILF, EWZ, EWW, ECH
+#   - 7 ETFs globales de referencia: SPY, QQQ, DIA, EEM, VT, IEMG, VEA
+#   - 11 ETFs sectoriales y de commodities: GLD, SLV, USO, TLT, XLE, XLF, XLK, VNQ, XLV, XLI, XLP
 #
 # Todos cotizan en NYSE o NASDAQ y tienen datos disponibles en Yahoo Finance.
 ACTIVOS = [
@@ -55,6 +55,9 @@ ACTIVOS = [
     # EWW: Replica el índice MSCI Mexico. México es el segundo mercado de LATAM.
     {"ticker": "EWW",  "nombre": "iShares MSCI Mexico",      "tipo": "etf",    "mercado": "NYSE"},
 
+    # ECH: Replica el índice MSCI Chile. Chile es un mercado desarrollado de LATAM.
+    {"ticker": "ECH",  "nombre": "iShares MSCI Chile",       "tipo": "etf",    "mercado": "NYSE"},
+
     # ── ETFs Globales de Referencia ───────────────────────────────
     # SPY: El ETF más negociado del mundo. Replica el S&P 500 (500 mayores empresas de EE.UU.).
     {"ticker": "SPY",  "nombre": "S&P 500 ETF",              "tipo": "etf",    "mercado": "NYSE"},
@@ -73,6 +76,9 @@ ACTIVOS = [
 
     # IEMG: Versión de bajo costo del EEM. Mercados emergentes con más cobertura.
     {"ticker": "IEMG", "nombre": "Core Emerging Markets",    "tipo": "etf",    "mercado": "NYSE"},
+
+    # VEA: Replica el índice FTSE Developed Markets (mercados desarrollados ex-US).
+    {"ticker": "VEA",  "nombre": "Vanguard Developed Markets", "tipo": "etf",  "mercado": "NYSE"},
 
     # ── Sectores y Commodities ────────────────────────────────────
     # GLD: Replica el precio del oro físico. Activo refugio en crisis.
@@ -99,6 +105,15 @@ ACTIVOS = [
 
     # VNQ: Sector inmobiliario (REITs). Replica el índice MSCI US REIT.
     {"ticker": "VNQ",  "nombre": "Vanguard Real Estate",     "tipo": "etf",    "mercado": "NYSE"},
+
+    # XLV: Sector salud del S&P 500 (Johnson & Johnson, Pfizer, UnitedHealth, etc.).
+    {"ticker": "XLV",  "nombre": "Health Care Select Sector", "tipo": "etf",   "mercado": "NYSE"},
+
+    # XLI: Sector industrial del S&P 500 (Boeing, Caterpillar, 3M, etc.).
+    {"ticker": "XLI",  "nombre": "Industrial Select Sector", "tipo": "etf",    "mercado": "NYSE"},
+
+    # XLP: Sector consumo básico del S&P 500 (Procter & Gamble, Coca-Cola, Walmart, etc.).
+    {"ticker": "XLP",  "nombre": "Consumer Staples Sector",  "tipo": "etf",    "mercado": "NYSE"},
 ]
 
 # Lista plana de tickers para iterar fácilmente
