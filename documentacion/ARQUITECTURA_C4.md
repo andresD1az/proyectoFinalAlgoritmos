@@ -1,4 +1,4 @@
-﻿# Arquitectura C4 — BVC Analytics
+﻿# Arquitectura C4 — Algorit Finance
 
 **Universidad del Quindio — Ingenieria de Sistemas y Computacion — Analisis de Algoritmos 2026-1**
 **Autores:** Sarita Londono Perdomo (1091884459) · Eyner Andres Diaz Diaz (1128544093)
@@ -8,7 +8,7 @@
 
 ## NIVEL 1 — Diagrama de Contexto
 
-Muestra el sistema BVC Analytics en relacion con los actores externos.
+Muestra el sistema Algorit Finance en relacion con los actores externos.
 
 ```
                     ┌─────────────────────────────────────────────────────────┐
@@ -28,7 +28,7 @@ Muestra el sistema BVC Analytics en relacion con los actores externos.
            ▼                                                       ▼
   ┌─────────────────────────────────────────────────────────────────────────────┐
   │                                                                             │
-  │                           BVC ANALYTICS                                    │
+  │                         ALGORIT FINANCE                                    │
   │                                                                             │
   │   Sistema de analisis financiero cuantitativo.                              │
   │   Descarga, procesa y analiza series de tiempo de 20 activos financieros    │

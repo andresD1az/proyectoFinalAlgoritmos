@@ -1,4 +1,4 @@
-# config.py — Configuración Global del Proyecto BVC Analytics
+# config.py — Configuración Global del Proyecto Algorit Finance
 # Universidad del Quindío — Análisis de Algoritmos
 #
 # Este archivo centraliza TODOS los parámetros del sistema:

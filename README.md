@@ -1,4 +1,4 @@
-# BVC Analytics
+# Algorit Finance
 
 **Sistema de Análisis Financiero Cuantitativo**
 
@@ -9,7 +9,7 @@ Autores: Sarita Londoño Perdomo · Eyner Andrés Díaz Díaz
 
 ## 📊 Descripción
 
-BVC Analytics es un sistema completo de análisis financiero que procesa y analiza datos históricos de 25 activos financieros con 5 años de historia diaria. Implementa 28 algoritmos desde cero en Python puro, sin dependencias externas de análisis de datos.
+Algorit Finance es un sistema completo de análisis financiero que procesa y analiza datos históricos de 25 activos financieros con 5 años de historia diaria. Implementa 28 algoritmos desde cero en Python puro, sin dependencias externas de análisis de datos.
 
 ### Características principales:
 
@@ -28,7 +28,7 @@ BVC Analytics es un sistema completo de análisis financiero que procesa y anali
 - Docker y Docker Compose
 - Python 3.11+ (opcional, para desarrollo local)
 
-### Instalación:
+### Instalación y Ejecución:
 
 ```bash
 # 1. Clonar el repositorio
@@ -41,13 +41,17 @@ cp .env.example .env
 # 3. Levantar contenedores
 docker compose -f docker-compose.local.yml up -d
 
-# 4. Ejecutar pipelines de datos
-docker exec bvc_api python main.py etl
-docker exec bvc_api python main.py similitud
+# 4. Ejecutar pipelines de datos (en orden)
+docker exec bvc_api python main.py etl          # Descargar datos (3-5 min)
+docker exec bvc_api python main.py similitud    # Calcular correlaciones (2-3 min)
+docker exec bvc_api python main.py volatilidad  # Calcular riesgo (1 min)
+docker exec bvc_api python main.py ordenamiento # Benchmark (30 seg)
 
 # 5. Acceder al dashboard
 # http://localhost:8001
 ```
+
+**📖 Instrucciones detalladas:** Ver `INSTRUCCIONES_LOCAL.md`
 
 ---
 

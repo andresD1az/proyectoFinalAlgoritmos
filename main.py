@@ -1,5 +1,5 @@
 ﻿"""
-main.py — Punto de entrada principal del proyecto BVC Analytics
+main.py — Punto de entrada principal del proyecto Algorit Finance
 Requerimientos: ETL | Similitud | Patrones/Volatilidad | Dashboard | Despliegue
 """
 
@@ -19,7 +19,7 @@ from etl.database   import (
 def pipeline_etl():
     """Req 1 — Descarga → Limpieza → Carga en PostgreSQL."""
     print("=" * 60)
-    print("  BVC ANALYTICS — Pipeline ETL (Requerimiento 1)")
+    print("  ALGORIT FINANCE — Pipeline ETL (Requerimiento 1)")
     print("=" * 60)
     print("\n[1/3] Registrando activos en la base de datos...")
     insertar_activos()
@@ -41,7 +41,7 @@ def pipeline_similitud():
     from etl.database import obtener_series_alineadas
 
     print("\n" + "=" * 60)
-    print("  BVC ANALYTICS — Pipeline de Similitud (Requerimiento 2)")
+    print("  ALGORIT FINANCE — Pipeline de Similitud (Requerimiento 2)")
     print("=" * 60)
 
     print("\n[SIMILITUD] Alineando series por fecha exacta (intersección de calendarios)...")
@@ -78,7 +78,7 @@ def pipeline_volatilidad():
     from config import DIAS_VOLATILIDAD
 
     print("\n" + "=" * 60)
-    print("  BVC ANALYTICS — Pipeline de Volatilidad (Requerimiento 3)")
+    print("  ALGORIT FINANCE — Pipeline de Volatilidad (Requerimiento 3)")
     print("=" * 60)
 
     for ticker in TICKERS:
@@ -113,7 +113,7 @@ def pipeline_ordenamiento():
     import psycopg2.extras
 
     print("\n" + "=" * 60)
-    print("  BVC ANALYTICS — Pipeline de Ordenamiento")
+    print("  ALGORIT FINANCE — Pipeline de Ordenamiento")
     print("=" * 60)
 
     print("\n[SORT] Cargando dataset unificado desde PostgreSQL...")

@@ -410,7 +410,7 @@ def _svg_heatmap_pearson(matriz_data: dict) -> str:
 def generar_reporte_json() -> dict:
     return {
         "meta": {
-            "titulo":       "BVC Analytics — Reporte Tecnico de Analisis",
+            "titulo":       "Algorit Finance — Reporte Tecnico de Analisis",
             "generado_en":  datetime.utcnow().isoformat() + "Z",
             "ventana_dias": VENTANA_DESLIZANTE_DIAS,
             "ventana_vol":  DIAS_VOLATILIDAD,
@@ -607,7 +607,7 @@ td.n{font-family:monospace;font-size:8px}
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>BVC Analytics — Reporte Tecnico</title>
+<title>Algorit Finance — Reporte Tecnico</title>
 <style>{CSS}</style>
 </head>
 <body>
@@ -741,7 +741,7 @@ td.n{font-family:monospace;font-size:8px}
 </div>
 
 <div class="report-footer">
-  <span class="left">BVC Analytics &mdash; Universidad del Quindio &mdash; Analisis de Algoritmos 2026-1</span>
+  <span class="left">Algorit Finance &mdash; Universidad del Quindio &mdash; Analisis de Algoritmos 2026-1</span>
   <span>Generado el {fecha_gen} &mdash; Python 3.11 stdlib</span>
 </div>
 

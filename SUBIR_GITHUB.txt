@@ -1,0 +1,16 @@
+# Comandos para Subir a GitHub
+
+# 1. Ver estado
+git status
+
+# 2. Agregar archivos
+git add .
+
+# 3. Crear commit
+git commit -m "Proyecto Algorit Finance - Sistema de Analisis Financiero Cuantitativo"
+
+# 4. Subir a GitHub
+git push origin main
+
+# Si tu rama es 'master':
+git push origin master

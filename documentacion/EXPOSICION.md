@@ -1,4 +1,4 @@
-# Guía de Exposición — BVC Analytics
+# Guía de Exposición — Algorit Finance
 Universidad del Quindío — Análisis de Algoritmos
 
 ---

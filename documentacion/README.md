@@ -1,4 +1,4 @@
-# 📚 Documentación Técnica — BVC Analytics
+# 📚 Documentación Técnica — Algorit Finance
 
 Esta carpeta contiene la documentación esencial del proyecto.
 

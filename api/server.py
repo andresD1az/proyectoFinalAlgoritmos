@@ -108,7 +108,7 @@ class BVCHandler(BaseHTTPRequestHandler):
     # ── SISTEMA ───────────────────────────────────────────────────
 
     def _health(self, params):
-        _respuesta_json(self, 200, {"estado": "ok", "servicio": "BVC Analytics API"})
+        _respuesta_json(self, 200, {"estado": "ok", "servicio": "Algorit Finance API"})
 
     def _etl_status(self, params):
         """GET /etl/status — Cuántos registros hay en la BD."""
@@ -413,7 +413,7 @@ class BVCHandler(BaseHTTPRequestHandler):
 
 def iniciar_servidor():
     servidor = ThreadingHTTPServer((API_HOST, API_PORT), BVCHandler)
-    print(f"[API] BVC Analytics corriendo en http://{API_HOST}:{API_PORT}")
+    print(f"[API] Algorit Finance corriendo en http://{API_HOST}:{API_PORT}")
     print("[API] Req1: /activos /precios /etl/status")
     print("[API] Req2: /similitud /correlacion/matriz")
     print("[API] Req3: /patrones /patrones/cruces /riesgo/clasificacion")

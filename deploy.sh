@@ -1,21 +1,21 @@
 #!/bin/bash
 # =============================================================
-# BVC Analytics — Script de despliegue en VPS propio
+# Algorit Finance — Script de despliegue en VPS propio
 # =============================================================
 # PASO 1 — desde tu PC, copiar el proyecto al VPS:
-#   rsync -avz --exclude='.git' --exclude='__pycache__' --exclude='*.pyc' --exclude='EXPOSICION.md' ./ root@TU_IP:/opt/bvc-analytics/
+#   rsync -avz --exclude='.git' --exclude='__pycache__' --exclude='*.pyc' ./ root@38.242.225.58:/opt/algorit-finance/
 #
 # PASO 2 — conectarse al VPS y ejecutar este script:
-#   ssh root@TU_IP "bash /opt/bvc-analytics/deploy.sh"
+#   ssh root@38.242.225.58 "bash /opt/algorit-finance/deploy.sh"
 # =============================================================
 
 set -e
 
-APP_DIR="/opt/bvc-analytics"
-VPS_IP=$(curl -s ifconfig.me 2>/dev/null || echo "TU_IP")
+APP_DIR="/opt/algorit-finance"
+VPS_IP=$(curl -s ifconfig.me 2>/dev/null || echo "38.242.225.58")
 
 echo "=================================================="
-echo "  BVC Analytics — Despliegue en VPS"
+echo "  Algorit Finance — Despliegue en VPS"
 echo "  IP: $VPS_IP"
 echo "=================================================="
 
@@ -43,7 +43,7 @@ if [ ! -f "$APP_DIR/.env" ]; then
     echo "[INFO] Creando .env desde .env.example..."
     cp .env.example .env
     # Cambiar password por defecto
-    sed -i 's/pon_aqui_tu_password_seguro/BVC_Deploy_2025!/g' .env
+    sed -i 's/pon_aqui_tu_password_seguro/AlgoritFinance2026!/g' .env
     # Asegurarse que DB_HOST apunte al contenedor
     sed -i 's/DB_HOST=localhost/DB_HOST=bvc_db/g' .env
     echo "[OK] .env creado"
@@ -55,7 +55,7 @@ fi
 echo "[3/5] Configurando Nginx..."
 apt-get install -y -qq nginx 2>/dev/null
 
-cat > /etc/nginx/sites-available/bvc-analytics << NGINX
+cat > /etc/nginx/sites-available/algorit-finance << NGINX
 server {
     listen 80;
     server_name _;
@@ -73,7 +73,7 @@ server {
 }
 NGINX
 
-ln -sf /etc/nginx/sites-available/bvc-analytics /etc/nginx/sites-enabled/bvc-analytics
+ln -sf /etc/nginx/sites-available/algorit-finance /etc/nginx/sites-enabled/algorit-finance
 rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
 if nginx -t 2>/dev/null; then
@@ -123,7 +123,7 @@ echo "[INFO] Ver progreso: tail -f /var/log/bvc-pipelines.log"
 
 echo ""
 echo "=================================================="
-echo "  ✅ BVC Analytics desplegado!"
+echo "  ✅ Algorit Finance desplegado!"
 echo "=================================================="
 echo ""
 echo "  🌐 Dashboard:     http://$VPS_IP"

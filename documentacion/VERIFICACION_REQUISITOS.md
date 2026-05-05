@@ -1,6 +1,6 @@
 # ✅ Verificación de Cumplimiento de Requisitos
 
-**Proyecto:** BVC Analytics  
+**Proyecto:** Algorit Finance  
 **Universidad del Quindío** — Análisis de Algoritmos 2026-1  
 **Autores:** Sarita Londoño Perdomo · Eyner Andrés Díaz Díaz
 
