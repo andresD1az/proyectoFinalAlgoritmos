@@ -282,11 +282,11 @@ def dtw(a, b, normalizar=True, window_pct=0.1):
 
 ## Matriz de Similitud
 
-Se calculan todos los pares posibles: C(20, 2) = 190 pares.
+Se calculan todos los pares posibles: C(25, 2) = 300 pares.
 
-**Complejidad total:** O(n² · m) donde n = 20 activos, m = 1272 días comunes
+**Complejidad total:** O(n² · m) donde n = 25 activos, m = 1253 días comunes
 
-**Resultados guardados:** 190 pares × 4 algoritmos = 760 registros en `resultados_similitud`
+**Resultados guardados:** 300 pares × 4 algoritmos = 1200 registros en `resultados_similitud`
 
 ---
 

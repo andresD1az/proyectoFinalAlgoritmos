@@ -10,7 +10,7 @@
 
 | Archivo | Función |
 |---|---|
-| `config.py` | Define los 20 activos, fechas y parámetros |
+| `config.py` | Define los 25 activos, fechas y parámetros |
 | `etl/descargador.py` | Descarga HTTP desde Yahoo Finance |
 | `etl/limpieza.py` | Interpolación lineal + Z-Score + validación |
 | `etl/database.py` | CRUD PostgreSQL con psycopg2 |
@@ -19,7 +19,7 @@
 
 ---
 
-## Portafolio de 20 Activos
+## Portafolio de 25 Activos
 
 | Ticker | Nombre | Tipo | Mercado |
 |---|---|---|---|
@@ -230,7 +230,7 @@ La función `obtener_series_alineadas(tickers)` resuelve el problema de calendar
 ## Endpoint API
 
 ```
-GET /activos              → Lista de 20 activos con días en BD
+GET /activos              → Lista de 25 activos con días en BD
 GET /precios?ticker=SPY   → Serie de precios de cierre
 GET /precios/ohlcv?ticker=SPY&n=120 → Últimos 120 días OHLCV
 GET /etl/status           → Cuántos registros hay en BD

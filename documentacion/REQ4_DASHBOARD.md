@@ -24,12 +24,12 @@ Aplicación de página única implementada en HTML5 + CSS3 + JavaScript vanilla.
 
 | Sección | Descripción |
 |---|---|
-| Overview | KPIs, sparklines de 20 activos, heatmap preview, distribución de riesgo |
-| Portafolio | Gráficos individuales de los 20 activos con filtros |
+| Overview | KPIs, sparklines de 25 activos, heatmap preview, distribución de riesgo |
+| Portafolio | Gráficos individuales de los 25 activos con filtros |
 | Comparar Activos | Comparación de 2 activos con los 4 algoritmos de similitud |
-| Mapa de Calor | Matriz de correlación 20×20 interactiva |
+| Mapa de Calor | Matriz de correlación 25×25 interactiva |
 | Patrones | Ventana deslizante + Golden/Death Cross por ticker |
-| Clasificación Riesgo | Ranking de 20 activos por volatilidad anualizada |
+| Clasificación Riesgo | Ranking de 25 activos por volatilidad anualizada |
 | Tabla 1 + Barras | Benchmark de 12 algoritmos de ordenamiento |
 | Top-15 Volumen | Días con mayor volumen de negociación |
 | Velas OHLC | Gráfico candlestick con SMA configurable |
@@ -96,7 +96,7 @@ function sma(arr, w) {
 ```
 
 **Parámetros configurables:**
-- Ticker (selector de los 20 activos)
+- Ticker (selector de los 25 activos)
 - SMA rápida: 2-50 días
 - SMA lenta: 5-200 días
 - Período: 60, 120, 180 días o 1 año

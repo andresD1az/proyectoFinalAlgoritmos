@@ -295,5 +295,5 @@ El sistema genera un listado de activos ordenados por nivel de riesgo calculado 
 ```
 GET /patrones?ticker=SPY                          → Ventana deslizante + picos/valles
 GET /patrones/cruces?ticker=SPY&corta=10&larga=30 → Golden/Death Cross
-GET /riesgo/clasificacion                         → Ranking de 20 activos por volatilidad
+GET /riesgo/clasificacion                         → Ranking de 25 activos por volatilidad
 ```

@@ -31,7 +31,7 @@ Muestra el sistema Algorit Finance en relacion con los actores externos.
   │                         ALGORIT FINANCE                                    │
   │                                                                             │
   │   Sistema de analisis financiero cuantitativo.                              │
-  │   Descarga, procesa y analiza series de tiempo de 20 activos financieros    │
+  │   Descarga, procesa y analiza series de tiempo de 25 activos financieros    │
   │   con 5 anos de historia diaria (OHLCV).                                    │
   │                                                                             │
   │   28 algoritmos implementados desde cero en Python 3.11 stdlib puro.        │
@@ -216,7 +216,7 @@ Muestra los modulos Python dentro del contenedor bvc_api organizados en capas.
 │  │  │ json.loads()        │  │  V[k]=V[izq]+       │  │                  │  │  │
 │  │  │ 3 reintentos        │  │  (V[der]-V[izq])×   │  │ insertar_activos │  │  │
 │  │  │ 1s pausa cortés     │  │  (k-izq)/(der-izq)  │  │ insertar_precios │  │  │
-│  │  │ 20 activos          │  │                     │  │  _lote()         │  │  │
+│  │  │ 25 activos          │  │                     │  │  _lote()         │  │  │
 │  │  │ 5 años historia     │  │ detectar_outliers_  │  │ obtener_series_  │  │  │
 │  │  │ ~1255 dias/activo   │  │  zscore() O(n)      │  │  alineadas()     │  │  │
 │  │  │                     │  │  z=(x-μ)/σ >3.5     │  │  interseccion de │  │  │
@@ -229,7 +229,7 @@ Muestra los modulos Python dentro del contenedor bvc_api organizados en capas.
 │  │  CAPA 5 — CONFIGURACION Y REPORTES                                        │  │
 │  │                                                                           │  │
 │  │  config.py              main.py               reportes/generador.py      │  │
-│  │  20 activos             pipeline_etl()        generar_reporte_html()     │  │
+│  │  25 activos             pipeline_etl()        generar_reporte_html()     │  │
 │  │  FECHA_INICIO/FIN       pipeline_similitud()  Portada + 7 secciones      │  │
 │  │  VENTANA=20 dias        pipeline_volatilidad()5 graficos SVG inline      │  │
 │  │  DIAS_VOL=30            pipeline_ordenamiento()Exportable a PDF          │  │
@@ -267,7 +267,7 @@ etl/descargador.py — descargar_ticker()
   Convierte ts:  datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
   Retorna:       List[Dict{fecha, apertura, maximo, minimo, cierre, volumen}]
         │
-        │  ~1,255 filas × 20 activos = ~25,100 filas crudas
+        │  ~1,255 filas × 25 activos = ~31,375 filas crudas
         ▼
 etl/limpieza.py — limpiar_dataset()
   1. sorted() por fecha ASC
@@ -345,12 +345,12 @@ api/server.py — BVCHandler(BaseHTTPRequestHandler)
 interfaz/index.html — SPA JavaScript vanilla
   fetch(API + "/endpoint") → JSON → render SVG/Canvas
   ┌──────────────────────────────────────────────────────────────────┐
-  │  Overview:         KPIs + sparklines 20 activos + heatmap mini  │
-  │  Portafolio:       20 graficos precio historico con filtros      │
+  │  Overview:         KPIs + sparklines 25 activos + heatmap mini  │
+  │  Portafolio:       25 graficos precio historico con filtros      │
   │  Comparar Activos: lineas % cambio + 4 valores similitud         │
-  │  Mapa de Calor:    SVG 20x20 Pearson con tooltip                 │
+  │  Mapa de Calor:    SVG 25x25 Pearson con tooltip                 │
   │  Patrones:         ventana deslizante + Golden/Death Cross        │
-  │  Riesgo:           ranking 20 activos por volatilidad            │
+  │  Riesgo:           ranking 25 activos por volatilidad            │
   │  Ordenamiento:     tabla benchmark + barras SVG                  │
   │  Velas OHLC:       Canvas 2D + SMA configurable                  │
   │  Reporte/PDF:      portada + 7 secciones + 5 graficos SVG        │

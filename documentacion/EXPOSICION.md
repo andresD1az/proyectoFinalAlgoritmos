@@ -37,14 +37,14 @@ Dashboard en: http://localhost:8001
 ### 1. `config.py` — 30 seg
 
 Qué hace:
-- Define los 20 activos del portafolio con ticker, nombre, tipo y mercado
+- Define los 25 activos del portafolio con ticker, nombre, tipo y mercado
 - Calcula FECHA_INICIO y FECHA_FIN automáticamente (5 años hacia atrás desde hoy)
 - Centraliza todos los parámetros: ventana deslizante 20 días, umbral similitud 0.75, ventana volatilidad 30 días
 - Lee las variables de entorno para la conexión a PostgreSQL (DB_HOST, DB_USER, etc.)
 - Si existe DATABASE_URL (formato Render/Heroku), la parsea con regex manualmente
 
 Qué decir:
-"Aquí están los 20 activos que analizamos y todos los parámetros del sistema.
+"Aquí están los 25 activos que analizamos y todos los parámetros del sistema.
 Cualquier cambio de parámetro se hace en un solo lugar."
 
 Portafolio:
@@ -66,7 +66,7 @@ Qué hace:
 - Convierte cada Unix timestamp a fecha con datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d")
 - 3 reintentos con pausa de 1 segundo entre peticiones
 - Retorna lista de dicts: {fecha, apertura, maximo, minimo, cierre, volumen}
-- descargar_todos() itera los 20 activos con pausa de 1s entre cada uno (scraping ético)
+- descargar_todos() itera los 25 activos con pausa de 1s entre cada uno (scraping ético)
 
 Qué decir:
 "Construimos la URL manualmente, parseamos el JSON a mano y convertimos
@@ -261,11 +261,11 @@ Qué hace:
 
 Abrir http://localhost:8001 y mostrar:
 
-- Overview: 20 activos, registros en BD, 190 pares de similitud, 28 algoritmos
+- Overview: 25 activos, registros en BD, 300 pares de similitud, 28 algoritmos
 - Comparar Activos: tabla de pares Pearson ordenada por correlación DESC
-- Mapa de Calor: matriz 20×20 de correlaciones Pearson
+- Mapa de Calor: matriz 25×25 de correlaciones Pearson
 - Patrones: ventana deslizante por ticker, Golden/Death Cross
-- Clasificación Riesgo: ranking de los 20 activos por volatilidad anualizada
+- Clasificación Riesgo: ranking de los 25 activos por volatilidad anualizada
 - Tabla 1 + Barras: benchmark de los 12 algoritmos con tiempos reales
 - Top-15 Volumen: los 15 días con mayor volumen de negociación
 - Velas OHLC: gráfico de velas con SMA10 y SMA30 superpuestas
